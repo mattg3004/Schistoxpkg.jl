@@ -1,0 +1,13 @@
+name = "Schistoxpkg"
+uuid = "ee8521ae-8f6d-4bf5-8f15-d671735ac7b0"
+authors = ["Matthew"]
+version = "0.1.0"
+
+[compat]
+julia = "1.3.1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
