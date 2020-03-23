@@ -7,7 +7,3 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/mattg3004/Schistoxpkg.jl?svg=true)](https://ci.appveyor.com/project/mattg3004/Schistoxpkg-jl)
 
 [![Codecov](https://codecov.io/gh/mattg3004/Schistoxpkg.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/mattg3004/Schistoxpkg.jl)
-[![Coveralls](https://coveralls.io/repos/github/mattg3004/Schistoxpkg.jl/badge.svg?branch=master)](https://coveralls.io/github/mattg3004/Schistoxpkg.jl?branch=master)
-
-[![Build Status](https://api.cirrus-ci.com/github/mattg3004/Schistoxpkg.jl.svg)](https://cirrus-ci.com/github/mattg3004/Schistoxpkg.jl)
-[![Build Status](https://cloud.drone.io/api/badges/mattg3004/Schistoxpkg.jl/status.svg)](https://cloud.drone.io/mattg3004/Schistoxpkg.jl)
