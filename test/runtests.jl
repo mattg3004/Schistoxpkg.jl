@@ -170,3 +170,43 @@ push!(lens, length(pop[end]))
 @testset "N" begin
     @test all(lens .== N)
 end
+
+
+
+
+
+female_worms= [[1,1], [2,1], [2,4]]
+male_worms= [[1,1], [2,1], [2,5]]
+vaccine_effectiveness = 1
+vaccine_coverage = 1
+min_age_vaccine = 5
+max_age_vaccine = 16
+vaccine_gender = [0,1]
+ages = [4,10,9]
+human_cercariae = [[1,2],[9,2,4], [ 0,5]]
+eggs = [1,2,3]
+treated = [1,1,1]
+vaccine_duration = 10
+vac_status = [0,0,0]
+vaccine_round = 1
+gender = [1,0,1]
+adherence = [1,1,1]
+
+
+@testset "vaccinate" begin
+@test isapprox(vaccinate(vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_effectiveness,
+        vaccine_gender, ages, female_worms, male_worms, human_cercariae, eggs,
+        treated, vaccine_duration, vac_status, vaccine_round, gender, adherence)[1],
+        [[1,1],[0,0],[0,0]])
+end
+
+female_worms= [[1,1], [2,1], [2,4]]
+male_worms= [[1,1], [2,1], [2,5]]
+adherence = [1,0,0]
+
+@testset "vaccinate" begin
+@test isapprox(vaccinate(vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_effectiveness,
+            vaccine_gender, ages, female_worms, male_worms, human_cercariae, eggs,
+            treated, vaccine_duration, vac_status, vaccine_round, gender, adherence)[1],
+            [[1,1],[2,1],[2,4]])
+end

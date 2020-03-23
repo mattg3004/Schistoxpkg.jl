@@ -733,10 +733,10 @@ function vaccinate(vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_e
 
 
 # update female and male worms, human cercariae and eggs post vaccine
-        female_worms = administer_drug(female_worms, y, vaccine_effectiveness)
-        male_worms = administer_drug(male_worms, y, vaccine_effectiveness)
-        human_cercariae = administer_drug(human_cercariae, y, vaccine_effectiveness)
-        eggs = administer_drug(eggs, y, 1)
+        female_worms = administer_drug(female_worms, y, vaccine_effectiveness, adherence)
+        male_worms = administer_drug(male_worms, y, vaccine_effectiveness, adherence)
+        human_cercariae = administer_drug(human_cercariae, y, vaccine_effectiveness, adherence)
+        eggs = administer_drug(eggs, y, 1, adherence)
         vac_status[y] .= vaccine_duration
  #   else
 
@@ -901,7 +901,7 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
             female_worms, male_worms, human_cercariae, eggs, vac_status =
                     vaccinate(vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_effectiveness,
                     vaccine_gender, ages, female_worms, male_worms, human_cercariae, eggs,
-                    treated, vaccine_duration, vac_status, vaccine_round, gender)
+                    treated, vaccine_duration, vac_status, vaccine_round, gender, adherence)
 
 #= update information for the next round of vaccination =#
             vaccine_round += 1

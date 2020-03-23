@@ -39,6 +39,8 @@ export specified_age_distribution
 export create_population_specified_ages
 export update_env_to_equilibrium
 export create_mda
+export vaccine_information
+export mda_information
 
 
 # using Distributions
