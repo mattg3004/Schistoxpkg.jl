@@ -118,6 +118,12 @@ end
 contact_rates_by_age = make_age_contact_rate_array(max_age)
 death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
 
+@testset "birth_of_human" begin
+    @test birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
+                            [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
+                            [0,0], [1.1,1], [0.0002,0.00005], 1,1, contact_rates_by_age,
+                        death_rate_per_time_step,2, 0.24, [1,1],1)[1] == [2,4,0]
+end
 new_pop = birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
                         [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
                         [0,0], [1.1,1], [0.0002,0.00005], 1,1, contact_rates_by_age,
@@ -153,7 +159,13 @@ big_drug = administer_drug([[3, 2],[1e5],[4,10]], [2], 0.5, [1,1,1])
     @test big_drug == [[3,2],[50029],[4,10]]
 end
 
-# But also with this big a sample size I think its fairly reasonable to use the 0.0001 and 0.9999 quantiles.
+
+@testset "create_mda" begin
+     mda_info = create_mda(0, .75, 1, 1,5, 2, [0,1], [0,1], [0,1], .92)
+    @test mda_info[1].coverage == 0
+end
+
+  # But also with this big a sample size I think its fairly reasonable to use the 0.0001 and 0.9999 quantiles.
 # In R qbinom(0.5, 1e5, c(0.0001, 0.9999))
 # So this isn't relying on the seed, and should nearly always be true.
 # but if we're repeatedly running it, we still want to use a seed.
