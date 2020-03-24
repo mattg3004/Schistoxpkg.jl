@@ -41,6 +41,7 @@ export update_env_to_equilibrium
 export create_mda
 export vaccine_information
 export mda_information
+export update_env_no_births_deaths
 
 
 # using Distributions
