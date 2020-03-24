@@ -1,7 +1,6 @@
 module Schistoxpkg
 
 include("functions.jl")
-include("parameters.jl")
 
 export create_population
 export make_age_contact_rate_array
