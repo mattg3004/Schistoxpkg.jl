@@ -115,7 +115,7 @@ end
 end
 
 
-contact_rates_by_age = make_age_contact_rate_array(max_age)
+contact_rates_by_age = make_age_contact_rate_array(100)
 death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
 
 @testset "birth_of_human" begin
