@@ -118,7 +118,7 @@ age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0
                            21.83, 29.98, 36.98]
 
 contact_rates_by_age = make_age_contact_rate_array(100)
-death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
+death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, 1)
 
 @testset "birth_of_human" begin
     @test birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
