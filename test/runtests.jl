@@ -72,12 +72,66 @@ end
     @test isapprox(calculate_worm_pairs([[1,3],[17,0],[400,12312]],[[100,3000],[1,6],[1,1]]),[4,7,2] )
 end
 
+@testset "total_worms" begin
+    @test isapprox(calculate_total_worms([[1,3],[17,0],[400,1]],[[10,30],[1,6],[1,1]])[1], [4,17,401])
+end
+
+
+@testset "total_worms" begin
+    @test isapprox(calculate_total_worms([[1,3],[17,0],[400,1]],[[10,30],[1,6],[1,1]])[2], [40,7,2])
+end
 
 
 @testset "make_age_contact_rate_array(max_age)" begin
     @test make_age_contact_rate_array(100)[1] == 0.032
 end
 
+
+
+
+@testset "death_of_human" begin
+    @test death_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
+                                [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
+                                [0,0], [1,1], [0.0002,0.00005], 1,
+                                [1,1])[1] == [2,4]
+
+end
+
+@testset "death_of_human" begin
+    @test death_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
+                                [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
+                                [0,0], [1,1], [2,0.00005], 1,
+                                [1,1])[1] == [4]
+
+end
+
+
+@testset "death_of_human" begin
+    @test death_of_human([120,120], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
+                                [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
+                                [0,0], [1,1], [0.00001,0.0001], 365,
+                                [1,1])[1] == []
+
+end
+
+
+contact_rates_by_age = make_age_contact_rate_array(max_age)
+death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
+
+new_pop = birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
+                        [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
+                        [0,0], [1.1,1], [0.0002,0.00005], 1,1, contact_rates_by_age,
+                    death_rate_per_time_step,2, 0.24, [1,1],1)
+@testset "birth_of_human" begin
+    @test new_pop[1]==[2,4,0]
+end
+@testset "birth_of_human" begin
+    @test new_pop[4]==[[2,3,4],[6,3,4],[]]
+end
+
+@testset "birth_of_human" begin
+    @test new_pop[5]==[15,7,0]
+end
 
 
 
