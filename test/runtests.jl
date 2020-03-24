@@ -113,7 +113,9 @@ end
                                 [1,1])[1] == []
 
 end
-
+age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0.65,
+                           0.88, 1.06, 1.44, 2.1, 3.33, 5.29, 8.51, 13.66,
+                           21.83, 29.98, 36.98]
 
 contact_rates_by_age = make_age_contact_rate_array(100)
 death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
