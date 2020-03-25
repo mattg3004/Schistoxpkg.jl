@@ -605,9 +605,13 @@ end
 function administer_drug(d, indices, drug_effectiveness, adherence)
     if drug_effectiveness === 1
         @inbounds d[indices] .*= (1 .- adherence[indices])
+
+    elseif drug_effectiveness === 0
+
     else
         for i in 1:length(indices)
             @inbounds index = indices[i]
+            d[index] = trunc.(Int, d[index])
             @inbounds d[index] = rand.(Binomial.(d[index], 1 - (drug_effectiveness * adherence[index])))
         end
     end
