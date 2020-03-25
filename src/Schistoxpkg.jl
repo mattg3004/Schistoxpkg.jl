@@ -1,5 +1,5 @@
 module Schistoxpkg
-
+include("parameters.jl")
 include("functions.jl")
 
 export create_population
