@@ -119,28 +119,28 @@ age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0
 
 contact_rates_by_age = make_age_contact_rate_array(100)
 death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, 1)
-#
-# @testset "birth_of_human" begin
-#     @test birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
-#                             [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
-#                             [0,0], [1.1,1], [0.0002,0.00005], 1,1, contact_rates_by_age,
-#                         death_rate_per_time_step,2, 0.24, [1,1],1)[1] == [2,4,0]
-# end
-# new_pop = birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
-#                         [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
-#                         [0,0], [1.1,1], [0.0002,0.00005], 1,1, contact_rates_by_age,
-#                     death_rate_per_time_step,2, 0.24, [1,1],1)
-# @testset "birth_of_human" begin
-#     @test new_pop[1]==[2,4,0]
-# end
-# @testset "birth_of_human" begin
-#     @test new_pop[4]==[[2,3,4],[6,3,4],[]]
-# end
-#
-# @testset "birth_of_human" begin
-#     @test new_pop[5]==[15,7,0]
-# end
-#
+
+@testset "birth_of_human" begin
+    @test birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
+                            [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
+                            [0,0], [1.1,1], [0.0002,0.00005], 1,1, contact_rates_by_age,
+                        death_rate_per_time_step,2, 0.24, [1,1],1)[1] == [2,4,0]
+end
+new_pop = birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
+                        [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
+                        [0,0], [1.1,1], [0.0002,0.00005], 1,1, contact_rates_by_age,
+                    death_rate_per_time_step,2, 0.24, [1,1],1)
+@testset "birth_of_human" begin
+    @test new_pop[1]==[2,4,0]
+end
+@testset "birth_of_human" begin
+    @test new_pop[4]==[[2,3,4],[6,3,4],[]]
+end
+
+@testset "birth_of_human" begin
+    @test new_pop[5]==[15,7,0]
+end
+
 
 
 @testset "administer_drug" begin
