@@ -41,6 +41,11 @@ export create_mda
 export vaccine_information
 export mda_information
 export update_env_no_births_deaths
+export update_env_keep_population_same
+export collect_prevs
+export run_repeated_sims_no_population_change
+export run_repeated_sims_random_births_deaths
+
 
 
 # using Distributions
