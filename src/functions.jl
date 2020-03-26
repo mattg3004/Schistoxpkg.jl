@@ -38,9 +38,16 @@ end
 
 
 
-
-
-
+# create the age specific contact settings given the scenario
+function create_contact_settings(scenario)
+    if scenario == "low adult"
+        contact_settings = [0.01, 1.2, 1, 0.02]
+    elseif scenario == "moderate adult"
+        contact_settings = [0.032, 0.61, 1, 0.06]
+    elseif scenario == "high adult"
+        contact_settings = [0.01, 0.61, 1, 0.12]
+    end
+end
 
 
 # function to get age dependent contact rate.
@@ -49,10 +56,11 @@ end
 #     of schistosome parasites in regions of endemic infection?" paper
 # at some point we may change this to be an input from a file instead
 
-function make_age_contact_rate_array(max_age, contact_settings)
+function make_age_contact_rate_array(max_age,  scenario)
     if max_age < 60
         error("max_age must be greater than 60")
     else
+        contact_settings = create_contact_settings(scenario)
 # initialize an array with the same value for contact rate across all ages
         contact_rates_by_age = [fill(contact_settings[4], max_age+1)]
         contact_rates_by_age = contact_rates_by_age[1]
@@ -61,12 +69,22 @@ function make_age_contact_rate_array(max_age, contact_settings)
         for i in 1:5
             contact_rates_by_age[i] = contact_settings[1]
         end
-        for i in 6:10
-            contact_rates_by_age[i] = contact_settings[2]
+        if scenario == "high adult"
+            for i in 6:12
+                contact_rates_by_age[i] = contact_settings[2]
+            end
+            for i in 13:21
+                contact_rates_by_age[i] = contact_settings[3]
+            end
+        else
+            for i in 6:10
+                contact_rates_by_age[i] = contact_settings[2]
+            end
+            for i in 11:16
+                contact_rates_by_age[i] = contact_settings[3]
+            end
         end
-        for i in 11:15
-            contact_rates_by_age[i] = contact_settings[3]
-        end
+
         return contact_rates_by_age
     end
 # return contact rates for age
@@ -1173,7 +1191,7 @@ function run_simulation(N, max_age, initial_worms, time_step, worm_stages, femal
     initial_miracidia, initial_miracidia_days,env_cercariae, contact_rate, max_fecundity,
     density_dependent_fecundity, r, num_time_steps, birth_rate, average_worm_lifespan, predis_aggregation,
     env_cercariae_death_rate, env_miracidia_death_rate, mda_coverage, mda_round, vaccine_effectiveness,
-    mda_info, vaccine_info, record_frequency, mda_adherence)
+    mda_info, vaccine_info, record_frequency, mda_adherence, scenario)
 
 
     age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0.65,
@@ -1181,7 +1199,7 @@ function run_simulation(N, max_age, initial_worms, time_step, worm_stages, femal
                                21.83, 29.98, 36.98]
 
 
-    contact_rates_by_age = make_age_contact_rate_array(max_age)
+    contact_rates_by_age = make_age_contact_rate_array(max_age, scenario)
     death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
 
 
