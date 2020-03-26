@@ -49,23 +49,23 @@ end
 #     of schistosome parasites in regions of endemic infection?" paper
 # at some point we may change this to be an input from a file instead
 
-function make_age_contact_rate_array(max_age)
+function make_age_contact_rate_array(max_age, contact_settings)
     if max_age < 60
         error("max_age must be greater than 60")
     else
 # initialize an array with the same value for contact rate across all ages
-        contact_rates_by_age = [fill(0.05, max_age+1)]
+        contact_rates_by_age = [fill(contact_settings[4], max_age+1)]
         contact_rates_by_age = contact_rates_by_age[1]
 
 # then edit the entries for different ages according to values
         for i in 1:5
-            contact_rates_by_age[i] = 0.032
+            contact_rates_by_age[i] = contact_settings[1]
         end
         for i in 6:10
-            contact_rates_by_age[i] = 0.162
+            contact_rates_by_age[i] = contact_settings[2]
         end
         for i in 11:15
-            contact_rates_by_age[i] = 1
+            contact_rates_by_age[i] = contact_settings[3]
         end
         return contact_rates_by_age
     end
@@ -1740,6 +1740,23 @@ end
 
 
 
+
+# when we run multiple simulations, we store them in an array. This function will store the prevalence and sac prevalence
+function collect_prevs(times, prev, sac_prev,record, run)
+        if run == 1
+            for i in 1 : length(record)
+                push!(times, record[i].time)
+                push!(prev, [record[i].pop_prev])
+                push!(sac_prev, [record[i].sac_prev])
+            end
+        else
+            for i in 1 : length(record)
+                push!(prev[i], record[i].pop_prev)
+                push!(sac_prev[i], record[i].sac_prev)
+            end
+        end
+    return times, prev, sac_prev
+end
 
 # repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
 function run_repeated_sims_no_population_change(num_repeats, num_time_steps, ages_equ, human_cercariae_equ, female_worms_equ, male_worms_equ,

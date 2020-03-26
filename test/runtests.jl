@@ -82,8 +82,9 @@ end
 end
 
 
-@testset "make_age_contact_rate_array(max_age)" begin
-    @test make_age_contact_rate_array(100)[1] == 0.032
+contact_settings = [0.032,0.61,1,0.06]
+@testset "make_age_contact_rate_array(max_age,contact_settings)" begin
+    @test make_age_contact_rate_array(100, contact_settings)[1] == 0.032
 end
 
 
@@ -117,7 +118,7 @@ age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0
                            0.88, 1.06, 1.44, 2.1, 3.33, 5.29, 8.51, 13.66,
                            21.83, 29.98, 36.98]
 
-contact_rates_by_age = make_age_contact_rate_array(100)
+contact_rates_by_age = make_age_contact_rate_array(100,contact_settings)
 death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, 1)
 
 @testset "birth_of_human" begin
@@ -230,7 +231,7 @@ age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0
 predis_aggregation = 0.24
 mda_adherence = 0.8
 
-contact_rates_by_age = make_age_contact_rate_array(max_age)
+contact_rates_by_age = make_age_contact_rate_array(max_age, contact_settings)
 death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
 
 pop = create_population(N, max_age, initial_worms, contact_rates_by_age,
