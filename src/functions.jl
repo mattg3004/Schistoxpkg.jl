@@ -1760,7 +1760,7 @@ end
 
 
 # when we run multiple simulations, we store them in an array. This function will store the prevalence and sac prevalence
-function collect_prevs(times, prev, sac_prev,record, run)
+function collect_prevs(times, prev, sac_prev, record, run)
         if run == 1
             for i in 1 : length(record)
                 push!(times, record[i].time)
@@ -1777,17 +1777,18 @@ function collect_prevs(times, prev, sac_prev,record, run)
 end
 
 # repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
-function run_repeated_sims_no_population_change(num_repeats, num_time_steps, ages_equ, human_cercariae_equ, female_worms_equ, male_worms_equ,
-                time_step, average_worm_lifespan,
-                eggs_equ, max_fecundity, r, worm_stages,
-                vac_status_equ, gender_equ, predis_aggregation,
-                predisposition_equ, treated_equ, vaccine_effectiveness,
-                density_dependent_fecundity,
-                vaccinated_equ, age_contact_rate_equ, death_rate_equ, env_miracidia_equ,
-                env_cercariae_equ , contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
-                female_factor, male_factor, contact_rates_by_age,
-                death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence_equ, mda_adherence,
-                record_frequency, times, prev, sac_prev)
+function run_repeated_sims_no_population_change(num_repeats, num_time_steps, ages_equ, human_cercariae_equ,
+    female_worms_equ, male_worms_equ,
+    time_step, average_worm_lifespan,
+    eggs_equ, max_fecundity, r, worm_stages,
+    vac_status_equ, gender_equ, predis_aggregation,
+    predisposition_equ, treated_equ, vaccine_effectiveness,
+    density_dependent_fecundity,
+    vaccinated_equ, age_contact_rate_equ, death_rate_equ, env_miracidia_equ,
+    env_cercariae_equ , contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+    female_factor, male_factor, contact_rates_by_age,
+    death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence_equ, mda_adherence,
+    record_frequency, times, prev, sac_prev)
 
 
 
@@ -1811,14 +1812,13 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps, age
                     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, copy(adherence_equ), mda_adherence,
                     record_frequency);
 
-
         times, prev, sac_prev = collect_prevs(times, prev, sac_prev, record, run)
         if mod(run,10)==0
             println("Done ", run)
         end
 
     end
-    return times, prev, sac_prev, record
+    return times, prev, sac_prev
 end
 
 
@@ -1866,5 +1866,5 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps, age
         end
 
     end
-    return times, prev, sac_prev, record
+    return times, prev, sac_prev
 end
