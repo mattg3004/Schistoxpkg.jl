@@ -1606,7 +1606,7 @@ function update_env_keep_population_same(num_time_steps, ages, human_cercariae, 
     start_pop = length(ages)
     update_contact_death_rates = 1/5
     sim_time = 0
-    record_time = record_frequency
+    record_time = 0
     record = []
     print_time = 0
     if size(mda_info)[1] > 0
@@ -1777,24 +1777,24 @@ function collect_prevs(times, prev, sac_prev, record, run)
 end
 
 # repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
-function run_repeated_sims_no_population_change(num_repeats, num_time_steps, ages_equ, human_cercariae_equ,
-    female_worms_equ, male_worms_equ,
+function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
     time_step, average_worm_lifespan,
-    eggs_equ, max_fecundity, r, worm_stages,
-    vac_status_equ, gender_equ, predis_aggregation,
-    predisposition_equ, treated_equ, vaccine_effectiveness,
-    density_dependent_fecundity,
-    vaccinated_equ, age_contact_rate_equ, death_rate_equ, env_miracidia_equ,
-    env_cercariae_equ , contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+    max_fecundity, r, worm_stages, predis_aggregation, vaccine_effectiveness,
+    density_dependent_fecundity, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
     female_factor, male_factor, contact_rates_by_age,
-    death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence_equ, mda_adherence,
-    record_frequency, times, prev, sac_prev)
+    death_rate_per_time_step, birth_rate, mda_info, vaccine_info, mda_adherence,
+    record_frequency, times, prev, sac_prev, filename)
 
 
 
 
     for run in 1:num_repeats
 
+
+        ages_equ, gender_equ, predisposition_equ, human_cercariae_equ,
+         eggs_equ, vac_status_equ, treated_equ,female_worms_equ, male_worms_equ,
+         vaccinated_equ, age_contact_rate_equ, death_rate_equ, env_miracidia_equ , env_cercariae_equ, adherence_equ =
+        load_population_from_file(filename, N, true)
 
         ages , gender, predisposition,  human_cercariae, eggs,
         vac_status, treated, female_worms, male_worms,
@@ -1825,23 +1825,25 @@ end
 
 
 # repeat simulations where we allow mdas and vaccination, and allow random births and deaths
-function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps, ages_equ, human_cercariae_equ, female_worms_equ, male_worms_equ,
+function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                 time_step, average_worm_lifespan,
-                eggs_equ, max_fecundity, r, worm_stages,
-                vac_status_equ, gender_equ, predis_aggregation,
-                predisposition_equ, treated_equ, vaccine_effectiveness,
+                max_fecundity, r, worm_stages,
+                predis_aggregation,
                 density_dependent_fecundity,
-                vaccinated_equ, age_contact_rate_equ, death_rate_equ, env_miracidia_equ,
-                env_cercariae_equ , contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+                age_contact_rate_equ, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
                 female_factor, male_factor, contact_rates_by_age,
-                death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence_equ, mda_adherence,
-                record_frequency, times, prev, sac_prev)
+                death_rate_per_time_step, birth_rate, mda_info, vaccine_info,  mda_adherence,
+                record_frequency, times, prev, sac_prev, filename)
 
 
 
 
     for run in 1:num_repeats
 
+        ages_equ, gender_equ, predisposition_equ, human_cercariae_equ,
+         eggs_equ, vac_status_equ, treated_equ,female_worms_equ, male_worms_equ,
+         vaccinated_equ, age_contact_rate_equ, death_rate_equ, env_miracidia_equ , env_cercariae_equ, adherence_equ =
+        load_population_from_file(filename, N, true)
 
         ages , gender, predisposition,  human_cercariae, eggs,
         vac_status, treated, female_worms, male_worms,
