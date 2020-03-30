@@ -1,7 +1,7 @@
 name = "Schistoxpkg"
 uuid = "ee8521ae-8f6d-4bf5-8f15-d671735ac7b0"
 authors = ["Matthew"]
-version = "1.0.4"
+version = "1.0.5"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
