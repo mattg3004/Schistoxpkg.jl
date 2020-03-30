@@ -95,7 +95,54 @@ end
     @test make_age_contact_rate_array(100, "low adult")[100] == 0.02
 end
 
+@testset "make_age_contact_rate_array(max_age, scenario)" begin
+    @test make_age_contact_rate_array(100, "moderate adult")[100] == 0.06
+end
+time_step = 10
+human_cercariae = [[4],[5],[6],[7],[8]]
+env_miracidia = [10, 10, 10, 10, 1]
+env_cercariae = 100
+contact_rate = 0.01
+predisposition  = [0.1, 0.21, 1.4, 3.1, 100]
+age_contact_rate = [0.0, 0.06, 0.12, 0.02, 0.06]
+vac_status = [0,0,0,0,0]
+vaccine_effectiveness = 0.95
 
+@testset "cercariae_uptake(max_age, scenario)" begin
+    @test isapprox(cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
+        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness))[3],  [10, 10, 10, 1])
+end
+
+time_step = 10
+human_cercariae = [[4],[5],[6],[7],[8]]
+env_miracidia = [10, 10, 10, 10, 1]
+env_cercariae = 100
+contact_rate = 0.01
+predisposition  = [0.1, 0.21, 1.4, 3.1, 100]
+age_contact_rate = [0.0, 0.06, 0.12, 0.02, 0.06]
+vac_status = [0,0,0,0,0]
+vaccine_effectiveness = 0.95
+
+@testset "cercariae_uptake(max_age, scenario)" begin
+    @test isapprox(cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
+        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness))[2][1][2],  0)
+end
+
+
+time_step = 10
+human_cercariae = [[4],[5],[6],[7],[8]]
+env_miracidia = [10, 10, 10, 10, 1]
+env_cercariae = 100
+contact_rate = 0.01
+predisposition  = [0.1, 0.21, 1.4, 3.1, 100]
+age_contact_rate = [0.0, 0.06, 0.12, 0.02, 0.06]
+vac_status = [0,0,0,0,0]
+vaccine_effectiveness = 0.95
+
+@testset "cercariae_uptake(max_age, scenario)" begin
+    @test cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
+        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness))[2][5][2] >0
+end
 
 
 @testset "death_of_human" begin
