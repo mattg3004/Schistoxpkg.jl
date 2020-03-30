@@ -123,7 +123,7 @@ age_contact_rate = [0.0, 0.06, 0.12, 0.02, 0.06]
 vac_status = [0,0,0,0,0]
 vaccine_effectiveness = 0.95
 
-@testset "cercariae_uptake(max_age, scenario)" begin
+@testset "cercariae_uptake" begin
     @test isapprox(cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
         copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness))[2][1][2],  0)
 end
@@ -139,9 +139,47 @@ age_contact_rate = [0.0, 0.06, 0.12, 0.02, 0.06]
 vac_status = [0,0,0,0,0]
 vaccine_effectiveness = 0.95
 
-@testset "cercariae_uptake(max_age, scenario)" begin
+@testset "cercariae_uptake" begin
     @test cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
         copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness))[2][5][2] >0
+end
+
+
+time_step = 10
+human_cercariae = [[4],[5],[6],[7],[8]]
+env_miracidia = [10, 10, 10, 10, 1]
+env_cercariae = 100
+contact_rate = 0.01
+predisposition  = [0.1, 0.21, 1.4, 3.1, 100]
+age_contact_rate = [0.0, 0.06, 0.12, 0.02, 0.06]
+vac_status = [0,0,0,0,1]
+vaccine_effectiveness = 1
+
+@testset "cercariae_uptake" begin
+    @test cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
+        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness))[2][5][2] == 0
+end
+
+female_worms = [[10000,200000],[2000,0]]
+male_worms = [[10000,200000],[2000,0]]
+worm_stages = 2
+average_worm_lifespan = 5.7
+
+@testset "worm_maturity" begin
+    @test worm_maturity(female_worms, male_worms, worm_stages, average_worm_lifespan, time_step)[1][1][2] < 200000
+end
+
+@testset "worm_maturity" begin
+    @test worm_maturity(female_worms, male_worms, worm_stages, average_worm_lifespan, time_step)[1][2][2] > 00
+end
+
+
+@testset "worm_maturity" begin
+    @test worm_maturity(female_worms, male_worms, worm_stages, average_worm_lifespan, time_step)[2][1][1] < 10000
+end
+
+@testset "worm_maturity" begin
+    @test worm_maturity(female_worms, male_worms, worm_stages, average_worm_lifespan, time_step)[2][2][1] < 2000
 end
 
 
