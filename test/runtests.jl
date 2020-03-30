@@ -188,24 +188,6 @@ end
 end
 
 
-function miracidia_production(eggs, env_miracidia, time_step)
-459
-#= as we can step forward an arbitrary number of days at a time, we multiply the number of miracidia by the
-460
-    length of the forward step, assuming that each of the last given number of days were equivalent to each other
-461
-=#
-462
-    push!(env_miracidia,  sum(eggs))
-463
-    return env_miracidia
-464
-end
-465
-466
-
-
-
 @testset "death_of_human" begin
     @test death_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
                                 [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
