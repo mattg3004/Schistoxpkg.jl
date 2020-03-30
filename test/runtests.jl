@@ -160,8 +160,8 @@ vaccine_effectiveness = 1
         copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness))[2][5][2] == 0
 end
 
-female_worms = [[10000,200000],[2000,0]]
-male_worms = [[10000,200000],[2000,0]]
+female_worms = [[10000,200000],[200000,0]]
+male_worms = [[10000,200000],[200000,0]]
 worm_stages = 2
 average_worm_lifespan = 5.7
 
@@ -179,8 +179,31 @@ end
 end
 
 @testset "worm_maturity" begin
-    @test worm_maturity(female_worms, male_worms, worm_stages, average_worm_lifespan, time_step)[2][2][1] < 2000
+    @test worm_maturity(female_worms, male_worms, worm_stages, average_worm_lifespan, time_step)[2][2][1] < 200000
 end
+
+
+@testset "miracidia_production" begin
+    @test miracidia_production([1,2,3],[6,7,6], 10)[1] == 6
+end
+
+
+function miracidia_production(eggs, env_miracidia, time_step)
+459
+#= as we can step forward an arbitrary number of days at a time, we multiply the number of miracidia by the
+460
+    length of the forward step, assuming that each of the last given number of days were equivalent to each other
+461
+=#
+462
+    push!(env_miracidia,  sum(eggs))
+463
+    return env_miracidia
+464
+end
+465
+466
+
 
 
 @testset "death_of_human" begin
