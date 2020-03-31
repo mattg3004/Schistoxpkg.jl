@@ -188,6 +188,34 @@ end
 end
 
 
+
+
+
+
+vaccine_info = []
+push!(vaccine_info, vaccine_information(0.75, 4, 16, [0,1], 3, 13))
+push!(vaccine_info, vaccine_information(0.4, 17, 110, [0,1], 3, 17))
+
+@testset "update_vaccine" begin
+    @test update_vaccine(vaccine_info, 1)[1] == 0.4
+end
+
+@testset "update_vaccine" begin
+    @test update_vaccine(vaccine_info, 1)[2] == 17
+end
+
+@testset "update_vaccine" begin
+    @test update_vaccine(vaccine_info, 1)[3] ==110
+end
+
+@testset "update_vaccine" begin
+    @test update_vaccine(vaccine_info, 1)[4] ==17
+end
+
+@testset "update_vaccine" begin
+    @test update_vaccine(vaccine_info, 1)[5] ==[0,1]
+end
+
 @testset "death_of_human" begin
     @test death_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
                                 [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
@@ -262,8 +290,24 @@ end
 
 
 @testset "create_mda" begin
-     mda_info = create_mda(0, .75, 1, 1,5, 2, [0,1], [0,1], [0,1], .92)
+     mda_info = create_mda(0, .75, 1, 1, 5, 2, [0,1], [0,1], [0,1], .92)
     @test mda_info[1].coverage == 0
+end
+
+
+@testset "create_mda" begin
+     mda_info = create_mda(0, .75, 1, 1, 5, 1, [0,1], [0,1], [0,1], .92)
+    @test mda_info[end].time == 5
+end
+
+mda_info = create_mda(0, .75, 1, 1, 5, 2, [0,1], [0,1], [0,1], .92)
+
+@testset "update_mda" begin
+    @test update_mda(mda_info, 3)[1] == 0
+end
+
+@testset "update_mda" begin
+    @test update_mda(mda_info, 3)[5] == 3
 end
 
   # But also with this big a sample size I think its fairly reasonable to use the 0.0001 and 0.9999 quantiles.

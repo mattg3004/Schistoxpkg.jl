@@ -716,7 +716,7 @@ function create_mda(pre_SAC_prop, SAC_prop, adult_prop, first_mda_time,
 
     mda_info = []
     mda_time = first_mda_time
-    while mda_time < last_mda_time
+    while mda_time <= last_mda_time
         push!(mda_info, mda_information(pre_SAC_prop, 0, 4, pre_SAC_gender, mda_effectiveness, mda_time))
         push!(mda_info, mda_information(SAC_prop, 4, 16, SAC_gender, mda_effectiveness, mda_time))
         push!(mda_info, mda_information(adult_prop, 16, 110, adult_gender, mda_effectiveness, mda_time))
@@ -900,24 +900,24 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
                      predisposition, age_contact_rate, vac_status, vaccine_effectiveness)
 
 #= check if we are at a point in time in which an mda is scheduled to take place =#
-        if sim_time >= next_mda_time
+        while sim_time >= next_mda_time
 
 #= perform mda =#
             female_worms, male_worms, human_cercariae, eggs =
             mda(mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, mda_gender,
                      ages, female_worms, male_worms, human_cercariae, eggs,
                      treated, mda_round, gender, adherence)
-
 #= update information for the next round of mda =#
             mda_round += 1
             mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, next_mda_time, mda_gender =
                 update_mda(mda_info, mda_round)
 
+
         end
 
 
 #= check if we are at a point in time in which a vaccine is scheduled to take place =#
-        if sim_time >= next_vaccine_time
+        while sim_time >= next_vaccine_time
 
 #= perform vaccination =#
             female_worms, male_worms, human_cercariae, eggs, vac_status =
@@ -1540,7 +1540,7 @@ function update_env_no_births_deaths(num_time_steps, ages, human_cercariae, fema
                      predisposition, age_contact_rate, vac_status, vaccine_effectiveness)
 
 #= check if we are at a point in time in which an mda is scheduled to take place =#
-        if sim_time >= next_mda_time
+        while sim_time >= next_mda_time
 
 #= perform mda =#
             female_worms, male_worms, human_cercariae, eggs =
@@ -1557,7 +1557,7 @@ function update_env_no_births_deaths(num_time_steps, ages, human_cercariae, fema
 
 
 #= check if we are at a point in time in which a vaccine is scheduled to take place =#
-        if sim_time >= next_vaccine_time
+        while sim_time >= next_vaccine_time
 
 #= perform vaccination =#
             female_worms, male_worms, human_cercariae, eggs, vac_status =
@@ -1709,7 +1709,7 @@ function update_env_keep_population_same(num_time_steps, ages, human_cercariae, 
                      predisposition, age_contact_rate, vac_status, vaccine_effectiveness)
 
 #= check if we are at a point in time in which an mda is scheduled to take place =#
-        if sim_time >= next_mda_time
+        while sim_time >= next_mda_time
 
 #= perform mda =#
             female_worms, male_worms, human_cercariae, eggs =
@@ -1726,7 +1726,7 @@ function update_env_keep_population_same(num_time_steps, ages, human_cercariae, 
 
 
 #= check if we are at a point in time in which a vaccine is scheduled to take place =#
-        if sim_time >= next_vaccine_time
+        while sim_time >= next_vaccine_time
 
 #= perform vaccination =#
             female_worms, male_worms, human_cercariae, eggs, vac_status =
