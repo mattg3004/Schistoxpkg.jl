@@ -900,7 +900,7 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
                      predisposition, age_contact_rate, vac_status, vaccine_effectiveness)
 
 #= check if we are at a point in time in which an mda is scheduled to take place =#
-        while sim_time >= next_mda_time
+        if sim_time >= next_mda_time
 
 #= perform mda =#
             female_worms, male_worms, human_cercariae, eggs =
@@ -917,7 +917,7 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
 
 
 #= check if we are at a point in time in which a vaccine is scheduled to take place =#
-        while sim_time >= next_vaccine_time
+        if sim_time >= next_vaccine_time
 
 #= perform vaccination =#
             female_worms, male_worms, human_cercariae, eggs, vac_status =
@@ -1540,7 +1540,7 @@ function update_env_no_births_deaths(num_time_steps, ages, human_cercariae, fema
                      predisposition, age_contact_rate, vac_status, vaccine_effectiveness)
 
 #= check if we are at a point in time in which an mda is scheduled to take place =#
-        while sim_time >= next_mda_time
+        if sim_time >= next_mda_time
 
 #= perform mda =#
             female_worms, male_worms, human_cercariae, eggs =
@@ -1557,7 +1557,7 @@ function update_env_no_births_deaths(num_time_steps, ages, human_cercariae, fema
 
 
 #= check if we are at a point in time in which a vaccine is scheduled to take place =#
-        while sim_time >= next_vaccine_time
+        if sim_time >= next_vaccine_time
 
 #= perform vaccination =#
             female_worms, male_worms, human_cercariae, eggs, vac_status =
@@ -1709,7 +1709,7 @@ function update_env_keep_population_same(num_time_steps, ages, human_cercariae, 
                      predisposition, age_contact_rate, vac_status, vaccine_effectiveness)
 
 #= check if we are at a point in time in which an mda is scheduled to take place =#
-        while sim_time >= next_mda_time
+        if sim_time >= next_mda_time
 
 #= perform mda =#
             female_worms, male_worms, human_cercariae, eggs =
@@ -1726,7 +1726,7 @@ function update_env_keep_population_same(num_time_steps, ages, human_cercariae, 
 
 
 #= check if we are at a point in time in which a vaccine is scheduled to take place =#
-        while sim_time >= next_vaccine_time
+        if sim_time >= next_vaccine_time
 
 #= perform vaccination =#
             female_worms, male_worms, human_cercariae, eggs, vac_status =
