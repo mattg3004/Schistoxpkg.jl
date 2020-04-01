@@ -266,7 +266,7 @@ distribution. otherwise, just uptake 0. =#
 
 # choose from the Poisson distribution
             uptake = rand(Poisson(pois_rate))
-    #println(uptake)
+
         else
             uptake = 0
         end
@@ -278,7 +278,7 @@ distribution. otherwise, just uptake 0. =#
         env_cercariae -= uptake
 
         end
-#println(uptakes/k)
+
 # return the infective, human and environmental larvae arrays
     return env_cercariae, human_cercariae, env_miracidia
 
@@ -436,10 +436,9 @@ otherwise the number of eggs is trivially 0 =#
 # calculate the probability of a success
                 p = NB_r/(NB_r+mean_eggs)
 
-# choose from NB
+# choose from Negative Binomial distribution
                 eggs_num = rand(NegativeBinomial(NB_r,p))[1]
-            #eggs_num = round(mean_eggs)
-            #println("prop = ", eggs_num/mean_eggs)
+
             else
                 eggs_num = 0
             end
@@ -764,9 +763,9 @@ function vaccinate(vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_e
 
  #   end
 
-    #println("output = ", female_worms, male_worms, human_cercariae, eggs)
+
     return female_worms, male_worms, human_cercariae, eggs, vac_status
-    #return x
+
 end
 
 
@@ -1813,9 +1812,7 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
                     record_frequency);
 
         times, prev, sac_prev = collect_prevs(times, prev, sac_prev, record, run)
-        if mod(run,10)==0
-            println("Done ", run)
-        end
+
 
     end
     return times, prev, sac_prev
@@ -1863,9 +1860,6 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
 
 
         times, prev, sac_prev = collect_prevs(times, prev, sac_prev, record, run)
-        if mod(run,10)==0
-            println("Done ", run)
-        end
 
     end
     return times, prev, sac_prev
