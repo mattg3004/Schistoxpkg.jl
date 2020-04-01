@@ -266,7 +266,7 @@ distribution. otherwise, just uptake 0. =#
 
 # choose from the Poisson distribution
             uptake = rand(Poisson(pois_rate))
-
+    #println(uptake)
         else
             uptake = 0
         end
@@ -278,7 +278,7 @@ distribution. otherwise, just uptake 0. =#
         env_cercariae -= uptake
 
         end
-
+#println(uptakes/k)
 # return the infective, human and environmental larvae arrays
     return env_cercariae, human_cercariae, env_miracidia
 
@@ -436,9 +436,10 @@ otherwise the number of eggs is trivially 0 =#
 # calculate the probability of a success
                 p = NB_r/(NB_r+mean_eggs)
 
-# choose from Negative Binomial distribution
+# choose from NB
                 eggs_num = rand(NegativeBinomial(NB_r,p))[1]
-
+            #eggs_num = round(mean_eggs)
+            #println("prop = ", eggs_num/mean_eggs)
             else
                 eggs_num = 0
             end
@@ -763,9 +764,9 @@ function vaccinate(vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_e
 
  #   end
 
-
+    #println("output = ", female_worms, male_worms, human_cercariae, eggs)
     return female_worms, male_worms, human_cercariae, eggs, vac_status
-
+    #return x
 end
 
 
@@ -906,11 +907,11 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
             mda(mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, mda_gender,
                      ages, female_worms, male_worms, human_cercariae, eggs,
                      treated, mda_round, gender, adherence)
+
 #= update information for the next round of mda =#
             mda_round += 1
             mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, next_mda_time, mda_gender =
                 update_mda(mda_info, mda_round)
-
 
         end
 
@@ -1759,20 +1760,22 @@ end
 
 
 # when we run multiple simulations, we store them in an array. This function will store the prevalence and sac prevalence
-function collect_prevs(times, prev, sac_prev, record, run)
+function collect_prevs(times, prev, sac_prev, high_burden, record, run)
         if run == 1
             for i in 1 : length(record)
                 push!(times, record[i].time)
                 push!(prev, [record[i].pop_prev])
                 push!(sac_prev, [record[i].sac_prev])
+                push!(high_burden, [record[i].population_burden[3]])
             end
         else
             for i in 1 : length(record)
                 push!(prev[i], record[i].pop_prev)
                 push!(sac_prev[i], record[i].sac_prev)
+                push!(high_burden[i], record[i].population_burden[3])
             end
         end
-    return times, prev, sac_prev
+    return times, prev, sac_prev, high_burden
 end
 
 # repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
@@ -1782,7 +1785,7 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
     density_dependent_fecundity, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, mda_adherence,
-    record_frequency, times, prev, sac_prev, filename)
+    record_frequency, times, prev, sac_prev, high_burden, filename)
 
 
 
@@ -1811,11 +1814,10 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
                     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, copy(adherence_equ), mda_adherence,
                     record_frequency);
 
-        times, prev, sac_prev = collect_prevs(times, prev, sac_prev, record, run)
-
+        times, prev, sac_prev = collect_prevs(times, prev, sac_prev, high_burden, record, run)
 
     end
-    return times, prev, sac_prev
+    return times, prev, sac_prev, high_burden
 end
 
 
@@ -1830,7 +1832,7 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                 age_contact_rate_equ, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
                 female_factor, male_factor, contact_rates_by_age,
                 death_rate_per_time_step, birth_rate, mda_info, vaccine_info,  mda_adherence,
-                record_frequency, times, prev, sac_prev, filename)
+                record_frequency, times, prev, sac_prev, high_burden, filename)
 
 
 
@@ -1859,8 +1861,8 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                     record_frequency);
 
 
-        times, prev, sac_prev = collect_prevs(times, prev, sac_prev, record, run)
+        times, prev, sac_prev, high_burden = collect_prevs(times, prev, sac_prev, high_burden, record, run)
 
     end
-    return times, prev, sac_prev
+    return times, prev, sac_prev, high_burden
 end
