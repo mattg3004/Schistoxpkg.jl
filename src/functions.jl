@@ -984,7 +984,7 @@ end
 
 
 
-
+# function to perform kato katz procedure to count eggs in stool
 function kato_katz(eggs, gamma_k)
     gamma1 = rand(gamma_k)[1]
     gamma2 = rand(gamma_k)[1]
@@ -998,9 +998,12 @@ end
 mutable struct out
     population_burden
     sac_burden
+    adult_burden
     pop_prev
     sac_prev
+    adult_prev
     sac_pop
+    adult_pop
     final_ages
     time
 end
@@ -1010,9 +1013,12 @@ function get_prevalences(ages, eggs, gamma_k, time)
 
     pop_burden = [0,0,0]
     sac_burden = [0,0,0]
+    adult_burden = [0,0,0]
     pop_prev = 0
     sac_prev = 0
+    adult_prev = 0
     sac_pop = 0
+    adult_pop = 0
     final_ages = []
 
     num_humans = size(ages)[1]
@@ -1022,6 +1028,9 @@ function get_prevalences(ages, eggs, gamma_k, time)
         final_eggs = kato_katz(eggs[i], gamma_k)
         if ages[i] > 4 && ages[i] < 17
             sac_pop = sac_pop + 1;
+        end
+        if ages[i] > 17
+            adult_pop = adult_pop + 1;
         end
         if final_eggs > 16
             pop_burden[3] = pop_burden[3] + 1
@@ -1034,6 +1043,12 @@ function get_prevalences(ages, eggs, gamma_k, time)
                 sac_burden[1] = sac_burden[1] + 1
                 sac_prev = sac_prev + 1
             end
+            if ages[i] > 17
+                adult_burden[3] = adult_burden[3] + 1
+                adult_burden[2] = adult_burden[2] + 1
+                adult_burden[1] = adult_burden[1] + 1
+                adult_prev = adult_prev + 1
+            end
         elseif final_eggs > 4
             pop_burden[2] = pop_burden[2] + 1
             pop_burden[1] = pop_burden[1] + 1
@@ -1043,6 +1058,11 @@ function get_prevalences(ages, eggs, gamma_k, time)
                 sac_burden[1] = sac_burden[1] + 1
                 sac_prev = sac_prev + 1
             end
+            if ages[i] > 17
+                adult_burden[2] = adult_burden[2] + 1
+                adult_burden[1] = adult_burden[1] + 1
+                adult_prev = adult_prev + 1
+            end
         elseif final_eggs > 0
             pop_burden[1] = pop_burden[1] + 1
             pop_prev = pop_prev + 1
@@ -1050,14 +1070,20 @@ function get_prevalences(ages, eggs, gamma_k, time)
                 sac_burden[1] = sac_burden[1] + 1
                 sac_prev = sac_prev +  1
             end
+            if ages[i] > 17
+                adult_burden[1] = adult_burden[1] + 1
+                adult_prev = adult_prev + 1
+            end
         end
     end
 
     output = out( round.(100 .*pop_burden./num_humans, digits = 2),
         round.(100 .*sac_burden./sac_pop, digits = 2),
+        round.(100 .*adult_burden./adult_pop, digits = 2),
         round.(100 .*pop_prev ./ num_humans, digits = 2),
         round(100 .*sac_prev / sac_pop, digits = 2),
-        sac_pop, round(mean(final_ages), digits = 2),
+        round(100 .*adult_prev / adult_pop, digits = 2),
+        sac_pop, adult_pop, round(mean(final_ages), digits = 2),
     time)
 
     return output
@@ -1787,22 +1813,24 @@ end
 
 
 # when we run multiple simulations, we store them in an array. This function will store the prevalence and sac prevalence
-function collect_prevs(times, prev, sac_prev, high_burden, record, run)
+function collect_prevs(times, prev, sac_prev, high_burden, adult_prev, record, run)
         if run == 1
             for i in 1 : length(record)
                 push!(times, record[i].time)
                 push!(prev, [record[i].pop_prev])
                 push!(sac_prev, [record[i].sac_prev])
                 push!(high_burden, [record[i].population_burden[3]])
+                push!(adult_prev, [record[i].adult_prev])
             end
         else
             for i in 1 : length(record)
                 push!(prev[i], record[i].pop_prev)
                 push!(sac_prev[i], record[i].sac_prev)
                 push!(high_burden[i], record[i].population_burden[3])
+                push!(adult_prev[i], record[i].adult_prev)
             end
         end
-    return times, prev, sac_prev, high_burden
+    return times, prev, sac_prev, high_burden, adult_prev
 end
 
 # repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
@@ -1812,7 +1840,7 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
     density_dependent_fecundity, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, mda_adherence, mda_access,
-    record_frequency, times, prev, sac_prev, high_burden, filename)
+    record_frequency, times, prev, sac_prev, high_burden, adult_prev, filename)
 
 
 
@@ -1844,10 +1872,10 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
                     record_frequency);
 
 
-        times, prev, sac_prev, high_burden = collect_prevs(times, prev, sac_prev, high_burden, record, run)
+        times, prev, sac_prev, high_burden, adult_prev = collect_prevs(times, prev, sac_prev, high_burden, adult_prev, record, run)
 
     end
-    return times, prev, sac_prev, high_burden
+    return times, prev, sac_prev, high_burden, adult_prev
 end
 
 
@@ -1862,7 +1890,7 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                 age_contact_rate_equ, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
                 female_factor, male_factor, contact_rates_by_age,
                 death_rate_per_time_step, birth_rate, mda_info, vaccine_info,  mda_adherence, mda_access,
-                record_frequency, times, prev, sac_prev, high_burden, filename)
+                record_frequency, times, prev, sac_prev, high_burden, adult_prev, filename)
 
 
 
@@ -1893,8 +1921,8 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                     record_frequency);
 
 
-        times, prev, sac_prev, high_burden = collect_prevs(times, prev, sac_prev, high_burden, record, run)
+        times, prev, sac_prev, high_burden, adult_prev = collect_prevs(times, prev, sac_prev, high_burden, adult_prev, record, run)
 
     end
-    return times, prev, sac_prev, high_burden
+    return times, prev, sac_prev, high_burden, adult_prev
 end
