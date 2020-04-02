@@ -50,7 +50,7 @@ vaccine_effectiveness = 0.95
 num_sims = 1
 
 # record the state of the population this often in years
-record_frequency = 1/12
+record_frequency = 1/24
 
 #= this is the number of thousands of people in 5 year (0-4, 5-9,...) intervals in Kenya
 and will be used to give a specified age structure when we run to equilibrium =#
