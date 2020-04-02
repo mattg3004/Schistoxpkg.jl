@@ -4,7 +4,7 @@ using Distributions
 using Random
 
 # filename to save population in =#
-filename = "equ_runs_1.jld"
+# filename = "equ_runs_1.jld"
 N = 1000
 max_age = 100
 initial_worms = 10
@@ -20,6 +20,7 @@ ages_per_index = 5
 
 # parameter for proportion of people who are given mda who will take it
 mda_adherence = .9
+mda_access = .9
 
 number_years = 250
 max_fecundity = 0.34  # From "The design of schistosomiasis monitoring and evaluation programmes:
