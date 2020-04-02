@@ -213,11 +213,13 @@ end
     @test update_vaccine(vaccine_info, 1)[5] ==[0,1]
 end
 
+
+
 @testset "death_of_human" begin
     @test death_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
                                 [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
                                 [0,0], [1,1], [0.0002,0.00005], 1,
-                                [1,1])[1] == [2,4]
+                                [1,1], [1,1])[1] == [2,4]
 
 end
 
@@ -225,7 +227,7 @@ end
     @test death_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
                                 [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
                                 [0,0], [1,1], [2,0.00005], 1,
-                                [1,1])[1] == [4]
+                                [1,1], [1,1])[1] == [4]
 
 end
 
@@ -234,7 +236,7 @@ end
     @test death_of_human([120,120], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
                                 [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
                                 [0,0], [1,1], [0.00001,0.0001], 365,
-                                [1,1])[1] == []
+                                [1,1], [1,1])[1] == []
 
 end
 age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0.65,
@@ -248,12 +250,12 @@ death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, 1)
     @test birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
                             [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
                             [0,0], [1.1,1], [0.0002,0.00005], 1,1, contact_rates_by_age,
-                        death_rate_per_time_step,2, 0.24, [1,1],1)[1] == [2,4,0]
+                        death_rate_per_time_step,2, 0.24, [1,1],1,[1,1],1)[1] == [2,4,0]
 end
 new_pop = birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
                         [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
                         [0,0], [1.1,1], [0.0002,0.00005], 1,1, contact_rates_by_age,
-                    death_rate_per_time_step,2, 0.24, [1,1],1)
+                    death_rate_per_time_step,2, 0.24, [1,1],1,[1,1],1)
 @testset "birth_of_human" begin
     @test new_pop[1]==[2,4,0]
 end
@@ -352,7 +354,7 @@ end
 Run some tests on the population making function
 Need to do some setup first though.
 =#
-
+ mda_access = 1
 N = 1000
 max_age = 100
 initial_worms = 10
@@ -376,7 +378,7 @@ death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_s
 pop = create_population(N, max_age, initial_worms, contact_rates_by_age,
     death_rate_per_time_step,worm_stages, female_factor, male_factor,
     initial_miracidia, initial_miracidia_days, predis_aggregation, time_step,
-    mda_adherence)
+    mda_adherence, mda_access)
 
 # These should all get give the initial value
 @testset "miracidia" begin
@@ -421,12 +423,13 @@ vac_status = [0,0,0]
 vaccine_round = 1
 gender = [1,0,1]
 adherence = [1,1,1]
+access = [1,1,1]
 
 
 @testset "vaccinate" begin
 @test isapprox(vaccinate(vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_effectiveness,
         vaccine_gender, ages, female_worms, male_worms, human_cercariae, eggs,
-        treated, vaccine_duration, vac_status, vaccine_round, gender, adherence)[1],
+        treated, vaccine_duration, vac_status, vaccine_round, gender, adherence, access)[1],
         [[1,1],[0,0],[0,0]])
 end
 
@@ -437,6 +440,24 @@ adherence = [1,0,0]
 @testset "vaccinate" begin
 @test isapprox(vaccinate(vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_effectiveness,
             vaccine_gender, ages, female_worms, male_worms, human_cercariae, eggs,
-            treated, vaccine_duration, vac_status, vaccine_round, gender, adherence)[1],
+            treated, vaccine_duration, vac_status, vaccine_round, gender, adherence,access)[1],
             [[1,1],[2,1],[2,4]])
+end
+
+time_step = 10
+num_time_steps = 1
+
+@testset "update_env" begin
+    @test update_env(num_time_steps, [1,3,4], human_cercariae, female_worms, male_worms,
+    time_step, 5.7,
+    eggs, 0.34, 0.03, 2,
+    vac_status, gender, 0.24,
+    [0.2, 0.8,1], treated, vaccine_effectiveness,
+    0.0005,
+    [0,0,0], [0.02,0.04,0.03], [0.02,0.04,0.03],env_miracidia,
+    env_cercariae, 0.0005, 1, 1,
+    1, 1, contact_rates_by_age,
+    death_rate_per_time_step,  28*time_step/(1000*365), [], [], [1,1,1], 1,
+    [1,1,1], 1,
+    1/24)[1] ==  [1+(num_time_steps*time_step/365),3+(num_time_steps*time_step/365),4+(num_time_steps*time_step/365)]
 end
