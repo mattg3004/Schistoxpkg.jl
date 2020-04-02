@@ -397,8 +397,9 @@ end
 end
 
 # All vectors except the last should be length N?
-lens = [length(pop[i]) for i=1:(length(pop) - 2)]
+lens = [length(pop[i]) for i=1:(length(pop) - 3)]
 push!(lens, length(pop[end]))
+push!(lens, length(pop[end-1]))
 @testset "N" begin
     @test all(lens .== N)
 end
