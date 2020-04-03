@@ -238,7 +238,7 @@ end
 # from a Poisson distribution
 
 function cercariae_uptake(human_cercariae, env_miracidia, env_cercariae, time_step, contact_rate,
-    predisposition, age_contact_rate, vac_status, vaccine_effectiveness)
+    predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop)
 
 #= we want the human population to randomly pick up larvae.
 therefore we want to shuffle the population.
@@ -250,7 +250,7 @@ the following lines make a random permutation of indices for the population=#
 then delete those larvae from the environmental larvae =#
 
     if  length(env_miracidia) > (40 / time_step)
-        env_cercariae += env_miracidia[1]
+        env_cercariae += (env_miracidia[1] * human_cercariae_prop)
         splice!(env_miracidia, 1)
     end
 
@@ -821,7 +821,7 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence, mda_adherence,
     mda_access, access,
-    record_frequency)
+    record_frequency, human_cercariae_prop)
 
     update_contact_death_rates = 1/5
     sim_time = 0
@@ -913,7 +913,7 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
 #=  uptake larvae into humans from the environment  =#
         env_cercariae, human_cercariae, env_miracidia =
                  cercariae_uptake(human_cercariae, env_miracidia, env_cercariae, time_step, contact_rate,
-                     predisposition, age_contact_rate, vac_status, vaccine_effectiveness)
+                     predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop)
 
 #= check if we are at a point in time in which an mda is scheduled to take place =#
         if sim_time >= next_mda_time
@@ -1005,6 +1005,7 @@ mutable struct out
     sac_pop
     adult_pop
     final_ages
+    recorded_eggs
     time
 end
 
@@ -1019,6 +1020,7 @@ function get_prevalences(ages, eggs, gamma_k, time)
     adult_prev = 0
     sac_pop = 0
     adult_pop = 0
+    recorded_eggs =[]
     final_ages = []
 
     num_humans = size(ages)[1]
@@ -1026,6 +1028,7 @@ function get_prevalences(ages, eggs, gamma_k, time)
     for i in 1:num_humans
         push!(final_ages, ages[i]);
         final_eggs = kato_katz(eggs[i], gamma_k)
+        push!(recorded_eggs, final_eggs)
         if ages[i] > 4 && ages[i] < 17
             sac_pop = sac_pop + 1;
         end
@@ -1083,7 +1086,7 @@ function get_prevalences(ages, eggs, gamma_k, time)
         round.(100 .*pop_prev ./ num_humans, digits = 2),
         round(100 .*sac_prev / sac_pop, digits = 2),
         round(100 .*adult_prev / adult_pop, digits = 2),
-        sac_pop, adult_pop, round(mean(final_ages), digits = 2),
+        sac_pop, adult_pop,  final_ages, recorded_eggs,
     time)
 
     return output
@@ -1194,7 +1197,7 @@ function run_simulation_from_loaded_population(num_time_steps, ages, human_cerca
         env_cercariae, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
         female_factor, male_factor, contact_rates_by_age,
         death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence, mda_adherence,
-        record_frequency)
+        record_frequency,human_cercariae_prop)
 
     return ages , gender, predisposition,  human_cercariae, eggs,
     vac_status, treated, female_worms, male_worms, vaccinated,
@@ -1237,7 +1240,7 @@ function run_simulation(N, max_age, initial_worms, time_step, worm_stages, femal
     initial_miracidia, initial_miracidia_days,env_cercariae, contact_rate, max_fecundity,
     density_dependent_fecundity, r, num_time_steps, birth_rate, average_worm_lifespan, predis_aggregation,
     env_cercariae_death_rate, env_miracidia_death_rate, mda_coverage, mda_round, vaccine_effectiveness,
-    mda_info, vaccine_info, record_frequency, mda_adherence, scenario)
+    mda_info, vaccine_info, record_frequency, mda_adherence, scenario,human_cercariae_prop)
 
 
     age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0.65,
@@ -1273,7 +1276,7 @@ function run_simulation(N, max_age, initial_worms, time_step, worm_stages, femal
     env_cercariae, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence,
-    record_frequency)
+    record_frequency,human_cercariae_prop)
 
     return ages , gender, predisposition,  human_cercariae, eggs,
     vac_status, treated, female_worms, male_worms, vaccinated,
@@ -1419,7 +1422,7 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
     predisposition, treated, vaccine_effectiveness,
     density_dependent_fecundity,vaccinated, env_miracidia,
     env_cercariae, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
-    female_factor, male_factor, contact_rates_by_age, record_frequency, age_contact_rate)
+    female_factor, male_factor, contact_rates_by_age, record_frequency, age_contact_rate,human_cercariae_prop)
 
 
     sim_time = 0
@@ -1471,7 +1474,7 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 #=  uptake larvae into humans from the environment  =#
         env_cercariae, human_cercariae, env_miracidia =
                  cercariae_uptake(human_cercariae, env_miracidia, env_cercariae, time_step, contact_rate,
-                     predisposition, age_contact_rate, vac_status, vaccine_effectiveness)
+                     predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop)
 
 
 #=  kill miracidia in the environment at specified death rate =#
@@ -1507,7 +1510,7 @@ function update_env_no_births_deaths(num_time_steps, ages, human_cercariae, fema
     env_cercariae, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence, mda_adherence,mda_access, access,
-    record_frequency)
+    record_frequency, human_cercariae_prop)
 
     update_contact_death_rates = 1/5
     sim_time = 0
@@ -1590,7 +1593,7 @@ function update_env_no_births_deaths(num_time_steps, ages, human_cercariae, fema
 #=  uptake larvae into humans from the environment  =#
         env_cercariae, human_cercariae, env_miracidia =
                  cercariae_uptake(human_cercariae, env_miracidia, env_cercariae, time_step, contact_rate,
-                     predisposition, age_contact_rate, vac_status, vaccine_effectiveness)
+                     predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop)
 
 #= check if we are at a point in time in which an mda is scheduled to take place =#
         if sim_time >= next_mda_time
@@ -1654,7 +1657,7 @@ function update_env_keep_population_same(num_time_steps, ages, human_cercariae, 
     env_cercariae, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
-    record_frequency)
+    record_frequency, human_cercariae_prop)
 
     start_pop = length(ages)
     update_contact_death_rates = 1/5
@@ -1759,7 +1762,7 @@ function update_env_keep_population_same(num_time_steps, ages, human_cercariae, 
 #=  uptake larvae into humans from the environment  =#
         env_cercariae, human_cercariae, env_miracidia =
                  cercariae_uptake(human_cercariae, env_miracidia, env_cercariae, time_step, contact_rate,
-                     predisposition, age_contact_rate, vac_status, vaccine_effectiveness)
+                     predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop)
 
 #= check if we are at a point in time in which an mda is scheduled to take place =#
         if sim_time >= next_mda_time
@@ -1813,13 +1816,14 @@ end
 
 
 # when we run multiple simulations, we store them in an array. This function will store the prevalence and sac prevalence
-function collect_prevs(times, prev, sac_prev, high_burden, adult_prev, record, run)
+function collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, record, run)
         if run == 1
             for i in 1 : length(record)
                 push!(times, record[i].time)
                 push!(prev, [record[i].pop_prev])
                 push!(sac_prev, [record[i].sac_prev])
                 push!(high_burden, [record[i].population_burden[3]])
+                push!(high_burden_sac, [record[i].sac_burden[3]])
                 push!(adult_prev, [record[i].adult_prev])
             end
         else
@@ -1827,10 +1831,11 @@ function collect_prevs(times, prev, sac_prev, high_burden, adult_prev, record, r
                 push!(prev[i], record[i].pop_prev)
                 push!(sac_prev[i], record[i].sac_prev)
                 push!(high_burden[i], record[i].population_burden[3])
+                push!(high_burden_sac[i], record[i].sac_burden[3])
                 push!(adult_prev[i], record[i].adult_prev)
             end
         end
-    return times, prev, sac_prev, high_burden, adult_prev
+    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev
 end
 
 # repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
@@ -1840,7 +1845,7 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
     density_dependent_fecundity, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, mda_adherence, mda_access,
-    record_frequency, times, prev, sac_prev, high_burden, adult_prev, filename)
+    record_frequency, times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, filename,human_cercariae_prop)
 
 
 
@@ -1869,13 +1874,14 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
                     female_factor, male_factor, contact_rates_by_age,
                     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, copy(adherence_equ), mda_adherence,
                     copy(access_equ), mda_access,
-                    record_frequency);
+                    record_frequency,human_cercariae_prop);
 
 
-        times, prev, sac_prev, high_burden, adult_prev = collect_prevs(times, prev, sac_prev, high_burden, adult_prev, record, run)
+        times, prev, sac_prev, high_burden, high_burden_sac, adult_prev = collect_prevs(times, prev, sac_prev, high_burden,
+        high_burden_sac, adult_prev, record, run)
 
     end
-    return times, prev, sac_prev, high_burden, adult_prev
+    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev
 end
 
 
@@ -1890,7 +1896,7 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                 age_contact_rate_equ, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
                 female_factor, male_factor, contact_rates_by_age,
                 death_rate_per_time_step, birth_rate, mda_info, vaccine_info,  mda_adherence, mda_access,
-                record_frequency, times, prev, sac_prev, high_burden, adult_prev, filename)
+                record_frequency, times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, filename,human_cercariae_prop)
 
 
 
@@ -1918,11 +1924,12 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                     female_factor, male_factor, contact_rates_by_age,
                     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, copy(adherence_equ), mda_adherence,
                     copy(access_equ), mda_access,
-                    record_frequency);
+                    record_frequency,human_cercariae_prop);
 
 
-        times, prev, sac_prev, high_burden, adult_prev = collect_prevs(times, prev, sac_prev, high_burden, adult_prev, record, run)
+                    times, prev, sac_prev, high_burden, high_burden_sac, adult_prev = collect_prevs(times, prev, sac_prev, high_burden,
+                    high_burden_sac, adult_prev, record, run)
 
     end
-    return times, prev, sac_prev, high_burden, adult_prev
+    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev
 end

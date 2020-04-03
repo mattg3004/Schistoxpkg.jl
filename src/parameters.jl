@@ -22,6 +22,7 @@ ages_per_index = 5
 mda_adherence = .9
 mda_access = .9
 
+# how long to run simulation for
 number_years = 250
 max_fecundity = 0.34  # From "The design of schistosomiasis monitoring and evaluation programmes:
 #The importance of collecting adu lt data to inform treatment strategies for Schistosoma mansoni"
@@ -29,6 +30,7 @@ density_dependent_fecundity = 0.0005
 r = 0.03 # aggregation parameter for negative binomial for egg production
 num_time_steps = trunc(Int, 365*number_years / time_step)
 
+# human birth rate
 birth_rate = 28*time_step/(1000*365)
 
 average_worm_lifespan = 5.7 # years
@@ -42,6 +44,9 @@ Parasites by Mass Drug Administration in Human Communities"  =#
 env_miracidia_death_rate = 0 * time_step
 mda_coverage = 0.8 # proportion of target age group reached by mda
 mda_round = 0
+
+# proportion of cercariae which can infect humans
+human_cercariae_prop = 1
 
 # gamma distribution for Kato-Katz method
 gamma_k = Gamma(0.87,1/0.87)

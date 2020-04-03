@@ -114,7 +114,7 @@ vaccine_effectiveness = 0.95
 
 @testset "cercariae_uptake(max_age, scenario)" begin
     @test isapprox(cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
-        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness))[3],  [10, 10, 10, 1])
+        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness), 1)[3],  [10, 10, 10, 1])
 end
 
 time_step = 10
@@ -129,7 +129,7 @@ vaccine_effectiveness = 0.95
 
 @testset "cercariae_uptake" begin
     @test isapprox(cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
-        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness))[2][1][2],  0)
+        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness),1)[2][1][2],  0)
 end
 
 
@@ -145,7 +145,7 @@ vaccine_effectiveness = 0.95
 
 @testset "cercariae_uptake" begin
     @test cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
-        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness))[2][5][2] >0
+        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness),1)[2][5][2] >0
 end
 
 
@@ -161,7 +161,7 @@ vaccine_effectiveness = 1
 
 @testset "cercariae_uptake" begin
     @test cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
-        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness))[2][5][2] == 0
+        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness),1)[2][5][2] == 0
 end
 
 female_worms = [[10000,200000],[200000,0]]
@@ -476,5 +476,5 @@ num_time_steps = 1
     1, 1, contact_rates_by_age,
     death_rate_per_time_step,  28*time_step/(1000*365), [], [], [1,1,1], 1,
     [1,1,1], 1,
-    1/24)[1] ==  [1+(num_time_steps*time_step/365),3+(num_time_steps*time_step/365),4+(num_time_steps*time_step/365)]
+    1/24,1)[1] ==  [1+(num_time_steps*time_step/365),3+(num_time_steps*time_step/365),4+(num_time_steps*time_step/365)]
 end
