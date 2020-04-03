@@ -707,7 +707,7 @@ function update_mda(mda_info, mda_round)
     max_age_mda =  mda_info[i].max_age
     mda_effectiveness =  mda_info[i].effectiveness
     mda_gender = mda_info[i].gender
-    if mda_round === size(mda_info)[1]
+    if mda_round >= size(mda_info)[1]
         next_mda_time = Inf
     else
         next_mda_time = mda_info[i].time
@@ -798,7 +798,7 @@ function update_vaccine(vaccine_info, vaccine_round)
     max_age_vaccine =  vaccine_info[i].max_age
     vaccine_duration = vaccine_info[i].duration
     vaccine_gender = vaccine_info[i].gender
-    if vaccine_round === size(vaccine_info)[1]
+    if vaccine_round >= size(vaccine_info)[1]
         next_vaccine_time = Inf
     else
         next_vaccine_time = vaccine_info[min(vaccine_round + 1, size(vaccine_info)[1])].time

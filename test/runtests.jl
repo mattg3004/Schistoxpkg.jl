@@ -81,6 +81,12 @@ end
 
 
 
+@testset "update_death_rate" begin
+    @test update_death_rate([1,4,55,8], [1,1,1,1], [1,2,3,4,5,6,7,8,9,10,11,12,13]) == [2,2,12,3]
+end
+
+
+
 @testset "make_age_contact_rate_array(max_age,scenario)" begin
     @test make_age_contact_rate_array(100, "high adult")[1] == 0.01
 end
@@ -215,6 +221,11 @@ end
 end
 
 
+@testset "update_vaccine" begin
+    @test update_vaccine(vaccine_info, 100)[4] == Inf
+end
+
+
 
 @testset "death_of_human" begin
     @test death_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
@@ -308,6 +319,10 @@ end
 
 @testset "update_mda" begin
     @test update_mda(mda_info, 3)[5] == 3
+end
+
+@testset "update_mda" begin
+    @test update_mda(mda_info, 30)[5] == Inf
 end
 
   # But also with this big a sample size I think its fairly reasonable to use the 0.0001 and 0.9999 quantiles.
