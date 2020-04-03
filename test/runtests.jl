@@ -14,7 +14,8 @@ using Random
 end
 
 # Test that the outputs of death rate array are sensible
-death_array1 = make_death_rate_array([6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0.65, 0.88, 1.06, 1.44, 2.1, 3.33, 5.29, 8.51, 13.66, 21.83, 29.98, 36.98], 1)
+death_array1 = make_death_rate_array([6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0.65, 0.88, 1.06,
+1.44, 2.1, 3.33, 5.29, 8.51, 13.66, 21.83, 29.98, 36.98], 1)
 
 # We put in 21 parameters, so should be a length 21 array
 @testset "make_death_rate_array_size" begin
