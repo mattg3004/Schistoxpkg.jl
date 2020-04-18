@@ -56,33 +56,52 @@ end
 #     of schistosome parasites in regions of endemic infection?" paper
 # at some point we may change this to be an input from a file instead
 
-function make_age_contact_rate_array(max_age,  scenario)
+function make_age_contact_rate_array(max_age, scenario, input_ages, input_contact_rates)
     if max_age < 60
         error("max_age must be greater than 60")
     else
-        contact_settings = create_contact_settings(scenario)
-# initialize an array with the same value for contact rate across all ages
-        contact_rates_by_age = [fill(contact_settings[4], max_age+1)]
-        contact_rates_by_age = contact_rates_by_age[1]
 
-# then edit the entries for different ages according to values
-        for i in 1:5
-            contact_rates_by_age[i] = contact_settings[1]
-        end
-        if scenario == "high adult"
-            for i in 6:12
-                contact_rates_by_age[i] = contact_settings[2]
+        if length(input_ages) == 0
+            contact_settings = create_contact_settings(scenario)
+    # initialize an array with the same value for contact rate across all ages
+            contact_rates_by_age = [fill(contact_settings[4], max_age+1)]
+            contact_rates_by_age = contact_rates_by_age[1]
+
+    # then edit the entries for different ages according to values
+            for i in 1:5
+                contact_rates_by_age[i] = contact_settings[1]
             end
-            for i in 13:21
-                contact_rates_by_age[i] = contact_settings[3]
+            if scenario == "high adult"
+                for i in 6:12
+                    contact_rates_by_age[i] = contact_settings[2]
+                end
+                for i in 13:21
+                    contact_rates_by_age[i] = contact_settings[3]
+                end
+            else
+                for i in 6:10
+                    contact_rates_by_age[i] = contact_settings[2]
+                end
+                for i in 11:16
+                    contact_rates_by_age[i] = contact_settings[3]
+                end
             end
+
         else
-            for i in 6:10
-                contact_rates_by_age[i] = contact_settings[2]
+            contact_rates_by_age = [fill(input_contact_rates[end], max_age+1)]
+            contact_rates_by_age = contact_rates_by_age[1]
+            for i in 1 : length(input_contact_rates)
+                if i == 1
+                    for j in 1:(input_ages[i] + 1)
+                        contact_rates_by_age[j] = input_contact_rates[i]
+                    end
+                else
+                    for j in (input_ages[i-1]+2):(input_ages[i] + 1)
+                        contact_rates_by_age[j] = input_contact_rates[i]
+                    end
+                end
             end
-            for i in 11:16
-                contact_rates_by_age[i] = contact_settings[3]
-            end
+
         end
 
         return contact_rates_by_age
@@ -300,7 +319,11 @@ function miracidia_death(env_miracidia, env_miracidia_death_rate)
     #= as env_miracidia is an array, we need to use . syntax to apply
     the functions to each element in the array =#
     # return rand.(Binomial.(env_miracidia, 1 - env_miracidia_death_rate))
-    env_miracidia[end] = trunc(Int, round(env_miracidia[end]/2, digits = 0))
+
+    env_miracidia[end] = trunc(Int, round(env_miracidia[end]/3, digits = 0))
+    # for i in 1:length(env_miracidia)
+    #     env_miracidia[i] = trunc(Int, round(env_miracidia[i]/1.5, digits = 0))
+    # end
     return env_miracidia
 end
 
@@ -433,9 +456,13 @@ otherwise the number of eggs is trivially 0 =#
         @inbounds if worm_pairs[i] > 0
 
 # calculate the mean number of eggs we would expect
-                @inbounds    mean_eggs =  max_fecundity * worm_pairs[i] *
-                    exp(- density_dependent_fecundity *
-                    (total_female_worms[i] + total_male_worms[i]))
+                # @inbounds    mean_eggs =  max_fecundity * worm_pairs[i] *
+                #     exp(- density_dependent_fecundity *
+                #     (total_female_worms[i] + total_male_worms[i]))
+
+                    @inbounds    mean_eggs =  max_fecundity * worm_pairs[i] *
+                        exp(- density_dependent_fecundity *
+                        (total_female_worms[i] ))
 
 # calculate the number of successes
                 @inbounds      NB_r = r * worm_pairs[i]
@@ -467,6 +494,16 @@ function miracidia_production(eggs, env_miracidia, time_step)
     length of the forward step, assuming that each of the last given number of days were equivalent to each other
 =#
     push!(env_miracidia,  sum(eggs))
+    return env_miracidia
+end
+function miracidia_production_by_contact_rate(eggs, env_miracidia, time_step, age_contact_rate, contact_rate)
+#= as we can step forward an arbitrary number of days at a time, we multiply the number of miracidia by the
+    length of the forward step, assuming that each of the last given number of days were equivalent to each other
+=#
+    max_contact_rate = maximum(age_contact_rate)
+    xx = age_contact_rate ./ max_contact_rate
+    released_eggs = xx .* eggs
+    push!(env_miracidia,  sum(released_eggs))
     return env_miracidia
 end
 
@@ -731,9 +768,9 @@ function create_mda(pre_SAC_prop, SAC_prop, adult_prop, first_mda_time,
     mda_info = []
     mda_time = first_mda_time
     while mda_time <= last_mda_time
-        push!(mda_info, mda_information(pre_SAC_prop, 0, 4, pre_SAC_gender, mda_effectiveness, mda_time))
-        push!(mda_info, mda_information(SAC_prop, 4, 16, SAC_gender, mda_effectiveness, mda_time))
-        push!(mda_info, mda_information(adult_prop, 16, 110, adult_gender, mda_effectiveness, mda_time))
+        push!(mda_info, mda_information(pre_SAC_prop, 0, 5, pre_SAC_gender, mda_effectiveness, mda_time))
+        push!(mda_info, mda_information(SAC_prop, 5, 15, SAC_gender, mda_effectiveness, mda_time))
+        push!(mda_info, mda_information(adult_prop, 15, 110, adult_gender, mda_effectiveness, mda_time))
         mda_time += regularity
     end
     return mda_info
@@ -991,6 +1028,7 @@ function kato_katz(eggs, gamma_k)
     pois1 = rand(Poisson(1*gamma1*eggs))[1]
     pois2 = rand(Poisson(1*gamma2*eggs))[1]
     return floor(0.5*(pois1 + pois2))
+
 end
 
 
@@ -1027,12 +1065,13 @@ function get_prevalences(ages, eggs, gamma_k, time)
 
     for i in 1:num_humans
         push!(final_ages, ages[i]);
-        final_eggs = kato_katz(eggs[i], gamma_k)
+        #final_eggs = kato_katz(eggs[i], gamma_k)
+        final_eggs = eggs[i]
         push!(recorded_eggs, final_eggs)
-        if ages[i] > 4 && ages[i] < 17
+        if ages[i] > 5 && ages[i] < 15
             sac_pop = sac_pop + 1;
         end
-        if ages[i] > 17
+        if ages[i] > 15
             adult_pop = adult_pop + 1;
         end
         if final_eggs > 16
@@ -1469,6 +1508,7 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 
 
 #=  hacth the human eggs into the environment  =#
+        # env_miracidia = miracidia_production_by_contact_rate(eggs, env_miracidia, time_step, age_contact_rate)
         env_miracidia = miracidia_production(eggs, env_miracidia, time_step)
 
 #=  uptake larvae into humans from the environment  =#
