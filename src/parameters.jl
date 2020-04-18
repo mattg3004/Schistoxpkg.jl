@@ -41,7 +41,10 @@ predis_aggregation = 0.24
 env_cercariae_death_rate = 0.09 * time_step #= life span of cercariae in the environment is short 8-20 hrs
 according to "Studies of the Transmission Dynamics, Mathematical Model Development and the Control of Schistosome
 Parasites by Mass Drug Administration in Human Communities"  =#
-env_miracidia_death_rate = 0 * time_step
+
+# what proportion of miracidias and cercariae survive each round
+env_miracidia_survival_prop = 1/3
+env_cercariae_survival_prop = 1/2
 mda_coverage = 0.8 # proportion of target age group reached by mda
 mda_round = 0
 

@@ -57,12 +57,23 @@ end
 
 
 @testset "miracidia_death" begin
-    @test miracidia_death([1000,1421,43523,55],1) == [1000,1421,43523,28]
+    @test miracidia_death([1000,1421,43523,55],1/2) == [1000,1421,43523,28]
+end
+
+
+@testset "miracidia_death" begin
+    @test miracidia_death([1000,1421,43523,55],1/3) == [1000,1421,43523,18]
+end
+
+
+
+@testset "cercariae_death" begin
+    @test cercariae_death(1000,1/2,1) == 500
 end
 
 
 @testset "cercariae_death" begin
-    @test cercariae_death(1000,1,1) == 500
+    @test cercariae_death(1000,1/3,1) == 333
 end
 
 

@@ -315,12 +315,15 @@ end
 
 
 # function to kill miracidia in the environment
-function miracidia_death(env_miracidia, env_miracidia_death_rate)
+function miracidia_death(env_miracidia, env_miracidia_survival_prop)
     #= as env_miracidia is an array, we need to use . syntax to apply
     the functions to each element in the array =#
-    # return rand.(Binomial.(env_miracidia, 1 - env_miracidia_death_rate))
-
-    env_miracidia[end] = trunc(Int, round(env_miracidia[end]/3, digits = 0))
+    # return rand.(Binomial.(env_miracidia, 1 - env_miracidia_survival_prop))
+    if env_miracidia_survival_prop <= 0
+        error("env_miracidia_survival_prop must be bigger than 0")
+    else
+        env_miracidia[end] = trunc(Int, round(env_miracidia[end] * env_miracidia_survival_prop, digits = 0))
+    end
     # for i in 1:length(env_miracidia)
     #     env_miracidia[i] = trunc(Int, round(env_miracidia[i]/1.5, digits = 0))
     # end
@@ -331,12 +334,16 @@ end
 
 
 # function to kill cercariae in the environment
-function cercariae_death(env_cercariae, env_cercariae_death_rate, time_step)
+function cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
     # updated_cercariae = 0
     # for i in 1:time_step
     #     updated_cercariae += (env_cercariae/time_step) * (1/(2^i))
     # end
-    updated_cercariae = trunc(Int,round(env_cercariae / 2, digits= 0))
+    if env_cercariae_survival_prop <= 0
+        error("env_cercariae_survival_prop must be bigger than 0")
+    else
+        updated_cercariae = trunc(Int,round(env_cercariae * env_cercariae_survival_prop, digits= 0))
+    end
     return updated_cercariae
 end
 
@@ -854,7 +861,7 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
     predisposition, treated, vaccine_effectiveness,
     density_dependent_fecundity,
     vaccinated, age_contact_rate, death_rate, env_miracidia,
-    env_cercariae, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+    env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence, mda_adherence,
     mda_access, access,
@@ -985,10 +992,10 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
         end
 
 #=  kill miracidia in the environment at specified death rate =#
-        env_miracidia = miracidia_death(env_miracidia, env_miracidia_death_rate)
+        env_miracidia = miracidia_death(env_miracidia, env_miracidia_survival_prop)
 
 #=  kill cercariae in the environment at specified death rate =#
-        env_cercariae = cercariae_death(env_cercariae, env_cercariae_death_rate, time_step)
+        env_cercariae = cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
 
  #=  choose from binomial distribution for the number of births in the population  =#
         l = rand(Binomial(size(ages)[1], birth_rate))[1]
@@ -1216,7 +1223,7 @@ function run_simulation_from_loaded_population(num_time_steps, ages, human_cerca
     predisposition, treated, vaccine_effectiveness,
     density_dependent_fecundity,
     vaccinated, age_contact_rate, death_rate, env_miracidia,
-    env_cercariae, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+    env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info,
     record_frequency)
@@ -1233,7 +1240,7 @@ function run_simulation_from_loaded_population(num_time_steps, ages, human_cerca
         predisposition, treated, vaccine_effectiveness,
         density_dependent_fecundity,
         vaccinated, age_contact_rate, death_rate, env_miracidia,
-        env_cercariae, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+        env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
         female_factor, male_factor, contact_rates_by_age,
         death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence, mda_adherence,
         record_frequency,human_cercariae_prop)
@@ -1278,7 +1285,7 @@ end
 function run_simulation(N, max_age, initial_worms, time_step, worm_stages, female_factor, male_factor,
     initial_miracidia, initial_miracidia_days,env_cercariae, contact_rate, max_fecundity,
     density_dependent_fecundity, r, num_time_steps, birth_rate, average_worm_lifespan, predis_aggregation,
-    env_cercariae_death_rate, env_miracidia_death_rate, mda_coverage, mda_round, vaccine_effectiveness,
+    env_cercariae_survival_prop, env_miracidia_survival_prop, mda_coverage, mda_round, vaccine_effectiveness,
     mda_info, vaccine_info, record_frequency, mda_adherence, scenario,human_cercariae_prop)
 
 
@@ -1312,7 +1319,7 @@ function run_simulation(N, max_age, initial_worms, time_step, worm_stages, femal
     predisposition, treated, vaccine_effectiveness,
     density_dependent_fecundity,
     vaccinated, age_contact_rate, death_rate, env_miracidia,
-    env_cercariae, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+    env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence,
     record_frequency,human_cercariae_prop)
@@ -1460,7 +1467,7 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
     vac_status, gender, predis_aggregation,
     predisposition, treated, vaccine_effectiveness,
     density_dependent_fecundity,vaccinated, env_miracidia,
-    env_cercariae, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+    env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age, record_frequency, age_contact_rate,human_cercariae_prop)
 
 
@@ -1518,10 +1525,10 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 
 
 #=  kill miracidia in the environment at specified death rate =#
-        env_miracidia = miracidia_death(env_miracidia, env_miracidia_death_rate)
+        env_miracidia = miracidia_death(env_miracidia, env_miracidia_survival_prop)
 
 #=  kill cercariae in the environment at specified death rate =#
-        env_cercariae = cercariae_death(env_cercariae, env_cercariae_death_rate, time_step)
+        env_cercariae = cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
 
 
     end
@@ -1547,7 +1554,7 @@ function update_env_no_births_deaths(num_time_steps, ages, human_cercariae, fema
     predisposition, treated, vaccine_effectiveness,
     density_dependent_fecundity,
     vaccinated, age_contact_rate, death_rate, env_miracidia,
-    env_cercariae, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+    env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence, mda_adherence,mda_access, access,
     record_frequency, human_cercariae_prop)
@@ -1668,10 +1675,10 @@ function update_env_no_births_deaths(num_time_steps, ages, human_cercariae, fema
         end
 
 #=  kill miracidia in the environment at specified death rate =#
-        env_miracidia = miracidia_death(env_miracidia, env_miracidia_death_rate)
+        env_miracidia = miracidia_death(env_miracidia, env_miracidia_survival_prop)
 
 #=  kill cercariae in the environment at specified death rate =#
-        env_cercariae = cercariae_death(env_cercariae, env_cercariae_death_rate, time_step)
+        env_cercariae = cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
 
 
     end
@@ -1694,7 +1701,7 @@ function update_env_keep_population_same(num_time_steps, ages, human_cercariae, 
     predisposition, treated, vaccine_effectiveness,
     density_dependent_fecundity,
     vaccinated, age_contact_rate, death_rate, env_miracidia,
-    env_cercariae, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+    env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
     record_frequency, human_cercariae_prop)
@@ -1837,10 +1844,10 @@ function update_env_keep_population_same(num_time_steps, ages, human_cercariae, 
         end
 
 #=  kill miracidia in the environment at specified death rate =#
-        env_miracidia = miracidia_death(env_miracidia, env_miracidia_death_rate)
+        env_miracidia = miracidia_death(env_miracidia, env_miracidia_survival_prop)
 
 #=  kill cercariae in the environment at specified death rate =#
-        env_cercariae = cercariae_death(env_cercariae, env_cercariae_death_rate, time_step)
+        env_cercariae = cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
 
 
     end
@@ -1882,7 +1889,7 @@ end
 function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
     time_step, average_worm_lifespan,
     max_fecundity, r, worm_stages, predis_aggregation, vaccine_effectiveness,
-    density_dependent_fecundity, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+    density_dependent_fecundity, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, mda_adherence, mda_access,
     record_frequency, times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, filename,human_cercariae_prop)
@@ -1910,7 +1917,7 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
                     copy(predisposition_equ), copy(treated_equ), vaccine_effectiveness,
                     density_dependent_fecundity,
                     copy(vaccinated_equ) , copy(age_contact_rate_equ), copy(death_rate_equ), copy(env_miracidia_equ) ,
-                    copy(env_cercariae_equ) , contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+                    copy(env_cercariae_equ) , contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
                     female_factor, male_factor, contact_rates_by_age,
                     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, copy(adherence_equ), mda_adherence,
                     copy(access_equ), mda_access,
@@ -1933,7 +1940,7 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                 max_fecundity, r, worm_stages,
                 predis_aggregation,
                 density_dependent_fecundity,
-                age_contact_rate_equ, contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+                age_contact_rate_equ, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
                 female_factor, male_factor, contact_rates_by_age,
                 death_rate_per_time_step, birth_rate, mda_info, vaccine_info,  mda_adherence, mda_access,
                 record_frequency, times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, filename,human_cercariae_prop)
@@ -1960,7 +1967,7 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                     copy(predisposition_equ), copy(treated_equ), vaccine_effectiveness,
                     density_dependent_fecundity,
                     copy(vaccinated_equ) , copy(age_contact_rate_equ), copy(death_rate_equ), copy(env_miracidia_equ) ,
-                    copy(env_cercariae_equ) , contact_rate, env_cercariae_death_rate, env_miracidia_death_rate,
+                    copy(env_cercariae_equ) , contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
                     female_factor, male_factor, contact_rates_by_age,
                     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, copy(adherence_equ), mda_adherence,
                     copy(access_equ), mda_access,
