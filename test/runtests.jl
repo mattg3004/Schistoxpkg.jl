@@ -399,7 +399,7 @@ age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0
 predis_aggregation = 0.24
 mda_adherence = 0.8
 scenario = "high adult"
-contact_rates_by_age = make_age_contact_rate_array(max_age, scenario)
+contact_rates_by_age = make_age_contact_rate_array(max_age, scenario, [], [])
 death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
 
 pop = create_population(N, max_age, initial_worms, contact_rates_by_age,
