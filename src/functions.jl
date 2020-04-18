@@ -1294,7 +1294,7 @@ function run_simulation(N, max_age, initial_worms, time_step, worm_stages, femal
                                21.83, 29.98, 36.98]
 
 
-    contact_rates_by_age = make_age_contact_rate_array(max_age, scenario)
+    contact_rates_by_age = make_age_contact_rate_array(max_age, scenario, [], [])
     death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
 
 
