@@ -285,7 +285,7 @@ distribution. otherwise, just uptake 0. =#
         if env_cercariae > 0
 # calculate the rate of the poisson distribution
             @inbounds  pois_rate  = predisposition[j] * contact_rate * age_contact_rate[j] *
-                    env_cercariae * time_step
+                    env_cercariae * time_step / k
 
 # reduce the rate according to the effectiveness of the vaccine (if any is given)
             @inbounds  pois_rate = pois_rate * (1 - (vac_status[j] > 0) * vaccine_effectiveness);
@@ -342,7 +342,7 @@ function cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
     if env_cercariae_survival_prop <= 0
         error("env_cercariae_survival_prop must be bigger than 0")
     else
-        updated_cercariae = trunc(Int,round(env_cercariae * env_cercariae_survival_prop, digits= 0))
+        updated_cercariae = trunc(Int, round(env_cercariae * env_cercariae_survival_prop, digits= 0))
     end
     return updated_cercariae
 end
@@ -456,7 +456,7 @@ function egg_production(eggs, max_fecundity, r, worm_pairs,
 
 
 # loop over individuals
-    for i in 1 : size(worm_pairs)[1]
+    for i in 1 : length(eggs)
 
 #= if we have a positive number of worms, then make calculation,
 otherwise the number of eggs is trivially 0 =#
@@ -503,6 +503,9 @@ function miracidia_production(eggs, env_miracidia, time_step)
     push!(env_miracidia,  sum(eggs))
     return env_miracidia
 end
+
+
+
 function miracidia_production_by_contact_rate(eggs, env_miracidia, time_step, age_contact_rate, contact_rate)
 #= as we can step forward an arbitrary number of days at a time, we multiply the number of miracidia by the
     length of the forward step, assuming that each of the last given number of days were equivalent to each other
