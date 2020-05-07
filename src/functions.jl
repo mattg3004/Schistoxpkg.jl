@@ -1078,7 +1078,7 @@ function get_prevalences(ages, eggs, gamma_k, time)
         #final_eggs = kato_katz(eggs[i], gamma_k)
         final_eggs = eggs[i]
         push!(recorded_eggs, final_eggs)
-        if ages[i] > 5 && ages[i] < 15
+        if ages[i] >= 5 && ages[i] <= 15
             sac_pop = sac_pop + 1;
         end
         if ages[i] > 15
@@ -1089,13 +1089,13 @@ function get_prevalences(ages, eggs, gamma_k, time)
             pop_burden[2] = pop_burden[2] + 1
             pop_burden[1] = pop_burden[1] + 1
             pop_prev = pop_prev + 1
-            if 4 < ages[i] && ages[i] < 17
+            if 5 <= ages[i] && ages[i] <= 15
                 sac_burden[3] = sac_burden[3] + 1
                 sac_burden[2] = sac_burden[2] + 1
                 sac_burden[1] = sac_burden[1] + 1
                 sac_prev = sac_prev + 1
             end
-            if ages[i] > 17
+            if ages[i] > 15
                 adult_burden[3] = adult_burden[3] + 1
                 adult_burden[2] = adult_burden[2] + 1
                 adult_burden[1] = adult_burden[1] + 1
@@ -1105,12 +1105,12 @@ function get_prevalences(ages, eggs, gamma_k, time)
             pop_burden[2] = pop_burden[2] + 1
             pop_burden[1] = pop_burden[1] + 1
             pop_prev = pop_prev + 1
-            if ages[i] > 4 && ages[i] < 17
+            if ages[i] >= 5 && ages[i] <= 15
                 sac_burden[2] = sac_burden[2] + 1
                 sac_burden[1] = sac_burden[1] + 1
                 sac_prev = sac_prev + 1
             end
-            if ages[i] > 17
+            if ages[i] > 15
                 adult_burden[2] = adult_burden[2] + 1
                 adult_burden[1] = adult_burden[1] + 1
                 adult_prev = adult_prev + 1
@@ -1118,11 +1118,11 @@ function get_prevalences(ages, eggs, gamma_k, time)
         elseif final_eggs > 0
             pop_burden[1] = pop_burden[1] + 1
             pop_prev = pop_prev + 1
-            if ages[i] > 4 && ages[i] < 17
+            if ages[i] >= 5 && ages[i] <= 15
                 sac_burden[1] = sac_burden[1] + 1
                 sac_prev = sac_prev +  1
             end
-            if ages[i] > 17
+            if ages[i] > 15
                 adult_burden[1] = adult_burden[1] + 1
                 adult_prev = adult_prev + 1
             end
