@@ -179,9 +179,9 @@ function create_population(N, max_age, initial_worms, contact_rates_by_age,
         end
 #=  everyone is initiated with a random number of worms in the first stage  =#
         f_worms = fill(0, worm_stages)
-        f_worms[1] = trunc(Int,round(rand()*initial_worms))
+        f_worms[1] = round(rand()*initial_worms)
         m_worms = fill(0, worm_stages)
-        m_worms[1] = trunc(Int,round(rand()*initial_worms))
+        m_worms[1] = round(rand()*initial_worms)
         push!(female_worms, f_worms)
         push!(male_worms, m_worms)
 
@@ -322,7 +322,7 @@ function miracidia_death(env_miracidia, env_miracidia_survival_prop)
     if env_miracidia_survival_prop <= 0
         error("env_miracidia_survival_prop must be bigger than 0")
     else
-        env_miracidia[end] = trunc(Int, round(env_miracidia[end] * env_miracidia_survival_prop, digits = 0))
+        env_miracidia[end] = round(env_miracidia[end] * env_miracidia_survival_prop, digits = 0)
     end
     # for i in 1:length(env_miracidia)
     #     env_miracidia[i] = trunc(Int, round(env_miracidia[i]/1.5, digits = 0))
@@ -342,7 +342,7 @@ function cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
     if env_cercariae_survival_prop <= 0
         error("env_cercariae_survival_prop must be bigger than 0")
     else
-        updated_cercariae = trunc(Int, round(env_cercariae * env_cercariae_survival_prop, digits= 0))
+        updated_cercariae = round(env_cercariae * env_cercariae_survival_prop, digits= 0)
     end
     return updated_cercariae
 end
