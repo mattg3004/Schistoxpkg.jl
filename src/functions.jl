@@ -1,6 +1,4 @@
-
-
-##########################
+## ##########################
 # function to get age dependent death rate.
 # The first entry is for under 1's, and the rest are at 5 year intervals
 #  At some point this will be changed to be read from a file
@@ -22,7 +20,23 @@ end
 
 
 
-
+# function to age population and generating death ages
+function generate_ages_and_deaths(num_steps, ages, death_ages, age_death_rate_per_1000, ages_for_deaths)
+     for i in 1:num_steps
+        x = findall(ages - death_ages .> 0)
+        k = length(x)
+        while k > 0
+            x = findall(ages - death_ages .> 0)
+            splice!(ages, x[1])
+            splice!(death_ages, x[1])
+            push!(ages, 0)
+            push!(death_ages, get_death_age(death_probabilities, ages_for_deaths))
+            k -= 1
+        end
+        ages .+= time_step/365
+    end
+    return ages
+end
 
 
 # function to return the correct death rate per time step based on individuals age
@@ -130,24 +144,24 @@ function create_population(N, max_age, initial_worms, contact_rates_by_age,
 
 # initialize all the arrays we will keep track of over time
 
-    female_worms = []
-    male_worms = []
-    human_cercariae = []
-    eggs = []
-    vac_status = []
-    treated = []
-    vaccinated = []
-    age_contact_rate = []
-    death_rate = []
-    ages = []
-    gender = []
-    adherence = []
-    access = []
+    female_worms =  Array{Int64}[]
+    male_worms = Array{Int64}[]
+    human_cercariae = Array{Int64}[]
+    eggs =  Int64[]
+    vac_status =  Int64[]
+    treated =  Int64[]
+    vaccinated =  Int64[]
+    age_contact_rate =  Float32[]
+    death_rate =  Float32[]
+    ages =  Float32[]
+    gender =  Int64[]
+    adherence =  Int64[]
+    access =  Int64[]
 #=  initialize the Gamma distribution for predisposition selection  =#
     gamma_pre = Gamma(predis_aggregation, 1/predis_aggregation)
 
 #=  initialize and fill the environmental variable  =#
-    env_miracidia = []
+    env_miracidia = Int64[]
 
     for i in 1 : initial_miracidia_days
         push!(env_miracidia, initial_miracidia )
@@ -161,7 +175,7 @@ function create_population(N, max_age, initial_worms, contact_rates_by_age,
         push!(ages, rand()*max_age)
         push!(gender, rand([0,1]))
         #push!(predisposition, rand(gamma_pre)[1])
-        push!(human_cercariae,[])
+        push!(human_cercariae,Int64[])
         push!(eggs,0)
         push!(vac_status, 0)
         push!(treated,0)
@@ -179,9 +193,9 @@ function create_population(N, max_age, initial_worms, contact_rates_by_age,
         end
 #=  everyone is initiated with a random number of worms in the first stage  =#
         f_worms = fill(0, worm_stages)
-        f_worms[1] = round(rand()*initial_worms)
+        f_worms[1] = trunc(Int,round(rand()*initial_worms))
         m_worms = fill(0, worm_stages)
-        m_worms[1] = round(rand()*initial_worms)
+        m_worms[1] = trunc(Int,round(rand()*initial_worms))
         push!(female_worms, f_worms)
         push!(male_worms, m_worms)
 
@@ -236,7 +250,7 @@ function update_death_rate(ages, death_rate, death_rate_per_time_step)
     for i in 1:length(ages)
 
         if ages[i] < 1
-            @inbounds death_rate[i] = death_rate_per_time_step[1]
+            @inbounds death_rate[i] =  death_rate_per_time_step[1]
         else
             age = trunc(Int, ages[i])
             index = min(2 + trunc(Int, (age-1)/5),length(death_rate_per_time_step))
@@ -322,7 +336,7 @@ function miracidia_death(env_miracidia, env_miracidia_survival_prop)
     if env_miracidia_survival_prop <= 0
         error("env_miracidia_survival_prop must be bigger than 0")
     else
-        env_miracidia[end] = round(env_miracidia[end] * env_miracidia_survival_prop, digits = 0)
+        env_miracidia[end] = trunc(Int, round(env_miracidia[end] * env_miracidia_survival_prop, digits = 0))
     end
     # for i in 1:length(env_miracidia)
     #     env_miracidia[i] = trunc(Int, round(env_miracidia[i]/1.5, digits = 0))
@@ -342,7 +356,7 @@ function cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
     if env_cercariae_survival_prop <= 0
         error("env_cercariae_survival_prop must be bigger than 0")
     else
-        updated_cercariae = round(env_cercariae * env_cercariae_survival_prop, digits= 0)
+        updated_cercariae = trunc(Int, round(env_cercariae * env_cercariae_survival_prop, digits= 0))
     end
     return updated_cercariae
 end
@@ -496,11 +510,14 @@ end
 
 # hatch the eggs in the humans into the environment
 
-function miracidia_production(eggs, env_miracidia, time_step)
+function miracidia_production(eggs, env_miracidia, time_step, age_contact_rate)
 #= as we can step forward an arbitrary number of days at a time, we multiply the number of miracidia by the
     length of the forward step, assuming that each of the last given number of days were equivalent to each other
 =#
-    push!(env_miracidia,  sum(eggs))
+    max_contact_rate = maximum(age_contact_rate)
+    xx = age_contact_rate ./ max_contact_rate
+    released_eggs = xx .* eggs
+    push!(env_miracidia,  round(sum(released_eggs)))
     return env_miracidia
 end
 
@@ -607,14 +624,14 @@ function birth_of_human(ages, gender, predisposition, human_cercariae, eggs, vac
     push!(ages, 0)
     push!(gender, rand([0,1]))
     push!(predisposition, rand(gamma_pre)[1])
-    push!(human_cercariae,[])
+    push!(human_cercariae, Int64[])
     push!(eggs,0)
     push!(vac_status, 0)
     push!(treated, 0)
     push!(vaccinated, 0)
     predisp = rand(gamma_pre)[1]
 
-    push!(death_rate, death_rate_per_time_step[1])
+    push!(death_rate,death_rate_per_time_step[1])
     push!(age_contact_rate, contact_rates_by_age[1])
     if rand() > mda_adherence
         push!(adherence, 0)
@@ -946,7 +963,7 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
         vac_status = vac_status .- time_step/365
 
 #=  hacth the human eggs into the environment  =#
-        env_miracidia = miracidia_production(eggs, env_miracidia, time_step)
+        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate)
 
 #=  update population due to death  =#
        ages , gender, predisposition,  human_cercariae, eggs,
@@ -1069,7 +1086,7 @@ function get_prevalences(ages, eggs, gamma_k, time)
     sac_pop = 0
     adult_pop = 0
     recorded_eggs =[]
-    final_ages = []
+    final_ages = Float16[]
 
     num_humans = size(ages)[1]
 
@@ -1078,7 +1095,7 @@ function get_prevalences(ages, eggs, gamma_k, time)
         #final_eggs = kato_katz(eggs[i], gamma_k)
         final_eggs = eggs[i]
         push!(recorded_eggs, final_eggs)
-        if ages[i] >= 5 && ages[i] <= 15
+        if ages[i] > 5 && ages[i] < 15
             sac_pop = sac_pop + 1;
         end
         if ages[i] > 15
@@ -1089,13 +1106,13 @@ function get_prevalences(ages, eggs, gamma_k, time)
             pop_burden[2] = pop_burden[2] + 1
             pop_burden[1] = pop_burden[1] + 1
             pop_prev = pop_prev + 1
-            if 5 <= ages[i] && ages[i] <= 15
+            if 4 < ages[i] && ages[i] < 17
                 sac_burden[3] = sac_burden[3] + 1
                 sac_burden[2] = sac_burden[2] + 1
                 sac_burden[1] = sac_burden[1] + 1
                 sac_prev = sac_prev + 1
             end
-            if ages[i] > 15
+            if ages[i] > 17
                 adult_burden[3] = adult_burden[3] + 1
                 adult_burden[2] = adult_burden[2] + 1
                 adult_burden[1] = adult_burden[1] + 1
@@ -1105,12 +1122,12 @@ function get_prevalences(ages, eggs, gamma_k, time)
             pop_burden[2] = pop_burden[2] + 1
             pop_burden[1] = pop_burden[1] + 1
             pop_prev = pop_prev + 1
-            if ages[i] >= 5 && ages[i] <= 15
+            if ages[i] > 4 && ages[i] < 17
                 sac_burden[2] = sac_burden[2] + 1
                 sac_burden[1] = sac_burden[1] + 1
                 sac_prev = sac_prev + 1
             end
-            if ages[i] > 15
+            if ages[i] > 17
                 adult_burden[2] = adult_burden[2] + 1
                 adult_burden[1] = adult_burden[1] + 1
                 adult_prev = adult_prev + 1
@@ -1118,11 +1135,11 @@ function get_prevalences(ages, eggs, gamma_k, time)
         elseif final_eggs > 0
             pop_burden[1] = pop_burden[1] + 1
             pop_prev = pop_prev + 1
-            if ages[i] >= 5 && ages[i] <= 15
+            if ages[i] > 4 && ages[i] < 17
                 sac_burden[1] = sac_burden[1] + 1
                 sac_prev = sac_prev +  1
             end
-            if ages[i] > 15
+            if ages[i] > 17
                 adult_burden[1] = adult_burden[1] + 1
                 adult_prev = adult_prev + 1
             end
@@ -1299,6 +1316,7 @@ function run_simulation(N, max_age, initial_worms, time_step, worm_stages, femal
 
     contact_rates_by_age = make_age_contact_rate_array(max_age, scenario, [], [])
     death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
+        death_rate_per_time_step =     death_rate_per_time_step.*100
 
 
     ages , gender, predisposition,  human_cercariae, eggs, vac_status,
@@ -1363,7 +1381,7 @@ end
 function specified_age_distribution(N, spec_ages, ages_per_index)
 
     cumsum_spec_ages = generate_age_distribution(spec_ages, ages_per_index)
-    ages = []
+    ages = Float16[]
     for i in 1:N
         x = rand()
         k = findall(cumsum_spec_ages .> x)[1]
@@ -1385,23 +1403,23 @@ function create_population_specified_ages(N, initial_worms, contact_rates_by_age
 
 # initialize all the arrays we will keep track of over time
 
-    female_worms = []
-    male_worms = []
-    human_cercariae = []
-    eggs = []
-    vac_status = []
-    treated = []
-    vaccinated = []
-    age_contact_rate = []
-    death_rate = []
-    gender = []
-    adherence = []
-    access = []
+    female_worms = Array{Int64}[]
+    male_worms = Array{Int64}[]
+    human_cercariae = Array{Int64}[]
+    eggs = Int64[]
+    vac_status = Int64[]
+    treated = Int64[]
+    vaccinated = Int64[]
+    age_contact_rate = Float16[]
+    death_rate = Float16[]
+    gender = Int64[]
+    adherence = Int64[]
+    access = Int64[]
 #=  initialize the Gamma distribution for predisposition selection  =#
     gamma_pre = Gamma(predis_aggregation, 1/predis_aggregation)
 
 #=  initialize and fill the environmental variable  =#
-    env_miracidia = []
+    env_miracidia = Int64[]
 
     for i in 1 : initial_miracidia_days
         push!(env_miracidia, initial_miracidia )
@@ -1414,7 +1432,7 @@ function create_population_specified_ages(N, initial_worms, contact_rates_by_age
 
 #=  begin pushing entries to the data variables we keep track of  =#
         push!(gender, rand([0,1]))
-        push!(human_cercariae,[])
+        push!(human_cercariae,Int64[])
         push!(eggs,0)
         push!(vac_status, 0)
         push!(treated,0)
@@ -1519,7 +1537,7 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 
 #=  hacth the human eggs into the environment  =#
         # env_miracidia = miracidia_production_by_contact_rate(eggs, env_miracidia, time_step, age_contact_rate)
-        env_miracidia = miracidia_production(eggs, env_miracidia, time_step)
+        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate)
 
 #=  uptake larvae into humans from the environment  =#
         env_cercariae, human_cercariae, env_miracidia =
@@ -1637,7 +1655,7 @@ function update_env_no_births_deaths(num_time_steps, ages, human_cercariae, fema
         vac_status = vac_status .- time_step/365
 
 #=  hacth the human eggs into the environment  =#
-        env_miracidia = miracidia_production(eggs, env_miracidia, time_step)
+        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate)
 
 
 #=  uptake larvae into humans from the environment  =#
@@ -1785,7 +1803,7 @@ function update_env_keep_population_same(num_time_steps, ages, human_cercariae, 
         vac_status = vac_status .- time_step/365
 
 #=  hacth the human eggs into the environment  =#
-        env_miracidia = miracidia_production(eggs, env_miracidia, time_step)
+        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate)
 
     #=  update population due to death  =#
        ages , gender, predisposition,  human_cercariae, eggs,
@@ -1982,4 +2000,156 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
 
     end
     return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev
+end
+
+
+
+function plot_sac_burden_and_sac_high_burden(r)
+    times = Float16[]
+    prev = Float16[]
+    sac_prev = Float16[]
+    high_burden = Float16[]
+    high_burden_sac = Float16[]
+    adult_prev = Float16[]
+
+    for i in 1 : length(r)
+        push!(times, r[i].time)
+        push!(prev, r[i].pop_prev)
+        push!(sac_prev, r[i].sac_prev)
+        push!(high_burden, r[i].population_burden[3])
+        push!(high_burden_sac, r[i].sac_burden[3])
+        push!(adult_prev, r[i].adult_prev)
+    end
+
+    plot(times, sac_prev, label  = "SAC prevalence", line=(:black, 0.5, 6, :solid))
+    plot!(times, high_burden_sac, label  = "SAC high burden", line=(:purple, 0.5, 6))
+    plot!(
+
+
+        size=(800, 600),
+
+        xticks = (0:100:300),
+        yticks = 0:10:100,
+
+        ylabel = "Prevalence",
+        xlabel = "Year",
+
+        # title  = "The Equation of Time",
+        xrotation = rad2deg(pi/3),
+
+        fillrange = 0,
+        fillalpha = 0.25,
+        fillcolor = :lightgoldenrod,
+
+        background_color = :ivory
+        )
+    ylims!((0, 100))
+
+end
+
+
+
+
+function plot_sac_burden_2_runs(r1, r2)
+    times1 = Float16[]
+    prev1 = Float16[]
+    sac_prev1 = Float16[]
+    high_burden1 = Float16[]
+    high_burden_sac1 = Float16[]
+    adult_prev1 = Float16[]
+
+    for i in 1 : length(r1)
+        push!(times1, r1[i].time)
+        push!(prev1, r1[i].pop_prev)
+        push!(sac_prev1, r1[i].sac_prev)
+        push!(high_burden1, r1[i].population_burden[3])
+        push!(high_burden_sac1, r1[i].sac_burden[3])
+        push!(adult_prev1, r1[i].adult_prev)
+    end
+
+    times2 = Float16[]
+    prev2 = Float16[]
+    sac_prev2 = Float16[]
+    high_burden2 = Float16[]
+    high_burden_sac2 = Float16[]
+    adult_prev2 = Float16[]
+
+    for i in 1 : length(r2)
+        push!(times2, r2[i].time)
+        push!(prev2, r2[i].pop_prev)
+        push!(sac_prev2, r2[i].sac_prev)
+        push!(high_burden2, r2[i].population_burden[3])
+        push!(high_burden_sac2, r2[i].sac_burden[3])
+        push!(adult_prev2, r2[i].adult_prev)
+    end
+
+
+    plot(times1, sac_prev1, label  = "SAC prevalence 1", line=(:black, 0.5, 6, :solid))
+    plot!(times2, sac_prev2, label  = "SAC prevalence 2", line=(:purple, 0.5, 6))
+    plot!(
+
+
+        size=(800, 600),
+
+        xticks = (0:100:300),
+        yticks = 0:10:100,
+
+        ylabel = "Prevalence",
+        xlabel = "Year",
+
+        # title  = "The Equation of Time",
+        xrotation = rad2deg(pi/3),
+
+        fillrange = 0,
+        fillalpha = 0.25,
+        fillcolor = :lightgoldenrod,
+
+        background_color = :ivory
+        )
+    ylims!((0, 100))
+
+end
+
+
+
+
+
+function get_mean_eggs_age(age_bins, sim_ages, sim_eggs)
+    a = Float16[]
+    for i in 1: length(age_bins)
+
+        if i < length(age_bins)
+            x = findall( age_bins[i] .<= sim_ages .<= (age_bins[i+1] - 0.0001))
+        else
+            x = findall(sim_ages .>= age_bins[i])
+        end
+        if length(x) > 0
+            aa = sim_eggs[x]
+            push!(a, mean(aa))
+        else
+            push!(a, 0)
+        end
+
+    end
+    return a
+end
+
+function get_mean_worms_age(age_bins, sim_ages, male_worms, female_worms)
+    a = Float16[]
+    for i in 1: length(age_bins)
+
+        if i < length(age_bins)
+            x = findall( age_bins[i] .<= sim_ages .<= (age_bins[i+1] - 0.0001))
+        else
+            x = findall(sim_ages .>= age_bins[i])
+        end
+        if length(x) > 0
+            aa = calculate_worm_pairs(female_worms[x], male_worms[x])
+            push!(a, mean(aa))
+        else
+            push!(a, 0)
+        end
+
+    end
+    return a
 end
