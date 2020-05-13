@@ -1,5 +1,4 @@
 using Schistoxpkg
-
 using Test
 using Distributions
 using Random
@@ -8,7 +7,7 @@ using Random
 # Test that at the first element of the death array created
 # matches the equation we think it should match
 @testset "make_death_rate_array" begin
-    @test make_death_rate_array([6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0.65,
+    @test make_death_rate_array([6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48, 0.53, 0.65,
     0.88, 1.06, 1.44, 2.1, 3.33, 5.29, 8.51, 13.66,
     21.83, 29.98, 36.98], 1)[1] == 1 .- exp(-1 * 6.56/(1000*365))
 end
@@ -199,7 +198,7 @@ end
 
 
 @testset "miracidia_production" begin
-    @test miracidia_production([1,2,3],[6,7,6], 10)[1] == 6
+    @test miracidia_production([1,2,3],[6,7,6], 10, [1,1,1])[1] == 6
 end
 
 
