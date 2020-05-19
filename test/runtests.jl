@@ -272,12 +272,12 @@ death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, 1)
     @test birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
                             [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
                             [0,0], [1.1,1], [0.0002,0.00005], 1,1, contact_rates_by_age,
-                        death_rate_per_time_step,2, 0.24, [1,1],1,[1,1],1)[1] == [2,4,0]
+                        death_rate_per_time_step,2, 0.24,1, [1,1],1,[1,1],1)[1] == [2,4,0]
 end
 new_pop = birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
                         [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
                         [0,0], [1.1,1], [0.0002,0.00005], 1,1, contact_rates_by_age,
-                    death_rate_per_time_step,2, 0.24, [1,1],1,[1,1],1)
+                    death_rate_per_time_step,2, 0.24,1, [1,1],1,[1,1],1)
 @testset "birth_of_human" begin
     @test new_pop[1]==[2,4,0]
 end
@@ -400,10 +400,11 @@ mda_adherence = 0.8
 scenario = "high adult"
 contact_rates_by_age = make_age_contact_rate_array(max_age, scenario, [], [])
 death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
+predis_weight = 1
 
 pop = create_population(N, max_age, initial_worms, contact_rates_by_age,
     death_rate_per_time_step,worm_stages, female_factor, male_factor,
-    initial_miracidia, initial_miracidia_days, predis_aggregation, time_step,
+    initial_miracidia, initial_miracidia_days, predis_aggregation, predis_weight, time_step,
     mda_adherence, mda_access)
 
 # These should all get give the initial value
