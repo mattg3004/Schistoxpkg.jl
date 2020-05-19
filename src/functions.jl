@@ -78,7 +78,7 @@ function make_age_contact_rate_array(max_age, scenario, input_ages, input_contac
         if length(input_ages) == 0
             contact_settings = create_contact_settings(scenario)
     # initialize an array with the same value for contact rate across all ages
-            contact_rates_by_age = [fill(contact_settings[4], max_age+1)]
+            contact_rates_by_age = [fill(contact_settings[4], trunc(Int,(max_age+1)))]
             contact_rates_by_age = contact_rates_by_age[1]
 
     # then edit the entries for different ages according to values
@@ -102,7 +102,7 @@ function make_age_contact_rate_array(max_age, scenario, input_ages, input_contac
             end
 
         else
-            contact_rates_by_age = [fill(input_contact_rates[end], max_age+1)]
+            contact_rates_by_age = [fill(input_contact_rates[end], trunc(Int,(max_age+1)))]
             contact_rates_by_age = contact_rates_by_age[1]
             for i in 1 : length(input_contact_rates)
                 if i == 1
@@ -139,7 +139,8 @@ end
 
 function create_population(N, max_age, initial_worms, contact_rates_by_age,
     death_rate_per_time_step,worm_stages, female_factor, male_factor,
-    initial_miracidia, initial_miracidia_days, predis_aggregation, time_step,
+    initial_miracidia, initial_miracidia_days, predis_aggregation, predis_weight,
+     time_step,
     mda_adherence, mda_access)
 
 # initialize all the arrays we will keep track of over time
@@ -158,7 +159,7 @@ function create_population(N, max_age, initial_worms, contact_rates_by_age,
     adherence =  Int64[]
     access =  Int64[]
 #=  initialize the Gamma distribution for predisposition selection  =#
-    gamma_pre = Gamma(predis_aggregation, 1/predis_aggregation)
+    gamma_pre = Gamma(predis_aggregation, predis_weight/predis_aggregation)
 
 #=  initialize and fill the environmental variable  =#
     env_miracidia = Int64[]
@@ -523,17 +524,6 @@ end
 
 
 
-function miracidia_production_by_contact_rate(eggs, env_miracidia, time_step, age_contact_rate, contact_rate)
-#= as we can step forward an arbitrary number of days at a time, we multiply the number of miracidia by the
-    length of the forward step, assuming that each of the last given number of days were equivalent to each other
-=#
-    max_contact_rate = maximum(age_contact_rate)
-    xx = age_contact_rate ./ max_contact_rate
-    released_eggs = xx .* eggs
-    push!(env_miracidia,  sum(released_eggs))
-    return env_miracidia
-end
-
 
 
 # function to kill humans at age dependent rate
@@ -606,12 +596,13 @@ end
 function birth_of_human(ages, gender, predisposition, human_cercariae, eggs, vac_status,
                         treated, female_worms, male_worms,vaccinated, age_contact_rate,
                         death_rate, female_factor, male_factor, contact_rates_by_age,
-                        death_rate_per_time_step, worm_stages, predis_aggregation, adherence,
+                        death_rate_per_time_step, worm_stages, predis_aggregation, predis_weight,
+                        adherence,
                         mda_adherence, access, mda_access)
 
 
 #  load the gamma distribution for the predispostion distribution
-    gamma_pre = Gamma(predis_aggregation, 1/predis_aggregation)
+    gamma_pre = Gamma(predis_aggregation, predis_weight/predis_aggregation)
 
 
 # fill female and male worms array
@@ -890,7 +881,7 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
     update_contact_death_rates = 1/5
     sim_time = 0
     record_time = record_frequency
-    record = []
+    record = out[]
     print_time = 0
     if size(mda_info)[1] > 0
         mda_round = 0
@@ -1085,7 +1076,7 @@ function get_prevalences(ages, eggs, gamma_k, time)
     adult_prev = 0
     sac_pop = 0
     adult_pop = 0
-    recorded_eggs =[]
+    recorded_eggs = Int64[]
     final_ages = Float16[]
 
     num_humans = size(ages)[1]
@@ -1397,7 +1388,8 @@ end
 =#
 function create_population_specified_ages(N, initial_worms, contact_rates_by_age,
         worm_stages, female_factor, male_factor,initial_miracidia,
-        initial_miracidia_days, predis_aggregation, time_step,
+        initial_miracidia_days, predis_aggregation, predis_weight,
+         time_step,
         spec_ages, ages_per_index, death_rate_per_time_step,
         mda_adherence, mda_access)
 
@@ -1416,7 +1408,7 @@ function create_population_specified_ages(N, initial_worms, contact_rates_by_age
     adherence = Int64[]
     access = Int64[]
 #=  initialize the Gamma distribution for predisposition selection  =#
-    gamma_pre = Gamma(predis_aggregation, 1/predis_aggregation)
+    gamma_pre = Gamma(predis_aggregation, predis_weight/predis_aggregation)
 
 #=  initialize and fill the environmental variable  =#
     env_miracidia = Int64[]
@@ -1494,7 +1486,7 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 
     sim_time = 0
     record_time = record_frequency
-    record = []
+    record = out[]
 
 
 #=  loop for number of sims  =#
@@ -1583,7 +1575,7 @@ function update_env_no_births_deaths(num_time_steps, ages, human_cercariae, fema
     update_contact_death_rates = 1/5
     sim_time = 0
     record_time = record_frequency
-    record = []
+    record = out[]
     print_time = 0
     if size(mda_info)[1] > 0
         mda_round = 0
@@ -1731,7 +1723,7 @@ function update_env_keep_population_same(num_time_steps, ages, human_cercariae, 
     update_contact_death_rates = 1/5
     sim_time = 0
     record_time = 0
-    record = []
+    record = out[]
     print_time = 0
     if size(mda_info)[1] > 0
         mda_round = 0
