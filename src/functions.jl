@@ -1909,12 +1909,12 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, mda_adherence, mda_access,
     record_frequency, filename, human_cercariae_prop)
 
-    times = Float16[]
-    prev = Float16[]
-    sac_prev = Float16[]
-    high_burden = Float16[]
-    high_burden_sac = Float16[]
-    adult_prev = Float16[]
+    times = []
+    prev = []
+    sac_prev = []
+    high_burden = []
+    high_burden_sac =[]
+    adult_prev = []
 
 
     for run in 1:num_repeats
