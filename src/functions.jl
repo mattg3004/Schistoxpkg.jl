@@ -868,7 +868,7 @@ end
 function update_env(num_time_steps, ages, human_cercariae, female_worms, male_worms,
     time_step, average_worm_lifespan,
     eggs, max_fecundity, r, worm_stages,
-    vac_status, gender, predis_aggregation,
+    vac_status, gender, predis_aggregation,predis_weight,
     predisposition, treated, vaccine_effectiveness,
     density_dependent_fecundity,
     vaccinated, age_contact_rate, death_rate, env_miracidia,
@@ -1022,7 +1022,8 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
                      birth_of_human(ages , gender, predisposition,  human_cercariae, eggs, vac_status,
                                         treated, female_worms, male_worms,vaccinated, age_contact_rate,
                                         death_rate, female_factor, male_factor, contact_rates_by_age,
-                                        death_rate_per_time_step, worm_stages, predis_aggregation, adherence,
+                                        death_rate_per_time_step, worm_stages, predis_aggregation, predis_weight,
+                                        adherence,
                                         mda_adherence, access, mda_access)
             end
         end
@@ -1247,7 +1248,7 @@ function run_simulation_from_loaded_population(num_time_steps, ages, human_cerca
     update_env(num_time_steps, ages, human_cercariae, female_worms, male_worms,
         time_step, average_worm_lifespan,
         eggs, max_fecundity, r, worm_stages,
-        vac_status, gender, predis_aggregation,
+        vac_status, gender, predis_aggregation, predis_weight,
         predisposition, treated, vaccine_effectiveness,
         density_dependent_fecundity,
         vaccinated, age_contact_rate, death_rate, env_miracidia,
@@ -1327,7 +1328,7 @@ function run_simulation(N, max_age, initial_worms, time_step, worm_stages, femal
         update_env(num_time_steps, ages, human_cercariae, female_worms, male_worms,
     time_step, average_worm_lifespan,
     eggs, max_fecundity, r, worm_stages,
-    vac_status, gender, predis_aggregation,
+    vac_status, gender, predis_aggregation, predis_weight,
     predisposition, treated, vaccine_effectiveness,
     density_dependent_fecundity,
     vaccinated, age_contact_rate, death_rate, env_miracidia,
@@ -1710,7 +1711,7 @@ end
 function update_env_keep_population_same(num_time_steps, ages, human_cercariae, female_worms, male_worms,
     time_step, average_worm_lifespan,
     eggs, max_fecundity, r, worm_stages,
-    vac_status, gender, predis_aggregation,
+    vac_status, gender, predis_aggregation,predis_weight,
     predisposition, treated, vaccine_effectiveness,
     density_dependent_fecundity,
     vaccinated, age_contact_rate, death_rate, env_miracidia,
@@ -1815,7 +1816,8 @@ function update_env_keep_population_same(num_time_steps, ages, human_cercariae, 
                      birth_of_human(ages , gender, predisposition,  human_cercariae, eggs, vac_status,
                                         treated, female_worms, male_worms,vaccinated, age_contact_rate,
                                         death_rate, female_factor, male_factor, contact_rates_by_age,
-                                        death_rate_per_time_step, worm_stages, predis_aggregation, adherence,
+                                        death_rate_per_time_step, worm_stages, predis_aggregation, predis_weight,
+                                        adherence,
                                         mda_adherence, access, mda_access)
             end
         end
@@ -1901,13 +1903,18 @@ end
 # repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
 function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
     time_step, average_worm_lifespan,
-    max_fecundity, r, worm_stages, predis_aggregation, vaccine_effectiveness,
+    max_fecundity, r, worm_stages, predis_aggregation, predis_weight,vaccine_effectiveness,
     density_dependent_fecundity, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, mda_adherence, mda_access,
-    record_frequency, times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, filename,human_cercariae_prop)
+    record_frequency, filename, human_cercariae_prop)
 
-
+    times = Float16[]
+    prev = Float16[]
+    sac_prev = Float16[]
+    high_burden = Float16[]
+    high_burden_sac = Float16[]
+    adult_prev = Float16[]
 
 
     for run in 1:num_repeats
@@ -1926,7 +1933,7 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
          update_env_keep_population_same(num_time_steps, copy(ages_equ), copy(human_cercariae_equ), copy(female_worms_equ), copy(male_worms_equ),
                     time_step, average_worm_lifespan,
                     copy(eggs_equ), max_fecundity, r, worm_stages,
-                    copy(vac_status_equ), copy(gender_equ), predis_aggregation,
+                    copy(vac_status_equ), copy(gender_equ), predis_aggregation, predis_weight,
                     copy(predisposition_equ), copy(treated_equ), vaccine_effectiveness,
                     density_dependent_fecundity,
                     copy(vaccinated_equ) , copy(age_contact_rate_equ), copy(death_rate_equ), copy(env_miracidia_equ) ,
@@ -1935,7 +1942,6 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
                     death_rate_per_time_step, birth_rate, mda_info, vaccine_info, copy(adherence_equ), mda_adherence,
                     copy(access_equ), mda_access,
                     record_frequency,human_cercariae_prop);
-
 
         times, prev, sac_prev, high_burden, high_burden_sac, adult_prev = collect_prevs(times, prev, sac_prev, high_burden,
         high_burden_sac, adult_prev, record, run)
@@ -1951,7 +1957,7 @@ end
 function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                 time_step, average_worm_lifespan,
                 max_fecundity, r, worm_stages,
-                predis_aggregation,
+                predis_aggregation,predis_weight,
                 density_dependent_fecundity,
                 age_contact_rate_equ, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
                 female_factor, male_factor, contact_rates_by_age,
@@ -1976,7 +1982,7 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
          update_env(num_time_steps, copy(ages_equ), copy(human_cercariae_equ), copy(female_worms_equ), copy(male_worms_equ),
                     time_step, average_worm_lifespan,
                     copy(eggs_equ), max_fecundity, r, worm_stages,
-                    copy(vac_status_equ), copy(gender_equ), predis_aggregation,
+                    copy(vac_status_equ), copy(gender_equ), predis_aggregation,predis_weight,
                     copy(predisposition_equ), copy(treated_equ), vaccine_effectiveness,
                     density_dependent_fecundity,
                     copy(vaccinated_equ) , copy(age_contact_rate_equ), copy(death_rate_equ), copy(env_miracidia_equ) ,
