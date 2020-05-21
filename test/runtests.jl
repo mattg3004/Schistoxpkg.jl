@@ -479,7 +479,7 @@ num_time_steps = 1
     @test update_env(num_time_steps, [1,3,4], human_cercariae, female_worms, male_worms,
     time_step, 5.7,
     eggs, 0.34, 0.03, 2,
-    vac_status, gender, 0.24,
+    vac_status, gender, 0.24,predis_weight,
     [0.2, 0.8,1], treated, vaccine_effectiveness,
     0.0005,
     [0,0,0], [0.02,0.04,0.03], [0.02,0.04,0.03],env_miracidia,
