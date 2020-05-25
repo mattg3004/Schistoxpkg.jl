@@ -919,7 +919,7 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
         end
 
         if sim_time >= record_time
-            a = get_prevalences(ages, eggs, gamma_k, sim_time)
+            a = get_prevalences(ages, eggs, sim_time)
             push!(record, a)
             record_time += record_frequency
         end
@@ -1067,7 +1067,7 @@ mutable struct out
 end
 
 
-function get_prevalences(ages, eggs, gamma_k, time)
+function get_prevalences(ages, eggs, time)
 
     pop_burden = [0,0,0]
     sac_burden = [0,0,0]
@@ -1084,7 +1084,6 @@ function get_prevalences(ages, eggs, gamma_k, time)
 
     for i in 1:num_humans
         push!(final_ages, ages[i]);
-        #final_eggs = kato_katz(eggs[i], gamma_k)
         final_eggs = eggs[i]
         push!(recorded_eggs, final_eggs)
         if ages[i] > 5 && ages[i] < 15
@@ -1098,13 +1097,13 @@ function get_prevalences(ages, eggs, gamma_k, time)
             pop_burden[2] = pop_burden[2] + 1
             pop_burden[1] = pop_burden[1] + 1
             pop_prev = pop_prev + 1
-            if 4 < ages[i] && ages[i] < 17
+            if 5 < ages[i] && ages[i] < 15
                 sac_burden[3] = sac_burden[3] + 1
                 sac_burden[2] = sac_burden[2] + 1
                 sac_burden[1] = sac_burden[1] + 1
                 sac_prev = sac_prev + 1
             end
-            if ages[i] > 17
+            if ages[i] > 15
                 adult_burden[3] = adult_burden[3] + 1
                 adult_burden[2] = adult_burden[2] + 1
                 adult_burden[1] = adult_burden[1] + 1
@@ -1114,12 +1113,12 @@ function get_prevalences(ages, eggs, gamma_k, time)
             pop_burden[2] = pop_burden[2] + 1
             pop_burden[1] = pop_burden[1] + 1
             pop_prev = pop_prev + 1
-            if ages[i] > 4 && ages[i] < 17
+            if ages[i] > 5 && ages[i] < 15
                 sac_burden[2] = sac_burden[2] + 1
                 sac_burden[1] = sac_burden[1] + 1
                 sac_prev = sac_prev + 1
             end
-            if ages[i] > 17
+            if ages[i] > 15
                 adult_burden[2] = adult_burden[2] + 1
                 adult_burden[1] = adult_burden[1] + 1
                 adult_prev = adult_prev + 1
@@ -1127,11 +1126,11 @@ function get_prevalences(ages, eggs, gamma_k, time)
         elseif final_eggs > 0
             pop_burden[1] = pop_burden[1] + 1
             pop_prev = pop_prev + 1
-            if ages[i] > 4 && ages[i] < 17
+            if ages[i] > 5 && ages[i] < 15
                 sac_burden[1] = sac_burden[1] + 1
                 sac_prev = sac_prev +  1
             end
-            if ages[i] > 17
+            if ages[i] > 15
                 adult_burden[1] = adult_burden[1] + 1
                 adult_prev = adult_prev + 1
             end
@@ -1496,7 +1495,7 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 
 
         if sim_time >= record_time
-            a = get_prevalences(ages, eggs, gamma_k, sim_time)
+            a = get_prevalences(ages, eggs, sim_time)
             push!(record, a)
             record_time += record_frequency
         end
@@ -1614,7 +1613,7 @@ function update_env_no_births_deaths(num_time_steps, ages, human_cercariae, fema
         end
 
         if sim_time >= record_time
-            a = get_prevalences(ages, eggs, gamma_k, sim_time)
+            a = get_prevalences(ages, eggs, sim_time)
             push!(record, a)
             record_time += record_frequency
         end
@@ -1762,7 +1761,7 @@ function update_env_keep_population_same(num_time_steps, ages, human_cercariae, 
         end
 
         if sim_time >= record_time
-            a = get_prevalences(ages, eggs, gamma_k, sim_time)
+            a = get_prevalences(ages, eggs, sim_time)
             push!(record, a)
             record_time += record_frequency
         end
@@ -2032,7 +2031,7 @@ function plot_sac_burden_and_sac_high_burden(r)
         ylabel = "Prevalence",
         xlabel = "Year",
 
-        # title  = "The Equation of Time",
+
         xrotation = rad2deg(pi/3),
 
         fillrange = 0,
@@ -2095,7 +2094,7 @@ function plot_sac_burden_2_runs(r1, r2)
         ylabel = "Prevalence",
         xlabel = "Year",
 
-        # title  = "The Equation of Time",
+
         xrotation = rad2deg(pi/3),
 
         fillrange = 0,
