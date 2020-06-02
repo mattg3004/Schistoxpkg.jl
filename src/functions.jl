@@ -1916,6 +1916,8 @@ function collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adul
     return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev
 end
 
+
+
 # repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
 function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
     time_step, average_worm_lifespan,
@@ -1966,7 +1968,7 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
         high_burden_sac, adult_prev, record, run)
 
     end
-    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, ages
+    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev
 end
 
 
