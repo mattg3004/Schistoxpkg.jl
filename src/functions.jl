@@ -924,7 +924,6 @@ function update_env(num_time_steps, ages, death_ages,
 
 #= update contact and death rates every year =#
         if sim_time >= update_contact_death_rates
-            death_rate = update_death_rate(ages, death_rate, death_rate_per_time_step)
             age_contact_rate = update_contact_rate(ages, age_contact_rate, contact_rates_by_age)
             update_contact_death_rates += 1/5
         end
@@ -1029,23 +1028,25 @@ function update_env(num_time_steps, ages, death_ages,
             for i in 1:l
 
  #=  update the population due to births  =#
-                 ages , gender, predisposition,  human_cercariae, eggs, vac_status,
+                 ages, death_ages, gender, predisposition,
+                 human_cercariae, eggs, vac_status,
                  treated, female_worms, male_worms,
-                     vaccinated, age_contact_rate, death_rate, adherence, access =
-                     birth_of_human(ages , gender, predisposition,  human_cercariae, eggs, vac_status,
-                                        treated, female_worms, male_worms,vaccinated, age_contact_rate,
-                                        death_rate, female_factor, male_factor, contact_rates_by_age,
-                                        death_rate_per_time_step, worm_stages, predis_aggregation, predis_weight,
-                                        adherence,
-                                        mda_adherence, access, mda_access)
+                 vaccinated, age_contact_rate, adherence, access =
+                     birth_of_human(ages, death_ages, gender, predisposition, human_cercariae, eggs, vac_status,
+                                            treated, female_worms, male_worms,vaccinated, age_contact_rate,
+                                            female_factor, male_factor, contact_rates_by_age,
+                                            worm_stages, predis_aggregation, predis_weight,
+                                            adherence, death_prob_by_age, ages_for_deaths,
+                                            mda_adherence, access, mda_access)
             end
         end
     end
 
 #=  return the arrays  =#
-    return ages , gender, predisposition,  human_cercariae, eggs,
+    return ages, death_ages, gender, predisposition,  human_cercariae, eggs,
     vac_status, treated, female_worms, male_worms,
-    vaccinated, age_contact_rate, death_rate, env_miracidia, env_cercariae, adherence, access,
+    vaccinated, age_contact_rate,
+    env_miracidia, env_cercariae, adherence,access,
     record
 end
 
