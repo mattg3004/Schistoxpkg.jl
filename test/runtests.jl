@@ -267,25 +267,39 @@ age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0
 contact_rates_by_age = make_age_contact_rate_array(100,"high adult", [], [])
 death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, 1)
 
+#
+# ages, death_ages, gender, predisposition, human_cercariae, eggs, vac_status,
+#                         treated, female_worms, male_worms,vaccinated, age_contact_rate,
+#                         female_factor, male_factor, contact_rates_by_age,
+#                         worm_stages, predis_aggregation, predis_weight,
+#                         adherence, death_prob_by_age, ages_for_deaths,
+#                         mda_adherence, access, mda_access
+
+death_prob_by_age = [0.0656, 0.0093, 0.003, 0.0023, 0.0027, 0.0038, 0.0044, 0.0048, 0.0053,
+                          0.0065, 0.0088, 0.0106, 0.0144, 0.021, 0.0333, 0.0529, 0.0851, 0.1366, 0.2183, 0.2998 , 0.3698, 1]
+
+ages_for_deaths = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
+                        65, 70, 75, 80, 85, 90, 95, 100, 110]
+
 @testset "birth_of_human" begin
-    @test birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
+    @test birth_of_human([2,4], [0.44,0], [0,0], [1.1,1], [[2,3,4],[6,3,4]], [15,7],
                             [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
-                            [0,0], [1.1,1], [0.0002,0.00005], 1,1, contact_rates_by_age,
-                        death_rate_per_time_step,2, 0.24,1, [1,1],1,[1,1],1)[1] == [2,4,0]
+                            [0,0], [1.1,1], 1, 1, [0.0002,0.00005], 2,1, 1, [1,1],
+                        death_prob_by_age, ages_for_deaths, 0.8,[1,1], 0.9)[1] == [2,4,0]
 end
-new_pop = birth_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
+new_pop = birth_of_human([2,4], [0.44,0], [0,0], [1.1,1], [[2,3,4],[6,3,4]], [15,7],
                         [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
-                        [0,0], [1.1,1], [0.0002,0.00005], 1,1, contact_rates_by_age,
-                    death_rate_per_time_step,2, 0.24,1, [1,1],1,[1,1],1)
+                        [0,0], [1.1,1], 1, 1, [0.0002,0.00005], 2,1, 1, [1,1],
+                    death_prob_by_age, ages_for_deaths, 0.8,[1,1], 0.9)
 @testset "birth_of_human" begin
     @test new_pop[1]==[2,4,0]
 end
 @testset "birth_of_human" begin
-    @test new_pop[4]==[[2,3,4],[6,3,4],[]]
+    @test new_pop[5]==[[2,3,4],[6,3,4],[]]
 end
 
 @testset "birth_of_human" begin
-    @test new_pop[5]==[15,7,0]
+    @test new_pop[6]==[15,7,0]
 end
 
 
@@ -476,11 +490,6 @@ time_step = 10
 num_time_steps = 1
 
 
-death_prob_by_age = [0.0656, 0.0093, 0.003, 0.0023, 0.0027, 0.0038, 0.0044, 0.0048, 0.0053,
-                          0.0065, 0.0088, 0.0106, 0.0144, 0.021, 0.0333, 0.0529, 0.0851, 0.1366, 0.2183, 0.2998 , 0.3698, 1]
-
-ages_for_deaths = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
-                        65, 70, 75, 80, 85, 90, 95, 100, 110]
 
 @testset "update_env" begin
     @test update_env(num_time_steps, [1,3,4], [2,5,8], human_cercariae, female_worms, male_worms,
