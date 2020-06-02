@@ -235,21 +235,24 @@ end
     @test update_vaccine(vaccine_info, 100)[4] == Inf
 end
 
-
+(ages, death_ages, gender, predisposition,  human_cercariae, eggs,
+                            vac_status, treated, female_worms, male_worms,
+                            vaccinated, age_contact_rate, time_step,
+                            adherence, access)
 
 @testset "death_of_human" begin
-    @test death_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
+    @test death_of_human([2,4], [0,6], [1,0], [0.0002,0.00005], [[2,3,4],[6,3,4]], [15,7],
                                 [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
-                                [0,0], [1,1], [0.0002,0.00005], 1,
-                                [1,1], [1,1])[1] == [2,4]
+                                [0,0], [1,1], 1,
+                                [1,1], [1,1])[1] == [4]
 
 end
 
 @testset "death_of_human" begin
-    @test death_of_human([2,4], [0,0], [0.4,0.6], [[2,3,4],[6,3,4]], [15,7],
+    @test death_of_human([2,4], [0,6], [1,0], [0.0002,0.00005], [[2,3,4],[6,3,4]], [15,7],
                                 [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
-                                [0,0], [1,1], [2,0.00005], 1,
-                                [1,1], [1,1])[1] == [4]
+                                [0,0], [1,1], 1,
+                                [1,1], [1,1])[4] == [0.00005]
 
 end
 
@@ -443,6 +446,7 @@ min_age_vaccine = 5
 max_age_vaccine = 16
 vaccine_gender = [0,1]
 ages = [4,10,9]
+death_ages = [5,11,66]
 human_cercariae = [[1,2],[9,2,4], [ 0,5]]
 eggs = [1,2,3]
 treated = [1,1,1]
@@ -475,17 +479,24 @@ end
 time_step = 10
 num_time_steps = 1
 
+
+death_prob_by_age = [0.0656, 0.0093, 0.003, 0.0023, 0.0027, 0.0038, 0.0044, 0.0048, 0.0053,
+                          0.0065, 0.0088, 0.0106, 0.0144, 0.021, 0.0333, 0.0529, 0.0851, 0.1366, 0.2183, 0.2998 , 0.3698, 1]
+
+ages_for_deaths = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
+                        65, 70, 75, 80, 85, 90, 95, 100, 110]
+
 @testset "update_env" begin
-    @test update_env(num_time_steps, [1,3,4], human_cercariae, female_worms, male_worms,
+    @test update_env(num_time_steps, [1,3,4], [2,5,8], human_cercariae, female_worms, male_worms,
     time_step, 5.7,
     eggs, 0.34, 0.03, 2,
     vac_status, gender, 0.24,predis_weight,
     [0.2, 0.8,1], treated, vaccine_effectiveness,
-    0.0005,
-    [0,0,0], [0.02,0.04,0.03], [0.02,0.04,0.03],env_miracidia,
+    0.0005, death_prob_by_age, ages_for_deaths,
+    [0,0,0], [0.02,0.04,0.03], env_miracidia,
     env_cercariae, 0.0005, 1, 1,
     1, 1, contact_rates_by_age,
-    death_rate_per_time_step,  28*time_step/(1000*365), [], [], [1,1,1], 1,
+    28*time_step/(1000*365), [], [], [1,1,1], 1,
     [1,1,1], 1,
     1/24,1)[1] ==  [1+(num_time_steps*time_step/365),3+(num_time_steps*time_step/365),4+(num_time_steps*time_step/365)]
 end
