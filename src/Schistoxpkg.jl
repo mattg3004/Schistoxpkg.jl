@@ -46,6 +46,8 @@ export collect_prevs
 export run_repeated_sims_no_population_change
 export run_repeated_sims_random_births_deaths
 export create_contact_settings
+export get_death_age
+export generate_ages_and_deaths
 export out
 
 
