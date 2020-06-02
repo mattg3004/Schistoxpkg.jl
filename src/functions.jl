@@ -1922,7 +1922,7 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
     max_fecundity, r, worm_stages, predis_aggregation, predis_weight,vaccine_effectiveness,
     density_dependent_fecundity, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
-    death_rate_per_time_step, birth_rate, mda_info, vaccine_info, mda_adherence, mda_access,
+    death_prob_by_age, ages_for_deaths, birth_rate, mda_info, vaccine_info, mda_adherence, mda_access,
     record_frequency, filename, human_cercariae_prop)
 
     times = []
@@ -1941,6 +1941,7 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
          vaccinated_equ, age_contact_rate_equ, env_miracidia_equ ,
          env_cercariae_equ, adherence_equ, access_equ =
         load_population_from_file(filename, N, true)
+
 
         ages, death_ages, gender, predisposition,  human_cercariae, eggs,
         vac_status, treated, female_worms, male_worms,
@@ -1992,6 +1993,9 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
          vaccinated_equ, age_contact_rate_equ, env_miracidia_equ ,
          env_cercariae_equ, adherence_equ, access_equ =
         load_population_from_file(filename, N, true)
+
+
+
 
         ages, death_ages, gender, predisposition,  human_cercariae, eggs,
         vac_status, treated, female_worms, male_worms,
