@@ -556,19 +556,17 @@ end
 
 function death_of_human(ages, death_ages, gender, predisposition,  human_cercariae, eggs,
                             vac_status, treated, female_worms, male_worms,
-                            vaccinated, age_contact_rate, death_rate, time_step,
+                            vaccinated, age_contact_rate, time_step,
                             adherence, access)
 
 #= loop through the population, and based on the death rate,
 delete individuals from the population  =#
-    println(length(death_ages))
-    println(length(ages))
+
         time_to_death = death_ages .- ages
 
 #= if there is anyone who is older than their death age, then find them =#
         x = findall(time_to_death .< 0)
         k = length(x)
-        println(x)
         if k > 0
             for j in k:-1:1
                 i = x[j]
@@ -584,7 +582,6 @@ delete individuals from the population  =#
                 splice!(male_worms, i)
                 splice!(vaccinated, i)
                 splice!(age_contact_rate, i)
-                splice!(death_rate, i)
                 splice!(adherence, i)
                 splice!(access, i)
             end
@@ -594,7 +591,7 @@ delete individuals from the population  =#
 #=  return the arrays  =#
     return ages, death_ages, gender, predisposition,  human_cercariae, eggs,
                                 vac_status, treated, female_worms, male_worms,
-                                vaccinated, age_contact_rate, death_rate,
+                                vaccinated, age_contact_rate,
                                 adherence, access
 end
 
@@ -879,17 +876,17 @@ end
 
 # function to update the variable arrays a given number of times (num_time_steps)
 
-function update_env(num_time_steps, ages, human_cercariae, female_worms, male_worms,
+function update_env(num_time_steps, ages, death_ages,
+    human_cercariae, female_worms, male_worms,
     time_step, average_worm_lifespan,
     eggs, max_fecundity, r, worm_stages,
     vac_status, gender, predis_aggregation,predis_weight,
     predisposition, treated, vaccine_effectiveness,
-    density_dependent_fecundity,
-    vaccinated, age_contact_rate, death_rate, env_miracidia,
+    density_dependent_fecundity, death_prob_by_age, ages_for_deaths,
+    vaccinated, age_contact_rate, env_miracidia,
     env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
-    death_rate_per_time_step, birth_rate, mda_info, vaccine_info, adherence, mda_adherence,
-    mda_access, access,
+    birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
     record_frequency, human_cercariae_prop)
 
     update_contact_death_rates = 1/5
@@ -973,12 +970,13 @@ function update_env(num_time_steps, ages, human_cercariae, female_worms, male_wo
 #=  update population due to death  =#
         ages, death_ages, gender, predisposition,  human_cercariae, eggs,
                                     vac_status, treated, female_worms, male_worms,
-                                    vaccinated, age_contact_rate, death_rate,
+                                    vaccinated, age_contact_rate,
                                     adherence, access =
             death_of_human(ages, death_ages, gender, predisposition,  human_cercariae, eggs,
                                         vac_status, treated, female_worms, male_worms,
                                         vaccinated, age_contact_rate,  time_step,
                                         adherence, access)
+
 
 #=  uptake larvae into humans from the environment  =#
         env_cercariae, human_cercariae, env_miracidia =
@@ -1783,7 +1781,7 @@ function update_env_keep_population_same(num_time_steps, ages, death_ages,
 
         sim_time += time_step/365
 
-
+        ages .+= time_step/365
 #=  mature larvae within humans  =#
    human_cercariae, female_worms, male_worms =
             human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
@@ -1815,7 +1813,7 @@ function update_env_keep_population_same(num_time_steps, ages, death_ages,
     #=  update population due to death  =#
     ages, death_ages, gender, predisposition,  human_cercariae, eggs,
                                 vac_status, treated, female_worms, male_worms,
-                                vaccinated, age_contact_rate, death_rate,
+                                vaccinated, age_contact_rate,
                                 adherence, access =
         death_of_human(ages, death_ages, gender, predisposition,  human_cercariae, eggs,
                                     vac_status, treated, female_worms, male_worms,
