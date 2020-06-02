@@ -235,10 +235,6 @@ end
     @test update_vaccine(vaccine_info, 100)[4] == Inf
 end
 
-(ages, death_ages, gender, predisposition,  human_cercariae, eggs,
-                            vac_status, treated, female_worms, male_worms,
-                            vaccinated, age_contact_rate, time_step,
-                            adherence, access)
 
 @testset "death_of_human" begin
     @test death_of_human([2,4], [0,6], [1,0], [0.0002,0.00005], [[2,3,4],[6,3,4]], [15,7],
