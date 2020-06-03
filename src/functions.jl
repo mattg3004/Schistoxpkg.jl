@@ -1231,7 +1231,8 @@ end
 
 
 function save_population_to_file(filename, ages, gender, predisposition, human_cercariae, eggs, vac_status, treated,
-        female_worms, male_worms, vaccinated, age_contact_rate, death_ages, env_miracidia, env_cercariae)
+        female_worms, male_worms, vaccinated, age_contact_rate, death_ages, env_miracidia, env_cercariae, adherence, access)
+
     save(filename, "ages", ages ,  "gender", gender,"predisposition",   predisposition,
         "human_cercariae", human_cercariae, "eggs", eggs,
         "vac_status", vac_status,"treated", treated, "female_worms",  female_worms, "male_worms", male_worms,
