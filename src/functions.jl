@@ -407,7 +407,7 @@ function worm_maturity(female_worms, male_worms, worm_stages,
     for i in 1:size(female_worms)[1]
 
 # probability of aging out of category/ dying
-        p = time_step / ( worm_stages * 365 * average_worm_lifespan)
+        p = time_step * worm_stages / ( 365 * average_worm_lifespan)
 
 # kill appropriate number of worms in the final stage
         @inbounds n = female_worms[i][worm_stages]
