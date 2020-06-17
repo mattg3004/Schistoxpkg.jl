@@ -123,9 +123,6 @@ vac_status = [0,0,0,0,0]
 vaccine_effectiveness = 0.95
 community = 1,2,3,4,1
 community_contact_rate = 1,1,1,0
-human_cercariae, env_miracidia, env_cercariae, time_step, contact_rate,
-    community, community_contact_rate,
-    predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop
 
 @testset "cercariae_uptake(max_age, scenario)" begin
     @test isapprox(cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
