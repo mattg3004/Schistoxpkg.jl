@@ -121,9 +121,15 @@ predisposition  = [0.1, 0.21, 1.4, 3.1, 100]
 age_contact_rate = [0.0, 0.06, 0.12, 0.02, 0.06]
 vac_status = [0,0,0,0,0]
 vaccine_effectiveness = 0.95
+community = 1,2,3,4,1
+community_contact_rate = 1,1,1,0
+human_cercariae, env_miracidia, env_cercariae, time_step, contact_rate,
+    community, community_contact_rate,
+    predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop
 
 @testset "cercariae_uptake(max_age, scenario)" begin
     @test isapprox(cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
+    community, community_contact_rate,
         copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness), 1)[3],  [10, 10, 10, 1])
 end
 
@@ -139,6 +145,7 @@ vaccine_effectiveness = 0.95
 
 @testset "cercariae_uptake" begin
     @test isapprox(cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
+    community, community_contact_rate,
         copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness),1)[2][1][2],  0)
 end
 
@@ -155,6 +162,7 @@ vaccine_effectiveness = 0.95
 
 @testset "cercariae_uptake" begin
     @test cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
+    community, community_contact_rate,
         copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness),1)[2][5][2] >0
 end
 
@@ -171,6 +179,7 @@ vaccine_effectiveness = 1
 
 @testset "cercariae_uptake" begin
     @test cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
+    community, community_contact_rate,
         copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness),1)[2][5][2] == 0
 end
 
@@ -281,25 +290,27 @@ death_prob_by_age = [0.0656, 0.0093, 0.003, 0.0023, 0.0027, 0.0038, 0.0044, 0.00
 ages_for_deaths = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
                         65, 70, 75, 80, 85, 90, 95, 100, 110]
 
+
+
 @testset "birth_of_human" begin
-    @test birth_of_human([2,4], [0.44,0], [0,0], [1.1,1], [[2,3,4],[6,3,4]], [15,7],
+    @test birth_of_human([2,4], [0.44,0], [0,0], [1.1,1], [2,4],[[2,3,4],[6,3,4]], [15,7],
                             [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
                             [0,0], [1.1,1], 1, 1, [0.0002,0.00005], 2,1, 1, [1,1],
-                        death_prob_by_age, ages_for_deaths, 0.8,[1,1], 0.9)[1] == [2,4,0]
+                        death_prob_by_age, ages_for_deaths,[1,2,3,4], 0.8,[1,1], 0.9)[1] == [2,4,0]
 end
-new_pop = birth_of_human([2,4], [0.44,0], [0,0], [1.1,1], [[2,3,4],[6,3,4]], [15,7],
+new_pop = birth_of_human([2,4], [0.44,0], [0,0], [1.1,1],[2,4], [[2,3,4],[6,3,4]], [15,7],
                         [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
                         [0,0], [1.1,1], 1, 1, [0.0002,0.00005], 2,1, 1, [1,1],
-                    death_prob_by_age, ages_for_deaths, 0.8,[1,1], 0.9)
+                    death_prob_by_age, ages_for_deaths,[1,2,3,4,5], 0.8,[1,1], 0.9)
 @testset "birth_of_human" begin
     @test new_pop[1]==[2,4,0]
 end
 @testset "birth_of_human" begin
-    @test new_pop[5]==[[2,3,4],[6,3,4],[]]
+    @test new_pop[6]==[[2,3,4],[6,3,4],[]]
 end
 
 @testset "birth_of_human" begin
-    @test new_pop[6]==[15,7,0]
+    @test new_pop[7]==[15,7,0]
 end
 
 
@@ -415,20 +426,23 @@ contact_rates_by_age = make_age_contact_rate_array(max_age, scenario, [], [])
 death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
 predis_weight = 1
 
-pop = create_population(N, max_age, initial_worms, contact_rates_by_age,
+N_communities= 4
+community_probs = [1,2,1,3]
+
+pop = create_population(N, max_age, N_communities, community_probs, initial_worms, contact_rates_by_age,
     death_rate_per_time_step,worm_stages, female_factor, male_factor,
     initial_miracidia, initial_miracidia_days, predis_aggregation, predis_weight, time_step,
     mda_adherence, mda_access)
 
 # These should all get give the initial value
 @testset "miracidia" begin
-    @test all(pop[13] .== initial_miracidia)
+    @test all(pop[14] .== initial_miracidia)
 end
 
 # Worms should be 0:ininity
 # Get first column of worms
-mworm1 = [pop[8][i][1] for i=1:length(pop[8])]
-fworm1 = [pop[9][i][1] for i=1:length(pop[9])]
+mworm1 = [pop[9][i][1] for i=1:length(pop[9])]
+fworm1 = [pop[10][i][1] for i=1:length(pop[10])]
 @testset "wormsm" begin
     @test all(mworm1 .>= 0)
 end
@@ -471,28 +485,42 @@ access = [1,1,1]
 @testset "vaccinate" begin
 @test isapprox(vaccinate(vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_effectiveness,
         vaccine_gender, ages, female_worms, male_worms, human_cercariae, eggs,
-        treated, vaccine_duration, vac_status, vaccine_round, gender, adherence, access)[1],
+        treated, vaccine_duration, vac_status, vaccine_round, gender, access)[1],
         [[1,1],[0,0],[0,0]])
 end
 
 female_worms= [[1,1], [2,1], [2,4]]
 male_worms= [[1,1], [2,1], [2,5]]
-adherence = [1,0,0]
+access = [1,1,1]
+
+
 
 @testset "vaccinate" begin
 @test isapprox(vaccinate(vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_effectiveness,
             vaccine_gender, ages, female_worms, male_worms, human_cercariae, eggs,
-            treated, vaccine_duration, vac_status, vaccine_round, gender, adherence,access)[1],
+            treated, vaccine_duration, vac_status, vaccine_round, gender,access)[1],
+            [[1,1],[0,0],[0,0]])
+end
+
+female_worms= [[1,1], [2,1], [2,4]]
+male_worms= [[1,1], [2,1], [2,5]]
+access = [1,0,0]
+
+@testset "vaccinate" begin
+@test isapprox(vaccinate(vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_effectiveness,
+            vaccine_gender, ages, female_worms, male_worms, human_cercariae, eggs,
+            treated, vaccine_duration, vac_status, vaccine_round, gender,access)[1],
             [[1,1],[2,1],[2,4]])
 end
 
 time_step = 10
 num_time_steps = 1
-
-
+community = 1,3,1
+community_contact_rate = 1,0.5, 1
+community_probs = 1,2,1
 
 @testset "update_env" begin
-    @test update_env(num_time_steps, [1,3,4], [2,5,8], human_cercariae, female_worms, male_worms,
+    @test update_env(num_time_steps, [1,3,4], [2,5,8],community, community_contact_rate, community_probs, human_cercariae, female_worms, male_worms,
     time_step, 5.7,
     eggs, 0.34, 0.03, 2,
     vac_status, gender, 0.24,predis_weight,
