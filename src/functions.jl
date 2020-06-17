@@ -173,7 +173,11 @@ function create_population(N, max_age, N_communities, community_probs, initial_w
     if length(community_probs) != N_communities
         error("must provide probabilities for membership of each community")
     else
+        community_selection = 1
+    if N_communities > 1
         community_selection = cumsum(community_probs)/sum(community_probs)
+    end
+
         community =  Int64[]
         female_worms =  Array{Int64}[]
         male_worms = Array{Int64}[]
@@ -542,13 +546,13 @@ end
 
 # hatch the eggs in the humans into the environment
 
-function miracidia_production(eggs, env_miracidia, time_step, age_contact_rate)
+function miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate)
 #= as we can step forward an arbitrary number of days at a time, we multiply the number of miracidia by the
     length of the forward step, assuming that each of the last given number of days were equivalent to each other
 =#
     max_contact_rate = maximum(age_contact_rate)
     xx = age_contact_rate ./ max_contact_rate
-    released_eggs = xx .* eggs
+    released_eggs = xx .* eggs .* community_contact_rate
     push!(env_miracidia,  round(sum(released_eggs)))
     return env_miracidia
 end
@@ -623,7 +627,10 @@ function birth_of_human(ages, death_ages, gender, predisposition, community, hum
 # fill female and male worms array
     f_worms = fill(0, worm_stages)
     m_worms = fill(0, worm_stages)
-    community_selection = cumsum(community_probs)/sum(community_probs)
+    community_selection = 1
+    if N_communities > 1
+        community_selection = cumsum(community_probs)/sum(community_probs)
+    end
     push!(community, findall(community_selection .> rand())[1])
 
 # push into arrays
@@ -966,7 +973,7 @@ function update_env(num_time_steps, ages, death_ages, community, community_conta
         vac_status = vac_status .- time_step/365
 
 #=  hacth the human eggs into the environment  =#
-        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate)
+        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate)
 
 #=  update population due to death  =#
         ages, death_ages, gender, predisposition,  human_cercariae, eggs,
@@ -1208,6 +1215,7 @@ function load_population_from_file(filename, chosen_pop_size, full_size)
     env_cercariae = get!(d, "env_cercariae",1)
     adherence = get!(d, "adherence",1)
     access = get!(d, "access",1)
+    community = get!(d, "community",1)
 
     if full_size != true
         x = randperm(length(ages))[1:choose_pop_size];
@@ -1226,19 +1234,20 @@ function load_population_from_file(filename, chosen_pop_size, full_size)
         death_ages = death_ages[x]
         adherence = adherence[x]
         access = access[x]
+        community = community[x]
     end
-     return ages, death_ages, gender, predisposition, human_cercariae, eggs, vac_status, treated,
+     return ages, death_ages, gender, predisposition, community, human_cercariae, eggs, vac_status, treated,
         female_worms, male_worms, vaccinated, age_contact_rate,
         env_miracidia, env_cercariae, adherence, access
 end
 
 
 
-function save_population_to_file(filename, ages, gender, predisposition, human_cercariae, eggs, vac_status, treated,
+function save_population_to_file(filename, ages, gender, predisposition, community, human_cercariae, eggs, vac_status, treated,
         female_worms, male_worms, vaccinated, age_contact_rate, death_ages, env_miracidia, env_cercariae, adherence, access)
 
     save(filename, "ages", ages ,  "gender", gender,"predisposition",   predisposition,
-        "human_cercariae", human_cercariae, "eggs", eggs,
+        "human_cercariae", human_cercariae, "eggs", eggs, "community", community,
         "vac_status", vac_status,"treated", treated, "female_worms",  female_worms, "male_worms", male_worms,
         "vaccinated", vaccinated,  "age_contact_rate", age_contact_rate, "death_ages", death_ages,
         "env_miracidia",env_miracidia, "env_cercariae", env_cercariae, "adherence", adherence, "access", access)
@@ -1420,7 +1429,10 @@ function create_population_specified_ages(N, N_communities, community_probs, ini
     if length(community_probs) != N_communities
         error("must provide probabilities for membership of each community")
     else
+        community_selection = 1
+    if N_communities > 1
         community_selection = cumsum(community_probs)/sum(community_probs)
+    end
         community =  Int64[]
     # initialize all the arrays we will keep track of over time
 
@@ -1562,7 +1574,7 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 
 #=  hacth the human eggs into the environment  =#
         # env_miracidia = miracidia_production_by_contact_rate(eggs, env_miracidia, time_step, age_contact_rate)
-        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate)
+        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate)
 
 #=  uptake larvae into humans from the environment  =#
         env_cercariae, human_cercariae, env_miracidia =
@@ -1678,7 +1690,7 @@ function update_env_keep_population_same(num_time_steps, ages, death_ages,commun
         vac_status = vac_status .- time_step/365
 
 #=  hacth the human eggs into the environment  =#
-        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate)
+        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate)
 
     #=  update population due to death  =#
     ages, death_ages, gender, predisposition,  human_cercariae, eggs,
@@ -1837,18 +1849,6 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
                     record_frequency,human_cercariae_prop);
 
 
-                    num_time_steps, ages, death_ages,community, community_contact_rate, community_probs,
-                        human_cercariae, female_worms, male_worms,
-                        time_step, average_worm_lifespan,
-                        eggs, max_fecundity, r, worm_stages,
-                        vac_status, gender, predis_aggregation,predis_weight,
-                        predisposition, treated, vaccine_effectiveness,
-                        density_dependent_fecundity, death_prob_by_age, ages_for_deaths,
-                        vaccinated, age_contact_rate, env_miracidia,
-                        env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
-                        female_factor, male_factor, contact_rates_by_age,
-                        birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
-                        record_frequency, human_cercariae_prop
 
         times, prev, sac_prev, high_burden, high_burden_sac, adult_prev = collect_prevs(times, prev, sac_prev, high_burden,
         high_burden_sac, adult_prev, record, run)
@@ -1881,7 +1881,7 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
 
     for run in 1:num_repeats
 
-        ages_equ, death_ages_equ, gender_equ, predisposition_equ, human_cercariae_equ,
+        ages_equ, death_ages_equ, gender_equ, predisposition_equ, community_equ,human_cercariae_equ,
          eggs_equ, vac_status_equ, treated_equ,female_worms_equ, male_worms_equ,
          vaccinated_equ, age_contact_rate_equ, env_miracidia_equ ,
          env_cercariae_equ, adherence_equ, access_equ =

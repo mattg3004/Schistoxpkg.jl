@@ -204,7 +204,22 @@ end
 
 
 @testset "miracidia_production" begin
-    @test miracidia_production([1,2,3],[6,7,6], 10, [1,1,1])[1] == 6
+    @test miracidia_production([1,2,3],[2,4,1], 10, [1,1,1],[1])[1] == 2
+end
+
+
+@testset "miracidia_production" begin
+    @test miracidia_production([1,2,3],[2,4,1], 10, [1,1,1],[1])[end] == 6
+end
+
+
+@testset "miracidia_production" begin
+    @test miracidia_production([1,2,3],[2,4,1], 10, [1,1,1],[0])[end] == 0
+end
+
+
+@testset "miracidia_production" begin
+    @test miracidia_production([1,2,3],[2,4,1], 10, [1,1,1],[0.5])[end] == 3
 end
 
 
