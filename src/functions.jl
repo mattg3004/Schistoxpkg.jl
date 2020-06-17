@@ -628,7 +628,7 @@ function birth_of_human(ages, death_ages, gender, predisposition, community, hum
     f_worms = fill(0, worm_stages)
     m_worms = fill(0, worm_stages)
     community_selection = 1
-    if N_communities > 1
+    if length(community_probs) > 1
         community_selection = cumsum(community_probs)/sum(community_probs)
     end
     push!(community, findall(community_selection .> rand())[1])
