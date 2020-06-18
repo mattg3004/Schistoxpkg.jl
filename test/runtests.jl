@@ -203,23 +203,24 @@ end
 end
 
 
+
 @testset "miracidia_production" begin
-    @test miracidia_production([1,2,3],[2,4,1], 10, [1,1,1],[1])[1] == 2
+    @test miracidia_production([1,2,3],[2,4,1], 10, [1,1,1],[1,1,2], [1,2,3])[1] == 2
 end
 
 
 @testset "miracidia_production" begin
-    @test miracidia_production([1,2,3],[2,4,1], 10, [1,1,1],[1])[end] == 6
+    @test miracidia_production([1,2,3],[2,4,1], 10, [1,1,1],[1,1,1.2], [1,2,3])[end] == 6
 end
 
 
 @testset "miracidia_production" begin
-    @test miracidia_production([1,2,3],[2,4,1], 10, [1,1,1],[0])[end] == 0
+    @test miracidia_production([1,2,3],[2,4,1], 10, [1,1,1],[0,1,0], [1,2,3])[end] == 2
 end
 
 
 @testset "miracidia_production" begin
-    @test miracidia_production([1,2,3],[2,4,1], 10, [1,1,1],[0.5])[end] == 3
+    @test miracidia_production([1,2,3],[2,4,1], 10, [1,1,1],[0.5,0.5,0.5], [1,2,3])[end] == 6
 end
 
 
@@ -304,26 +305,26 @@ ages_for_deaths = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
 
 
 
-@testset "birth_of_human" begin
-    @test birth_of_human([2,4], [0.44,0], [0,0], [1.1,1], [2,4],[[2,3,4],[6,3,4]], [15,7],
+    @testset "birth_of_human" begin
+        @test birth_of_human([2,4], [0.44,0], [0,0], [1.1,1], [2,4],[[2,3,4],[6,3,4]], [15,7],
+                                [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
+                                [0,0], [1.1,1], 1, 1, [0.0002,0.00005], 2,1, 1, [1,1],
+                            death_prob_by_age, ages_for_deaths,[1,2,3,4], 0.8,[1,1], 0.9)[1] == [2,4,0]
+    end
+    new_pop = birth_of_human([2,4], [0.44,0], [0,0], [1.1,1],[2,4], [[2,3,4],[6,3,4]], [15,7],
                             [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
                             [0,0], [1.1,1], 1, 1, [0.0002,0.00005], 2,1, 1, [1,1],
-                        death_prob_by_age, ages_for_deaths,[1,2,3,4], 0.8,[1,1], 0.9)[1] == [2,4,0]
-end
-new_pop = birth_of_human([2,4], [0.44,0], [0,0], [1.1,1],[2,4], [[2,3,4],[6,3,4]], [15,7],
-                        [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
-                        [0,0], [1.1,1], 1, 1, [0.0002,0.00005], 2,1, 1, [1,1],
-                    death_prob_by_age, ages_for_deaths,[1,2,3,4,5], 0.8,[1,1], 0.9)
-@testset "birth_of_human" begin
-    @test new_pop[1]==[2,4,0]
-end
-@testset "birth_of_human" begin
-    @test new_pop[6]==[[2,3,4],[6,3,4],[]]
-end
+                        death_prob_by_age, ages_for_deaths,[1,2,3,4,5], 0.8,[1,1], 0.9)
+    @testset "birth_of_human" begin
+        @test new_pop[1]==[2,4,0]
+    end
+    @testset "birth_of_human" begin
+        @test new_pop[6]==[[2,3,4],[6,3,4],[]]
+    end
 
-@testset "birth_of_human" begin
-    @test new_pop[7]==[15,7,0]
-end
+    @testset "birth_of_human" begin
+        @test new_pop[7]==[15,7,0]
+    end
 
 
 

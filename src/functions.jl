@@ -546,13 +546,16 @@ end
 
 # hatch the eggs in the humans into the environment
 
-function miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate)
+function miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate, community)
 #= as we can step forward an arbitrary number of days at a time, we multiply the number of miracidia by the
     length of the forward step, assuming that each of the last given number of days were equivalent to each other
 =#
     max_contact_rate = maximum(age_contact_rate)
     xx = age_contact_rate ./ max_contact_rate
-    released_eggs = xx .* eggs .* community_contact_rate
+    released_eggs = 0
+    for i in 1:length(eggs)
+        released_eggs = released_eggs +  xx[i] * eggs[i] * community_contact_rate[community[i]]/maximum(community_contact_rate)
+    end
     push!(env_miracidia,  round(sum(released_eggs)))
     return env_miracidia
 end
@@ -973,7 +976,7 @@ function update_env(num_time_steps, ages, death_ages, community, community_conta
         vac_status = vac_status .- time_step/365
 
 #=  hacth the human eggs into the environment  =#
-        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate)
+        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate, community)
 
 #=  update population due to death  =#
         ages, death_ages, gender, predisposition,  human_cercariae, eggs,
@@ -1573,8 +1576,7 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 
 
 #=  hacth the human eggs into the environment  =#
-        # env_miracidia = miracidia_production_by_contact_rate(eggs, env_miracidia, time_step, age_contact_rate)
-        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate)
+        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate, community)
 
 #=  uptake larvae into humans from the environment  =#
         env_cercariae, human_cercariae, env_miracidia =
@@ -1690,7 +1692,7 @@ function update_env_keep_population_same(num_time_steps, ages, death_ages,commun
         vac_status = vac_status .- time_step/365
 
 #=  hacth the human eggs into the environment  =#
-        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate)
+        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate, community)
 
     #=  update population due to death  =#
     ages, death_ages, gender, predisposition,  human_cercariae, eggs,
