@@ -532,7 +532,6 @@ otherwise the number of eggs is trivially 0 =#
 
 # choose from NB
                 eggs_num = rand(NegativeBinomial(NB_r,p))[1]
-                eggs_num = round(mean_eggs)
 
             else
                 eggs_num = 0
