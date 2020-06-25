@@ -413,24 +413,26 @@ end
 function worm_maturity(female_worms, male_worms, worm_stages,
     average_worm_lifespan, time_step)
 
+
+
+# probability of aging out of category/ dying
+    p = time_step * worm_stages / ( 365 * average_worm_lifespan)
+
 # loop over the worms
     for i in 1:size(female_worms)[1]
 
-# probability of aging out of category/ dying
-        p = time_step * worm_stages / ( 365 * average_worm_lifespan)
-
 # kill appropriate number of worms in the final stage
-        @inbounds n = female_worms[i][worm_stages]
-        if(n>0)
+        n = female_worms[i][worm_stages]
+        if n > 0
             dis = Binomial(n, 1-p)
-            @inbounds female_worms[i][worm_stages] = rand(dis, 1)[1]
+            female_worms[i][worm_stages] = rand(dis, 1)[1]
         end
 
 
-        @inbounds n = male_worms[i][worm_stages]
+        n = male_worms[i][worm_stages]
         if n > 0
             dis = Binomial(n, 1-p)
-            @inbounds male_worms[i][worm_stages] = rand(dis, 1)[1]
+            male_worms[i][worm_stages] = rand(dis, 1)[1]
         end
 
 #=
@@ -440,14 +442,14 @@ function worm_maturity(female_worms, male_worms, worm_stages,
 
         for j in (worm_stages-1):-1:1
 #=   choose the number of male and female worms to age from one stage to the next   =#
-            @inbounds aging_females = rand(Binomial(female_worms[i][j], p), 1)[1]
-            @inbounds aging_males = rand(Binomial(male_worms[i][j], p), 1)[1]
+            aging_females = rand(Binomial(female_worms[i][j], p), 1)[1]
+            aging_males = rand(Binomial(male_worms[i][j], p), 1)[1]
 
 #=   add and subtract the number of worms from the appropriate categories   =#
-            @inbounds female_worms[i][j+1] += aging_females
-            @inbounds female_worms[i][j] -= aging_females
-            @inbounds male_worms[i][j+1] += aging_males
-            @inbounds male_worms[i][j] -= aging_males
+            female_worms[i][j+1] += aging_females
+            female_worms[i][j] -= aging_females
+            male_worms[i][j+1] += aging_males
+            male_worms[i][j] -= aging_males
         end
     end
 
@@ -530,6 +532,7 @@ otherwise the number of eggs is trivially 0 =#
 
 # choose from NB
                 eggs_num = rand(NegativeBinomial(NB_r,p))[1]
+                eggs_num = mean_eggs
 
             else
                 eggs_num = 0
