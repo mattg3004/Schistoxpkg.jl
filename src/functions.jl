@@ -501,8 +501,6 @@ from the mean and aggregation in the function below
 # inputs
 
 # r - aggregation factor for NB distribution
-
-
 function egg_production(eggs, max_fecundity, r, worm_pairs,
                         total_female_worms, total_male_worms,
                         density_dependent_fecundity, time_step)
@@ -1858,7 +1856,12 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
         high_burden_sac, adult_prev, record, run)
 
     end
-    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev
+    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev,
+    ages, death_ages, gender, predisposition, community, human_cercariae, eggs,
+    vac_status, treated, female_worms, male_worms,
+    vaccinated, age_contact_rate,
+    env_miracidia, env_cercariae, adherence,access,
+    record
 end
 
 
