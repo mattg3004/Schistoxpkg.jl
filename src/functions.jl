@@ -307,20 +307,21 @@ end
 # and the number of larvae in the environment. number of larvae taken up is chosen
 # from a Poisson distribution
 
-function cercariae_uptake(human_cercariae, env_miracidia, env_cercariae, time_step, contact_rate,
-    community, community_contact_rate,
-    predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop)
+function cercariae_uptake(env_miracidia, env_cercariae, time_step, contact_rate,
+    community, community_contact_rate, female_worms, male_worms,
+    predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop,
+    miracidia_maturity_time)
 
 #= we want the human population to randomly pick up larvae.
 therefore we want to shuffle the population.
 the following lines make a random permutation of indices for the population=#
-    k = size(human_cercariae)[1]
+    k = size(female_worms)[1]
     x = randperm(k)
     uptakes = 0
 #= assign larvae which have been in the environment for 40 days to become infective.
 then delete those larvae from the environmental larvae =#
 
-    if  length(env_miracidia) > (40 / time_step)
+    if  length(env_miracidia) > (miracidia_maturity_time / time_step)
         env_cercariae += (env_miracidia[1] * human_cercariae_prop)
         splice!(env_miracidia, 1)
     end
@@ -334,22 +335,28 @@ then delete those larvae from the environmental larvae =#
 #= if there are still infective larvae in the environment,
 we will uptake from choose from Poisson
 distribution. otherwise, just uptake 0. =#
-        if env_cercariae > 0
+    #    if env_cercariae > 0
 # calculate the rate of the poisson distribution
             @inbounds  pois_rate  = predisposition[j] * contact_rate * age_contact_rate[j] * community_contact_rate[comm] *
                     env_cercariae * time_step / k
 
 # reduce the rate according to the effectiveness of the vaccine (if any is given)
-            @inbounds  pois_rate = pois_rate * (1 - (vac_status[j] > 0) * vaccine_effectiveness);
+          # pois_rate = pois_rate * (1 - (vac_status[j] > 0) * vaccine_effectiveness);
 
 # choose from the Poisson distribution
             uptake = rand(Poisson(pois_rate))
-        else
-            uptake = 0
-        end
+    #    else
+    #        uptake = 0
+    #    end
 
 # push the number of uptaken larvae into the human larvae array
-        push!(human_cercariae[j], uptake)
+        n = rand(Binomial(uptake, 0.5))
+
+        female_worms[j][1] += n
+        male_worms[j][1] += uptake - n
+
+
+        # push!(human_cercariae[j], uptake)
 
 # # reduce the infective larvae by the number of larvae uptaken
         env_cercariae -= uptake
@@ -357,7 +364,7 @@ distribution. otherwise, just uptake 0. =#
         end
 
 # return the infective, human and environmental larvae arrays
-    return env_cercariae, human_cercariae, env_miracidia
+    return env_cercariae, env_miracidia, female_worms, male_worms
 
 end
 
@@ -423,17 +430,17 @@ function worm_maturity(female_worms, male_worms, worm_stages,
 
 # kill appropriate number of worms in the final stage
         n = female_worms[i][worm_stages]
-        if n > 0
-            dis = Binomial(n, 1-p)
-            female_worms[i][worm_stages] = rand(dis, 1)[1]
-        end
+        # if n > 0
+            # dis = Binomial(n, 1-p)
+            female_worms[i][worm_stages] = rand(Binomial(n, 1-p))
+        # end
 
 
         n = male_worms[i][worm_stages]
-        if n > 0
-            dis = Binomial(n, 1-p)
-            male_worms[i][worm_stages] = rand(dis, 1)[1]
-        end
+        # if n > 0
+            # dis = Binomial(n, 1-p)
+            male_worms[i][worm_stages] = rand(Binomial(n, 1-p))
+        # end
 
 #=
      for aging worms, we do this in reverse order, which ensures the
@@ -442,8 +449,8 @@ function worm_maturity(female_worms, male_worms, worm_stages,
 
         for j in (worm_stages-1):-1:1
 #=   choose the number of male and female worms to age from one stage to the next   =#
-            aging_females = rand(Binomial(female_worms[i][j], p), 1)[1]
-            aging_males = rand(Binomial(male_worms[i][j], p), 1)[1]
+            aging_females = rand(Binomial(female_worms[i][j], p))
+            aging_males = rand(Binomial(male_worms[i][j], p))
 
 #=   add and subtract the number of worms from the appropriate categories   =#
             female_worms[i][j+1] += aging_females
@@ -465,7 +472,12 @@ end
 
 
 function calculate_worm_pairs(female_worms, male_worms)
-    return min.(sum.(female_worms), sum.(male_worms))
+    worm_pairs = Int64[]
+    for i in 1:length(female_worms)
+        push!(worm_pairs, min(sum(female_worms[i]), sum(male_worms[i]))
+    end
+    return(worm_pairs)
+    # return min.(sum.(female_worms), sum.(male_worms))
 end
 
 
@@ -502,7 +514,6 @@ from the mean and aggregation in the function below
 
 # r - aggregation factor for NB distribution
 function egg_production(eggs, max_fecundity, r, worm_pairs,
-                        total_female_worms, total_male_worms,
                         density_dependent_fecundity, time_step)
 
 
@@ -511,29 +522,31 @@ function egg_production(eggs, max_fecundity, r, worm_pairs,
 
 #= if we have a positive number of worms, then make calculation,
 otherwise the number of eggs is trivially 0 =#
-        @inbounds if worm_pairs[i] > 0
+        #@inbounds if worm_pairs[i] > 0
 
 # calculate the mean number of eggs we would expect
                 # @inbounds    mean_eggs =  max_fecundity * worm_pairs[i] *
                 #     exp(- density_dependent_fecundity *
                 #     (total_female_worms[i] + total_male_worms[i]))
-
-                    @inbounds    mean_eggs =  max_fecundity * worm_pairs[i] *
+wp = worm_pairs[i]
+wp = max(wp,0.000000001)
+                    @inbounds    mean_eggs =  max_fecundity * wp *
                         exp(- density_dependent_fecundity *
-                        (total_female_worms[i] ))
+                        (wp ))
 
 # calculate the number of successes
-                @inbounds      NB_r = r * worm_pairs[i]
+                @inbounds      NB_r = r * wp
 
 # calculate the probability of a success
                 p = NB_r/(NB_r+mean_eggs)
 
 # choose from NB
+
                 eggs_num = rand(NegativeBinomial(NB_r,p))[1]
 
-            else
-                eggs_num = 0
-            end
+        #    else
+        #        eggs_num = 0
+        #    end
 
 # put this selected number of eggs into the eggs array
             @inbounds eggs[i] = eggs_num
@@ -554,7 +567,7 @@ function miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, 
     xx = age_contact_rate ./ max_contact_rate
     released_eggs = 0
     for i in 1:length(eggs)
-        released_eggs = released_eggs +  xx[i] * eggs[i] * community_contact_rate[community[i]]/maximum(community_contact_rate)
+        released_eggs +=  xx[i] * eggs[i] * community_contact_rate[community[i]]/maximum(community_contact_rate)
     end
     push!(env_miracidia,  round(sum(released_eggs)))
     return env_miracidia
@@ -899,7 +912,7 @@ function update_env(num_time_steps, ages, death_ages, community, community_conta
     env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
     birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
-    record_frequency, human_cercariae_prop)
+    record_frequency, human_cercariae_prop,miracidia_maturity_time)
 
     update_contact_death_rates = 1/5
     sim_time = 0
@@ -964,7 +977,7 @@ function update_env(num_time_steps, ages, death_ages, community, community_conta
 
 #=  produce eggs in each human =#
         eggs = egg_production(eggs, max_fecundity, r, worm_pairs,
-                               total_female_worms, total_male_worms,
+
                                density_dependent_fecundity, time_step)
 
 #=  mature worms in each human  =#
@@ -990,10 +1003,12 @@ function update_env(num_time_steps, ages, death_ages, community, community_conta
 
 
 #=  uptake larvae into humans from the environment  =#
-        env_cercariae, human_cercariae, env_miracidia =
-                 cercariae_uptake(human_cercariae, env_miracidia, env_cercariae, time_step, contact_rate,
-                     community, community_contact_rate,
-                     predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop)
+        env_cercariae, env_miracidia, female_worms, male_worms =
+        cercariae_uptake(env_miracidia, env_cercariae, time_step, contact_rate,
+            community, community_contact_rate, female_worms, male_worms,
+            predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop,
+            miracidia_maturity_time)
+
 
 #= check if we are at a point in time in which an mda is scheduled to take place =#
         if sim_time >= next_mda_time
@@ -1288,7 +1303,7 @@ function run_simulation_from_loaded_population(num_time_steps, ages, human_cerca
         env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
         female_factor, male_factor, contact_rates_by_age,
         birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
-        record_frequency, human_cercariae_prop)
+        record_frequency, human_cercariae_prop,miracidia_maturity_time)
 
     return ages , gender, predisposition,  human_cercariae, eggs,
     vac_status, treated, female_worms, male_worms, vaccinated,
@@ -1370,7 +1385,7 @@ function run_simulation(N, max_age, initial_worms, time_step, worm_stages, femal
             env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
             female_factor, male_factor, contact_rates_by_age,
             birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
-            record_frequency, human_cercariae_prop)
+            record_frequency, human_cercariae_prop,miracidia_maturity_time)
 
     return ages , gender, predisposition,  human_cercariae, eggs,
     vac_status, treated, female_worms, male_worms, vaccinated,
@@ -1529,7 +1544,8 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
     predisposition, treated, vaccine_effectiveness,
     density_dependent_fecundity,vaccinated, env_miracidia,
     env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
-    female_factor, male_factor, contact_rates_by_age, record_frequency, age_contact_rate,human_cercariae_prop)
+    female_factor, male_factor, contact_rates_by_age, record_frequency, age_contact_rate,human_cercariae_prop,
+    miracidia_maturity_time)
 
 
     sim_time = 0
@@ -1552,44 +1568,53 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 
 
 #=  mature larvae within humans  =#
-   human_cercariae, female_worms, male_worms =
-            human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
+# print("human_cercariae_maturity")
+#    @time human_cercariae, female_worms, male_worms =
+#             human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
 
 
 #=  calculate the number of worm pairs in each human  =#
-        worm_pairs = calculate_worm_pairs(female_worms, male_worms)
+print("worm pairs")
+@time worm_pairs = calculate_worm_pairs(female_worms, male_worms)
 
 #=  calculate the total number of worms in each human  =#
-       total_female_worms, total_male_worms =
-        calculate_total_worms(female_worms, male_worms)
+# print("calculate total worms")
+#        total_female_worms, total_male_worms =
+#     @time    calculate_total_worms(female_worms, male_worms)
+print("egg prod")
+ @time eggs = egg_production(eggs, max_fecundity, r, worm_pairs,
 
-#=  produce eggs in each human =#
-        eggs = egg_production(eggs, max_fecundity, r, worm_pairs,
-                               total_female_worms, total_male_worms,
                                density_dependent_fecundity, time_step)
 
 #=  mature worms in each human  =#
-        female_worms, male_worms = worm_maturity(female_worms, male_worms,
+print("worm mat")
+   @time female_worms, male_worms = worm_maturity(female_worms, male_worms,
                                                  worm_stages, average_worm_lifespan,
                                                  time_step)
 
 
 
 #=  hacth the human eggs into the environment  =#
-        env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate, community)
+print("mira prod")
+      @time env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate, community)
 
 #=  uptake larvae into humans from the environment  =#
-        env_cercariae, human_cercariae, env_miracidia =
-                 cercariae_uptake(human_cercariae, env_miracidia, env_cercariae, time_step, contact_rate,
-                     community, community_contact_rate,
-                     predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop)
+print("cerc uptake")
+ @time env_cercariae, env_miracidia, female_worms, male_worms =
+    cercariae_uptake(env_miracidia, env_cercariae, time_step, contact_rate,
+        community, community_contact_rate, female_worms, male_worms,
+        predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop,
+        miracidia_maturity_time)
+
 
 
 #=  kill miracidia in the environment at specified death rate =#
-        env_miracidia = miracidia_death(env_miracidia, env_miracidia_survival_prop)
+print("mira death")
+@time       env_miracidia = miracidia_death(env_miracidia, env_miracidia_survival_prop)
 
 #=  kill cercariae in the environment at specified death rate =#
-        env_cercariae = cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
+ print("cerc death")
+ @time env_cercariae = cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
 
 
     end
@@ -1615,7 +1640,7 @@ function update_env_keep_population_same(num_time_steps, ages, death_ages,commun
     env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
     birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
-    record_frequency, human_cercariae_prop)
+    record_frequency, human_cercariae_prop, miracidia_maturity_time)
 
     start_pop = length(ages)
     update_contact_death_rates = 1/5
@@ -1680,7 +1705,7 @@ function update_env_keep_population_same(num_time_steps, ages, death_ages,commun
 
 #=  produce eggs in each human =#
         eggs = egg_production(eggs, max_fecundity, r, worm_pairs,
-                               total_female_worms, total_male_worms,
+
                                density_dependent_fecundity, time_step)
 
 #=  mature worms in each human  =#
@@ -1720,10 +1745,12 @@ function update_env_keep_population_same(num_time_steps, ages, death_ages,commun
             end
         end
 #=  uptake larvae into humans from the environment  =#
-        env_cercariae, human_cercariae, env_miracidia =
-                 cercariae_uptake(human_cercariae, env_miracidia, env_cercariae, time_step, contact_rate,
-                     community, community_contact_rate,
-                     predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop)
+        env_cercariae, env_miracidia, female_worms, male_worms =
+        cercariae_uptake(env_miracidia, env_cercariae, time_step, contact_rate,
+            community, community_contact_rate, female_worms, male_worms,
+            predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop,
+            miracidia_maturity_time)
+
 
 #= check if we are at a point in time in which an mda is scheduled to take place =#
         if sim_time >= next_mda_time
@@ -1848,7 +1875,7 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
                     female_factor, male_factor, contact_rates_by_age,
                     birth_rate, mda_info, vaccine_info, copy(adherence_equ), mda_adherence,
                     copy(access_equ), mda_access,
-                    record_frequency,human_cercariae_prop);
+                    record_frequency,human_cercariae_prop,miracidia_maturity_time);
 
 
 
