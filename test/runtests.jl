@@ -546,5 +546,5 @@ community_probs = 1,2,1
     1, 1, contact_rates_by_age,
     28*time_step/(1000*365), [], [], [1,1,1], 1,
     [1,1,1], 1,
-    1/24,1, 24)[1] ==  [1+(num_time_steps*time_step/365),3+(num_time_steps*time_step/365),4+(num_time_steps*time_step/365),24]
+    1/24,1, 24)[1] ==  [1+(num_time_steps*time_step/365),3+(num_time_steps*time_step/365),4+(num_time_steps*time_step/365)]
 end
