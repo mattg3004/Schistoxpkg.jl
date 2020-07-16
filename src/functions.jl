@@ -348,13 +348,13 @@ distribution. otherwise, just uptake 0. =#
     #    else
     #        uptake = 0
     #    end
-
+        if uptake >0
 # push the number of uptaken larvae into the human larvae array
-        n = rand(Binomial(uptake, 0.5))
+            n = rand(Binomial(uptake, 0.5))
 
-        female_worms[j][1] += n
-        male_worms[j][1] += uptake - n
-
+            female_worms[j][1] += n
+            male_worms[j][1] += uptake - n
+        end
 
         # push!(human_cercariae[j], uptake)
 

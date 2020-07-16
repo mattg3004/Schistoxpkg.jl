@@ -122,12 +122,14 @@ age_contact_rate = [0.0, 0.06, 0.12, 0.02, 0.06]
 vac_status = [0,0,0,0,0]
 vaccine_effectiveness = 0.95
 community = 1,2,3,4,1
-community_contact_rate = 1,1,1,0
+community_contact_rate = 1,1,1,0,1
+female_worms= [[1,1], [2,1], [2,4],[3,1], [2,4]]
+male_worms= [[1,1], [2,1], [2,5],[2,1], [2,4]]
 
 @testset "cercariae_uptake(max_age, scenario)" begin
-    @test isapprox(cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
-    community, community_contact_rate,
-        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness), 1)[3],  [10, 10, 10, 1])
+    @test isapprox(cercariae_uptake(copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
+    community, community_contact_rate, copy(female_worms), copy(male_worms),
+        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness), 1, 24)[2],  [10, 10, 10, 1])
 end
 
 time_step = 10
@@ -141,9 +143,9 @@ vac_status = [0,0,0,0,0]
 vaccine_effectiveness = 0.95
 
 @testset "cercariae_uptake" begin
-    @test isapprox(cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
-    community, community_contact_rate,
-        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness),1)[2][1][2],  0)
+    @test isapprox(cercariae_uptake(copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
+    community, community_contact_rate, copy(female_worms), copy(male_worms),
+        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness),1,24)[3][1][2],  1)
 end
 
 
@@ -158,9 +160,9 @@ vac_status = [0,0,0,0,0]
 vaccine_effectiveness = 0.95
 
 @testset "cercariae_uptake" begin
-    @test cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
-    community, community_contact_rate,
-        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness),1)[2][5][2] >0
+    @test cercariae_uptake(copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
+    community, community_contact_rate, copy(female_worms), copy(male_worms),
+        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness),1,24)[3][5][2] >0
 end
 
 
@@ -175,9 +177,9 @@ vac_status = [0,0,0,0,1]
 vaccine_effectiveness = 1
 
 @testset "cercariae_uptake" begin
-    @test cercariae_uptake(copy(human_cercariae),copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
-    community, community_contact_rate,
-        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness),1)[2][5][2] == 0
+    @test cercariae_uptake(copy( env_miracidia), copy(env_cercariae), copy(time_step), copy(contact_rate),
+    community, community_contact_rate, copy(female_worms), copy(male_worms),
+        copy(predisposition), copy(age_contact_rate), copy(vac_status), copy(vaccine_effectiveness),1,1)[3][5][2] == 4
 end
 
 female_worms = [[10000,200000],[200000,0]]
@@ -544,5 +546,5 @@ community_probs = 1,2,1
     1, 1, contact_rates_by_age,
     28*time_step/(1000*365), [], [], [1,1,1], 1,
     [1,1,1], 1,
-    1/24,1)[1] ==  [1+(num_time_steps*time_step/365),3+(num_time_steps*time_step/365),4+(num_time_steps*time_step/365)]
+    1/24,1)[1] ==  [1+(num_time_steps*time_step/365),3+(num_time_steps*time_step/365),4+(num_time_steps*time_step/365),24]
 end
