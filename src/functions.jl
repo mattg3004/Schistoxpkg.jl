@@ -474,7 +474,7 @@ end
 function calculate_worm_pairs(female_worms, male_worms)
     worm_pairs = Int64[]
     for i in 1:length(female_worms)
-        push!(worm_pairs, min(sum(female_worms[i]), sum(male_worms[i]))
+        push!(worm_pairs, min(sum(female_worms[i]), sum(male_worms[i])))
     end
     return(worm_pairs)
     # return min.(sum.(female_worms), sum.(male_worms))
@@ -1574,33 +1574,28 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 
 
 #=  calculate the number of worm pairs in each human  =#
-print("worm pairs")
-@time worm_pairs = calculate_worm_pairs(female_worms, male_worms)
+worm_pairs = calculate_worm_pairs(female_worms, male_worms)
 
 #=  calculate the total number of worms in each human  =#
 # print("calculate total worms")
 #        total_female_worms, total_male_worms =
 #     @time    calculate_total_worms(female_worms, male_worms)
-print("egg prod")
- @time eggs = egg_production(eggs, max_fecundity, r, worm_pairs,
+eggs = egg_production(eggs, max_fecundity, r, worm_pairs,
 
                                density_dependent_fecundity, time_step)
 
 #=  mature worms in each human  =#
-print("worm mat")
-   @time female_worms, male_worms = worm_maturity(female_worms, male_worms,
+female_worms, male_worms = worm_maturity(female_worms, male_worms,
                                                  worm_stages, average_worm_lifespan,
                                                  time_step)
 
 
 
 #=  hacth the human eggs into the environment  =#
-print("mira prod")
-      @time env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate, community)
+ env_miracidia = miracidia_production(eggs, env_miracidia, time_step, age_contact_rate, community_contact_rate, community)
 
 #=  uptake larvae into humans from the environment  =#
-print("cerc uptake")
- @time env_cercariae, env_miracidia, female_worms, male_worms =
+ env_cercariae, env_miracidia, female_worms, male_worms =
     cercariae_uptake(env_miracidia, env_cercariae, time_step, contact_rate,
         community, community_contact_rate, female_worms, male_worms,
         predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop,
@@ -1609,12 +1604,10 @@ print("cerc uptake")
 
 
 #=  kill miracidia in the environment at specified death rate =#
-print("mira death")
-@time       env_miracidia = miracidia_death(env_miracidia, env_miracidia_survival_prop)
+       env_miracidia = miracidia_death(env_miracidia, env_miracidia_survival_prop)
 
 #=  kill cercariae in the environment at specified death rate =#
- print("cerc death")
- @time env_cercariae = cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
+ env_cercariae = cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
 
 
     end
@@ -1903,7 +1896,7 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                 age_contact_rate_equ, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
                 female_factor, male_factor, contact_rates_by_age,death_prob_by_age, ages_for_deaths,
                 birth_rate, mda_info, vaccine_info,  mda_adherence, mda_access,
-                record_frequency, times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, filename,human_cercariae_prop)
+                record_frequency, times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, filename,human_cercariae_prop, miracidia_maturity_time)
 
 
                 times = []
@@ -1940,7 +1933,7 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                     female_factor, male_factor, contact_rates_by_age,
                     birth_rate, mda_info, vaccine_info, copy(adherence_equ), mda_adherence,
                     copy(access_equ), mda_access,
-                    record_frequency,human_cercariae_prop);
+                    record_frequency,human_cercariae_prop, miracidia_maturity_time);
 
                     times, prev, sac_prev, high_burden, high_burden_sac, adult_prev = collect_prevs(times, prev, sac_prev, high_burden,
                     high_burden_sac, adult_prev, record, run)
