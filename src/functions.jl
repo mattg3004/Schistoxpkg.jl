@@ -160,7 +160,7 @@ end
          In addition to this, it will create the initial miracidia environment vector
 """
 function create_population(N, max_age, N_communities, community_probs, initial_worms, contact_rates_by_age,
-    death_rate_per_time_step,worm_stages, female_factor, male_factor,
+    worm_stages, female_factor, male_factor,
     initial_miracidia, initial_miracidia_days, predis_aggregation, predis_weight,
      time_step,
     mda_adherence, mda_access)
@@ -235,9 +235,6 @@ function create_population(N, max_age, N_communities, community_probs, initial_w
             age = (trunc(Int, ages[i]))
             push!(age_contact_rate, contact_rates_by_age[age+1])
 
-    #=  death rate for the correct age is pushed into array  =#
-            push!(death_rate, find_death_rate(age, death_rate_per_time_step))
-
     #=  if the person is chosen to be a male of female, then
         adjust their predisposition based on the
         male or female factor, adjusting for
@@ -249,7 +246,7 @@ function create_population(N, max_age, N_communities, community_probs, initial_w
     #=  return all data that we will use to track the spread of the disease  =#
         return ages , gender, predisposition, community, human_cercariae, eggs, vac_status,
                 treated, female_worms, male_worms, vaccinated,
-                age_contact_rate, death_rate, env_miracidia, adherence, access
+                age_contact_rate,  env_miracidia, adherence, access
     end
 end
 
@@ -1357,10 +1354,11 @@ function run_simulation(N, max_age, initial_worms, time_step, worm_stages, femal
 
     ages , gender, predisposition,  human_cercariae, eggs, vac_status,
             treated, female_worms, male_worms, vaccinated,
-            age_contact_rate, death_rate, env_miracidia, adherence, access =
-        create_population(N, max_age,N_communities, community_probs,  initial_worms, contact_rates_by_age,
-            death_rate_per_time_step,worm_stages, female_factor, male_factor,
-            initial_miracidia, initial_miracidia_days, predis_aggregation, time_step,
+            age_contact_rate, env_miracidia, adherence, access =
+        create_population(N, max_age, N_communities, community_probs, initial_worms, contact_rates_by_age,
+            worm_stages, female_factor, male_factor,
+            initial_miracidia, initial_miracidia_days, predis_aggregation, predis_weight,
+             time_step,
             mda_adherence, mda_access)
 
 
@@ -1880,7 +1878,7 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
         high_burden_sac, adult_prev, record, run)
 
     end
-    
+
     return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev
 end
 

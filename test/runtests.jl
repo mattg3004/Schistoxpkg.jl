@@ -4,51 +4,6 @@ using Distributions
 using Random
 
 
-# Test that at the first element of the death array created
-# matches the equation we think it should match
-@testset "make_death_rate_array" begin
-    @test make_death_rate_array([6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48, 0.53, 0.65,
-    0.88, 1.06, 1.44, 2.1, 3.33, 5.29, 8.51, 13.66,
-    21.83, 29.98, 36.98], 1)[1] == 1 .- exp(-1 * 6.56/(1000*365))
-end
-
-# Test that the outputs of death rate array are sensible
-death_array1 = make_death_rate_array([6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0.65, 0.88, 1.06,
-1.44, 2.1, 3.33, 5.29, 8.51, 13.66, 21.83, 29.98, 36.98], 1)
-
-# We put in 21 parameters, so should be a length 21 array
-@testset "make_death_rate_array_size" begin
-    @test size(death_array1)[1] == 21
-end
-
-# They should all be positive.
-@testset "make_death_rate_array_positive" begin
-    @test all(death_array1 .> 0)
-end
-
-
-
-
-death_rate = find_death_rate(0, [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21])
-@testset "find_death_rate" begin
-    @test death_rate == 1
-end
-
-death_rate_2 = find_death_rate(6, [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18])
-@testset "find_death_rate2" begin
-    @test death_rate_2 == 3
-end
-
-death_rate_3 = find_death_rate(1000, [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18])
-@testset "find_death_rate3" begin
-    @test death_rate_3 == 18
-end
-
-# If I understand right, death rate should increase with age.
-@testset "find_death_rate3" begin
-    @test death_rate < death_rate_2
-end
-
 @testset "update_contact_rate" begin
     @test isapprox(update_contact_rate([5,10,3], [0,0,0], [1,2,3,4,5,6,7,8,9,10,11,12]), [6,11,4])
 end
@@ -289,7 +244,7 @@ age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0
                            21.83, 29.98, 36.98]
 
 contact_rates_by_age = make_age_contact_rate_array(100,"high adult", [], [])
-death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, 1)
+
 
 #
 # ages, death_ages, gender, predisposition, human_cercariae, eggs, vac_status,
@@ -406,14 +361,6 @@ end
 [[1], [0], [0], [0], [5]])
 end
 
-@testset "mda" begin
-    @test isapprox(mda(1, 3, 8, 1,[0,1],
-[2,5,4,7,9], [[1],[2],[3],[4],[5]], [[1],[2],[3],[4],[5]],
-[[1],[2],[3],[4],[5]], [[1],[2],[3],[4],[5]],
-0,0,[1,1,1,1,1], [1,1,1,1,1],[1,1,1,1,1])[3],
-[[1], [0], [0], [0], [5]])
-end
-
 
 #=
 Run some tests on the population making function
@@ -438,20 +385,20 @@ predis_aggregation = 0.24
 mda_adherence = 0.8
 scenario = "high adult"
 contact_rates_by_age = make_age_contact_rate_array(max_age, scenario, [], [])
-death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
+
 predis_weight = 1
 
 N_communities= 4
 community_probs = [1,2,1,3]
 
 pop = create_population(N, max_age, N_communities, community_probs, initial_worms, contact_rates_by_age,
-    death_rate_per_time_step,worm_stages, female_factor, male_factor,
+worm_stages, female_factor, male_factor,
     initial_miracidia, initial_miracidia_days, predis_aggregation, predis_weight, time_step,
     mda_adherence, mda_access)
 
 # These should all get give the initial value
 @testset "miracidia" begin
-    @test all(pop[14] .== initial_miracidia)
+    @test all(pop[13] .== initial_miracidia)
 end
 
 # Worms should be 0:ininity
