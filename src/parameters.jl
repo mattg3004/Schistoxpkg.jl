@@ -27,13 +27,16 @@ N_communities = 1
 #community_probs = [1,1,1]
 community_probs = 1
 
+# community_contact_rate = [1,1,1]
+community_contact_rate = 1
+
 # parameter for proportion of people who are given mda who will take it
 mda_adherence = .9
 mda_access = .9
 
 # number of days after which miracidia become cercariae
-miracidia_maturity_time = 24 # for S. mansoni 
-# miracidia_maturity_time = 21 # for S. haemotobium 
+miracidia_maturity_time = 24 # for S. mansoni
+# miracidia_maturity_time = 21 # for S. haemotobium
 
 env_cercariae = 0
 initial_miracidia = 50000*N/1000
@@ -41,7 +44,7 @@ init_env_cercariae = 50000*N/1000
 initial_miracidia_days = trunc(Int,ceil(miracidia_maturity_time/time_step, digits = 0))
 
 # how long to run simulation for
-number_years = 250
+number_years_equ = 200
 
 max_fecundity = 0.34  # for S. mansoni [Toor et al JID paper SI]
 #max_fecundity = 0.3  # for S. haematobium [Toor et al JID paper SI]
@@ -50,7 +53,7 @@ density_dependent_fecundity = 0.0007 # for S. mansoni [Toor et al JID paper SI]
 #density_dependent_fecundity = 0.0006 # for S. haematobium [Toor et al JID paper SI]
 
 r = 0.03 # aggregation parameter for negative binomial for egg production
-num_time_steps = trunc(Int, 365*number_years / time_step)
+num_time_steps_equ = trunc(Int, 365*number_years_equ / time_step)
 
 # human birth rate
 birth_rate = 28*time_step/(1000*365)
@@ -87,8 +90,14 @@ spec_ages = 7639, 7082, 6524, 5674, 4725, 4147, 3928, 3362,
 
 #= number of deaths per 1000 individuals by age
     first entry is for under 1's, then for 5 year intervals from then on =#
-age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0.65,
-                           0.88, 1.06, 1.44, 2.1, 3.33, 5.29, 8.51, 13.66,
-                           21.83, 29.98, 36.98]
 
+
+death_prob_by_age = [0.0656, 0.0093, 0.003, 0.0023, 0.0027, 0.0038, 0.0044, 0.0048, 0.0053,
+                                                0.0065, 0.0088, 0.0106, 0.0144, 0.021, 0.0333, 0.0529, 0.0851, 0.1366, 0.2183, 0.2998 , 0.3698, 1]
+
+ages_for_deaths = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
+                                              65, 70, 75, 80, 85, 90, 95, 100, 110]
+
+
+drug_efficacy = 0.863
 scenario = "moderate adult"
