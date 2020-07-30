@@ -38,7 +38,7 @@ miracidia_maturity_time = 24 # for S. mansoni
 env_cercariae = 0
 initial_miracidia = 50000*N/1000
 init_env_cercariae = 50000*N/1000
-initial_miracidia_days = trunc(Int,ceiling(miracidia_maturity_time/time_step, digits = 0))
+initial_miracidia_days = trunc(Int,ceil(miracidia_maturity_time/time_step, digits = 0))
 
 # how long to run simulation for
 number_years = 250

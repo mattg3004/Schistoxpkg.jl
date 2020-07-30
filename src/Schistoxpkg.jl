@@ -3,11 +3,6 @@ include("parameters.jl")
 include("functions.jl")
 
 export create_population
-"""
-    create_population(x)
-
-Returns double the number `x` plus `1`.
-"""
 export make_age_contact_rate_array
 export make_death_rate_array
 export birth_of_human
