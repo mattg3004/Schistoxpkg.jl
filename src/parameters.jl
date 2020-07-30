@@ -3,6 +3,8 @@ using Plots
 using Distributions
 using Random
 
+
+
 # filename to save population in =#
 # filename = "equ_runs_1.jld"
 N = 1000
@@ -12,10 +14,7 @@ time_step = 10
 worm_stages = 2
 female_factor = 1
 male_factor = 1
-initial_miracidia = 1
-initial_miracidia_days = trunc(Int,round(41/time_step, digits = 0))
-env_cercariae = 0
-contact_rate = 0.00003
+contact_rate = 0.03
 ages_per_index = 5
 
 # if more than one community, then specify how many here
@@ -36,6 +35,10 @@ mda_access = .9
 miracidia_maturity_time = 24 # for S. mansoni 
 # miracidia_maturity_time = 21 # for S. haemotobium 
 
+env_cercariae = 0
+initial_miracidia = 50000*N/1000
+init_env_cercariae = 50000*N/1000
+initial_miracidia_days = trunc(Int,ceiling(miracidia_maturity_time/time_step, digits = 0))
 
 # how long to run simulation for
 number_years = 250
@@ -52,7 +55,8 @@ num_time_steps = trunc(Int, 365*number_years / time_step)
 # human birth rate
 birth_rate = 28*time_step/(1000*365)
 
-average_worm_lifespan = 5.7 # years
+average_worm_lifespan = 5.7 # years for S. mansoni [Toor et al JID paper SI]
+#average_worm_lifespan = 4 # years for S. haematobium [Toor et al JID paper SI]
 
 # this is the aggregation parameter for the predisposition
 predis_aggregation = 0.24
