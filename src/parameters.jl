@@ -18,15 +18,34 @@ env_cercariae = 0
 contact_rate = 0.00003
 ages_per_index = 5
 
+# if more than one community, then specify how many here
+#N_communities = 3
+N_communities = 1
+
+# next parameter is the relative probabilities of being in each community
+# if entries are all equal, then all communities are equally likely and will
+# be roughly the same size
+#community_probs = [1,1,1]
+community_probs = 1
+
 # parameter for proportion of people who are given mda who will take it
 mda_adherence = .9
 mda_access = .9
 
+# number of days after which miracidia become cercariae
+miracidia_maturity_time = 24 # for S. mansoni 
+# miracidia_maturity_time = 21 # for S. haemotobium 
+
+
 # how long to run simulation for
 number_years = 250
-max_fecundity = 0.34  # From "The design of schistosomiasis monitoring and evaluation programmes:
-#The importance of collecting adu lt data to inform treatment strategies for Schistosoma mansoni"
-density_dependent_fecundity = 0.0005
+
+max_fecundity = 0.34  # for S. mansoni [Toor et al JID paper SI]
+#max_fecundity = 0.3  # for S. haematobium [Toor et al JID paper SI]
+
+density_dependent_fecundity = 0.0007 # for S. mansoni [Toor et al JID paper SI]
+#density_dependent_fecundity = 0.0006 # for S. haematobium [Toor et al JID paper SI]
+
 r = 0.03 # aggregation parameter for negative binomial for egg production
 num_time_steps = trunc(Int, 365*number_years / time_step)
 
@@ -37,13 +56,10 @@ average_worm_lifespan = 5.7 # years
 
 # this is the aggregation parameter for the predisposition
 predis_aggregation = 0.24
-
-env_cercariae_death_rate = 0.09 * time_step #= life span of cercariae in the environment is short 8-20 hrs
-according to "Studies of the Transmission Dynamics, Mathematical Model Development and the Control of Schistosome
-Parasites by Mass Drug Administration in Human Communities"  =#
+predis_weight = 1
 
 # what proportion of miracidias and cercariae survive each round
-env_miracidia_survival_prop = 1/3
+env_miracidia_survival_prop = 1/2
 env_cercariae_survival_prop = 1/2
 mda_coverage = 0.8 # proportion of target age group reached by mda
 mda_round = 0
@@ -70,3 +86,5 @@ spec_ages = 7639, 7082, 6524, 5674, 4725, 4147, 3928, 3362,
 age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0.65,
                            0.88, 1.06, 1.44, 2.1, 3.33, 5.29, 8.51, 13.66,
                            21.83, 29.98, 36.98]
+
+scenario = "moderate adult"
