@@ -31,6 +31,9 @@ end
 # make it so that no ones age is greater than their deatha age
 ages, death_ages = generate_ages_and_deaths(20000, ages, death_ages, death_prob_by_age, ages_for_deaths)
 
+# update contact rates
+age_contact_rate = update_contact_rate(ages, age_contact_rate, contact_rates_by_age)
+
 # run to equilibrium for time length defined in parameters.jl
 ages_equ, gender_equ, predisposition_equ,  human_cercariae_equ, eggs_equ,
 vac_status_equ, treated_equ, female_worms_equ, male_worms_equ,
