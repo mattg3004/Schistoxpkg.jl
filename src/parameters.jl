@@ -11,7 +11,7 @@ N = 1000
 max_age = 100
 initial_worms = 10
 time_step = 10
-worm_stages = 2
+worm_stages = 1
 female_factor = 1
 male_factor = 1
 contact_rate = 0.03
@@ -34,6 +34,7 @@ community_contact_rate = 1
 mda_adherence = .9
 mda_access = .9
 
+heavy_burden_threshold = 16
 # number of days after which miracidia become cercariae
 miracidia_maturity_time = 24 # for S. mansoni
 # miracidia_maturity_time = 21 # for S. haemotobium

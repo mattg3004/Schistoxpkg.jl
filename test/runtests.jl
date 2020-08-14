@@ -480,7 +480,7 @@ num_time_steps = 1
 community = 1,3,1
 community_contact_rate = 1,0.5, 1
 community_probs = 1,2,1
-
+heavy_burden_threshold = 16
 @testset "update_env" begin
     @test update_env(num_time_steps, [1,3,4], [2,5,8],community, community_contact_rate, community_probs, human_cercariae, female_worms, male_worms,
     time_step, 5.7,
@@ -493,5 +493,5 @@ community_probs = 1,2,1
     1, 1, contact_rates_by_age,
     28*time_step/(1000*365), [], [], [1,1,1], 1,
     [1,1,1], 1,
-    1/24,1, 24)[1] ==  [1+(num_time_steps*time_step/365),3+(num_time_steps*time_step/365),4+(num_time_steps*time_step/365)]
+    1/24,1, 24, heavy_burden_threshold)[1] ==  [1+(num_time_steps*time_step/365),3+(num_time_steps*time_step/365),4+(num_time_steps*time_step/365)]
 end

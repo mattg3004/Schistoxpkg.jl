@@ -257,7 +257,13 @@ end
 
 
 #= function to update the contact rate of individuals in the population =#
+"""
+    update_contact_rate(ages, age_contact_rate, contact_rates_by_age)
 
+function to update the contact rate of individuals in the population. This is necessary
+    as over time when people age, they will move through different age groups which have
+    different contact rates
+"""
 function update_contact_rate(ages, age_contact_rate, contact_rates_by_age)
     for i in 1:length(ages)
         age = min(length(contact_rates_by_age) - 1, (trunc(Int, ages[i])))
@@ -299,7 +305,14 @@ end
 # humans uptake larvae based on their predisposition, age_dependent contact rate
 # and the number of larvae in the environment. number of larvae taken up is chosen
 # from a Poisson distribution
+"""
+cercariae_uptake(env_miracidia, env_cercariae, time_step, contact_rate,
+    community, community_contact_rate, female_worms, male_worms,
+    predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop,
+    miracidia_maturity_time)
 
+    uptake cer
+"""
 function cercariae_uptake(env_miracidia, env_cercariae, time_step, contact_rate,
     community, community_contact_rate, female_worms, male_worms,
     predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop,
@@ -905,7 +918,7 @@ function update_env(num_time_steps, ages, death_ages, community, community_conta
     env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
     birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
-    record_frequency, human_cercariae_prop, miracidia_maturity_time)
+    record_frequency, human_cercariae_prop, miracidia_maturity_time, heavy_burden_threshold)
 
     update_contact_death_rates = 1/5
     sim_time = 0
@@ -947,7 +960,7 @@ function update_env(num_time_steps, ages, death_ages, community, community_conta
         end
 
         if sim_time >= record_time
-            a = get_prevalences(ages, eggs, sim_time)
+            a = get_prevalences(ages, eggs, sim_time, heavy_burden_threshold)
             push!(record, a)
             record_time += record_frequency
         end
@@ -1102,7 +1115,7 @@ mutable struct out
 end
 
 
-function get_prevalences(ages, eggs, time)
+function get_prevalences(ages, eggs, time, heavy_burden_threshold)
 
     pop_burden = [0,0,0]
     sac_burden = [0,0,0]
@@ -1128,7 +1141,7 @@ function get_prevalences(ages, eggs, time)
         if ages[i] > 15
             adult_pop = adult_pop + 1;
         end
-        if final_eggs > 16
+        if final_eggs > heavy_burden_threshold
             pop_burden[3] = pop_burden[3] + 1
             pop_burden[2] = pop_burden[2] + 1
             pop_burden[1] = pop_burden[1] + 1
@@ -1548,7 +1561,7 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
     density_dependent_fecundity,vaccinated, env_miracidia,
     env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age, record_frequency, age_contact_rate,human_cercariae_prop,
-    miracidia_maturity_time)
+    miracidia_maturity_time, heavy_burden_threshold)
 
 
     sim_time = 0
@@ -1562,7 +1575,7 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 
 
         if sim_time >= record_time
-            a = get_prevalences(ages, eggs, sim_time)
+            a = get_prevalences(ages, eggs, sim_time, heavy_burden_threshold)
             push!(record, a)
             record_time += record_frequency
         end
@@ -1611,7 +1624,6 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 #=  kill cercariae in the environment at specified death rate =#
     env_cercariae = cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
 
-
     end
 
 #=  return the arrays  =#
@@ -1635,7 +1647,7 @@ function update_env_keep_population_same(num_time_steps, ages, death_ages,commun
     env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
     birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
-    record_frequency, human_cercariae_prop, miracidia_maturity_time)
+    record_frequency, human_cercariae_prop, miracidia_maturity_time, heavy_burden_threshold)
 
     start_pop = length(ages)
     update_contact_death_rates = 1/5
@@ -1678,7 +1690,7 @@ function update_env_keep_population_same(num_time_steps, ages, death_ages,commun
         end
 
         if sim_time >= record_time
-            a = get_prevalences(ages, eggs, sim_time)
+            a = get_prevalences(ages, eggs, sim_time, heavy_burden_threshold)
             push!(record, a)
             record_time += record_frequency
         end
@@ -1784,8 +1796,12 @@ function update_env_keep_population_same(num_time_steps, ages, death_ages,commun
 
 #=  kill cercariae in the environment at specified death rate =#
         env_cercariae = cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
-
-
+        # println("time = ", sim_time)
+        # println( "female_worms =", sum(sum(female_worms)))
+        # println( "male_worms =", sum(sum(male_worms)))
+        # println( "age_contact_rate =", sum(age_contact_rate))
+        # println("cerc = ", env_cercariae)
+        # println("mira = ", env_miracidia)
     end
 
 #=  return the arrays  =#
@@ -1831,7 +1847,7 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
     density_dependent_fecundity, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
     female_factor, male_factor, contact_rates_by_age,
     death_prob_by_age, ages_for_deaths, birth_rate, mda_info, vaccine_info, mda_adherence, mda_access,
-    record_frequency, filename, human_cercariae_prop, miracidia_maturity_time)
+    record_frequency, filename, human_cercariae_prop, miracidia_maturity_time,  heavy_burden_threshold)
 
     times = []
     prev = []
@@ -1851,7 +1867,6 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
          env_cercariae_equ, adherence_equ, access_equ =
         load_population_from_file(filename, N, true)
 
-
         ages, death_ages, gender, predisposition, community, human_cercariae, eggs,
         vac_status, treated, female_worms, male_worms,
         vaccinated, age_contact_rate,
@@ -1870,7 +1885,7 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
                     female_factor, male_factor, contact_rates_by_age,
                     birth_rate, mda_info, vaccine_info, copy(adherence_equ), mda_adherence,
                     copy(access_equ), mda_access,
-                    record_frequency,human_cercariae_prop,miracidia_maturity_time);
+                    record_frequency,human_cercariae_prop,miracidia_maturity_time, heavy_burden_threshold);
 
 
 
@@ -1894,7 +1909,8 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                 age_contact_rate_equ, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
                 female_factor, male_factor, contact_rates_by_age,death_prob_by_age, ages_for_deaths,
                 birth_rate, mda_info, vaccine_info,  mda_adherence, mda_access,
-                record_frequency, times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, filename,human_cercariae_prop, miracidia_maturity_time)
+                record_frequency, times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, filename,
+                human_cercariae_prop, miracidia_maturity_time, heavy_burden_threshold)
 
 
                 times = []
@@ -1931,7 +1947,7 @@ function run_repeated_sims_random_births_deaths(num_repeats, num_time_steps,
                     female_factor, male_factor, contact_rates_by_age,
                     birth_rate, mda_info, vaccine_info, copy(adherence_equ), mda_adherence,
                     copy(access_equ), mda_access,
-                    record_frequency,human_cercariae_prop, miracidia_maturity_time);
+                    record_frequency,human_cercariae_prop, miracidia_maturity_time, heavy_burden_threshold);
 
                     times, prev, sac_prev, high_burden, high_burden_sac, adult_prev = collect_prevs(times, prev, sac_prev, high_burden,
                     high_burden_sac, adult_prev, record, run)
@@ -1943,21 +1959,27 @@ end
 
 
 function plot_sac_burden_and_sac_high_burden(r)
-    times = Float32[]
-    prev = Float32[]
-    sac_prev = Float32[]
-    high_burden = Float32[]
-    high_burden_sac = Float32[]
-    adult_prev = Float32[]
-
-    for i in 1 : length(r)
-        push!(times, r[i].time)
-        push!(prev, r[i].pop_prev)
-        push!(sac_prev, r[i].sac_prev)
-        push!(high_burden, r[i].population_burden[3])
-        push!(high_burden_sac, r[i].sac_burden[3])
-        push!(adult_prev, r[i].adult_prev)
-    end
+    # times = Float32[]
+    # prev = Float32[]
+    # sac_prev = Float32[]
+    # high_burden = Float32[]
+    # high_burden_sac = Float32[]
+    # adult_prev = Float32[]
+    #
+    # for i in 1 : length(r)
+    #     push!(times, r[i].time)
+    #     push!(prev, r[i].pop_prev)
+    #     push!(sac_prev, r[i].sac_prev)
+    #     push!(high_burden, r[i].population_burden[3])
+    #     push!(high_burden_sac, r[i].sac_burden[3])
+    #     push!(adult_prev, r[i].adult_prev)
+    # end
+    times = (p->p.time).(r)
+    prev = (p->p.pop_prev).(r)
+    sac_prev = (p->p.sac_prev).(r)
+    high_burden = (p->p.population_burden[3]).(r)
+    high_burden_sac = (p->p.sac_burden[3]).(r)
+    adult_prev = (p->p.adult_prev).(r)
 
     plot(times, sac_prev, label  = "SAC prevalence", line=(:black, 0.5, 6, :solid))
     plot!(times, high_burden_sac, label  = "SAC high burden", line=(:purple, 0.5, 6))
