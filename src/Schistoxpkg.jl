@@ -49,6 +49,9 @@ export create_contact_settings
 export get_death_age
 export generate_ages_and_deaths
 export out
+export Human
+export Parameters
+export Environment
 
 
 # using Distributions
