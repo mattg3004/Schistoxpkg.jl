@@ -1,8 +1,5 @@
 using Distributions
-using DelimitedFiles
 using Random
-using TimerOutputs
-using PyPlot
 using JLD
 #=
     set up a Human struct to contain information
