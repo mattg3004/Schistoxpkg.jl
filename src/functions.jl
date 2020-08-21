@@ -1891,7 +1891,8 @@ function run_repeated_sims_no_population_change(num_repeats, num_time_steps,
                     female_factor, male_factor, contact_rates_by_age,
                     birth_rate, mda_info, vaccine_info, copy(adherence_equ), mda_adherence,
                     copy(access_equ), mda_access,
-                    record_frequency,human_cercariae_prop,miracidia_maturity_time, heavy_burden_threshold);
+                    record_frequency,human_cercariae_prop,miracidia_maturity_time, heavy_burden_threshold,
+                    kato_katz_par, use_kato_katz);
 
 
 
