@@ -961,7 +961,7 @@ function update_env(num_time_steps, ages, death_ages, community, community_conta
         end
 
         if sim_time >= record_time
-            a = get_prevalences(ages, eggs, time, heavy_burden_threshold, kato_katz_par, use_kato_katz)
+            a = get_prevalences(ages, eggs, sim_time, heavy_burden_threshold, kato_katz_par, use_kato_katz)
             push!(record, a)
             record_time += record_frequency
         end
@@ -1576,7 +1576,7 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 
 
         if sim_time >= record_time
-            a = get_prevalences(ages, eggs, time, heavy_burden_threshold, kato_katz_par, use_kato_katz)
+            a = get_prevalences(ages, eggs, sim_time, heavy_burden_threshold, kato_katz_par, use_kato_katz)
             push!(record, a)
             record_time += record_frequency
         end
@@ -1692,7 +1692,7 @@ function update_env_keep_population_same(num_time_steps, ages, death_ages,commun
         end
 
         if sim_time >= record_time
-            a = get_prevalences(ages, eggs, time, heavy_burden_threshold, kato_katz_par, use_kato_katz)
+            a = get_prevalences(ages, eggs, sim_time, heavy_burden_threshold, kato_katz_par, use_kato_katz)
             push!(record, a)
             record_time += record_frequency
         end
