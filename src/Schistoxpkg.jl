@@ -6,19 +6,19 @@ export create_population
 export make_age_contact_rate_array
 export make_death_rate_array
 export birth_of_human
-export cercariae_uptake!
-export worm_maturity!
+export cercariae_uptake
+export worm_maturity
 export calculate_worm_pairs
 export calculate_total_worms
-export egg_production!
-export miracidia_production!
+export egg_production
+export miracidia_production
 export death_of_human
 export birth_of_human
 export human_cercariae_maturity
 export update_env
 export find_death_rate
-export cercariae_death!
-export miracidia_death!
+export cercariae_death
+export miracidia_death
 export mda
 export administer_drug
 export update_contact_rate
@@ -28,7 +28,7 @@ export vaccinate
 export update_mda
 export load_population_from_file
 export kato_katz
-export get_prevalences!
+export get_prevalences
 export save_population_to_file
 export run_simulation_from_loaded_population
 export find_mean_worms_by_age
@@ -49,9 +49,6 @@ export create_contact_settings
 export get_death_age
 export generate_ages_and_deaths
 export out
-export Human
-export Parameters
-export Environment
 
 
 # using Distributions

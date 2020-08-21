@@ -99,6 +99,7 @@ death_prob_by_age = [0.0656, 0.0093, 0.003, 0.0023, 0.0027, 0.0038, 0.0044, 0.00
 ages_for_deaths = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
                                               65, 70, 75, 80, 85, 90, 95, 100, 110]
 
-
+use_kato_katz = 0
+kato_katz_par = 0.87
 drug_efficacy = 0.863
 scenario = "moderate adult"
