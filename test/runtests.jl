@@ -481,6 +481,8 @@ community = 1,3,1
 community_contact_rate = 1,0.5, 1
 community_probs = 1,2,1
 heavy_burden_threshold = 16
+kato_katz_par = 0.87
+use_kato_katz = 0
 @testset "update_env" begin
     @test update_env(num_time_steps, [1,3,4], [2,5,8],community, community_contact_rate, community_probs, human_cercariae, female_worms, male_worms,
     time_step, 5.7,
