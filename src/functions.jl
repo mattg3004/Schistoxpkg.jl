@@ -526,14 +526,6 @@ function egg_production(eggs, max_fecundity, r, worm_pairs,
 # loop over individuals
     for i in 1 : length(eggs)
 
-#= if we have a positive number of worms, then make calculation,
-otherwise the number of eggs is trivially 0 =#
-        #@inbounds if worm_pairs[i] > 0
-
-# calculate the mean number of eggs we would expect
-                # @inbounds    mean_eggs =  max_fecundity * worm_pairs[i] *
-                #     exp(- density_dependent_fecundity *
-                #     (total_female_worms[i] + total_male_worms[i]))
 wp = worm_pairs[i]
 wp = max(wp,0.000000001)
                     @inbounds    mean_eggs =  max_fecundity * wp *
@@ -549,10 +541,6 @@ wp = max(wp,0.000000001)
 # choose from NB
 
                 eggs_num = rand(NegativeBinomial(NB_r,p))[1]
-
-        #    else
-        #        eggs_num = 0
-        #    end
 
 # put this selected number of eggs into the eggs array
             @inbounds eggs[i] = eggs_num
