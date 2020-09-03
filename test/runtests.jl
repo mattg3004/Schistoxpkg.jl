@@ -46,12 +46,6 @@ end
 
 
 
-@testset "update_death_rate" begin
-    @test update_death_rate([1,4,55,8], [1,1,1,1], [1,2,3,4,5,6,7,8,9,10,11,12,13]) == [2,2,12,3]
-end
-
-
-
 @testset "make_age_contact_rate_array(max_age,scenario)" begin
     @test make_age_contact_rate_array(100, "high adult", [], [])[1] == 0.01
 end
