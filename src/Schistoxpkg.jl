@@ -49,7 +49,9 @@ export create_contact_settings
 export get_death_age
 export generate_ages_and_deaths
 export out
-
+export update_env_keep_population_same_save_predisposition
+export death_of_human_save_predis
+export birth_of_human_specified_predis
 
 # using Distributions
 # using Random
