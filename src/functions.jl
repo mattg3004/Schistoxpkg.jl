@@ -344,9 +344,8 @@ distribution. otherwise, just uptake 0. =#
 
 # # reduce the infective larvae by the number of larvae uptaken
         env_cercariae -= uptake
-
+        env_cercariae = maximum([env_cercariae, 0])
         end
-
 # return the infective, human and environmental larvae arrays
     return env_cercariae, env_miracidia, female_worms, male_worms
 
