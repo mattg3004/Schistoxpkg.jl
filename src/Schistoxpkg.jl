@@ -52,6 +52,8 @@ export out
 export update_env_keep_population_same_save_predisposition
 export death_of_human_save_predis
 export birth_of_human_specified_predis
+export update_env_with_mda_no_births_deaths
+export run_repeated_sims_no_births_deaths
 
 # using Distributions
 # using Random
