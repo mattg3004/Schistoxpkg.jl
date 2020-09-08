@@ -7,18 +7,20 @@
 #define structs to hold the output, along with structs for holding information about mdas and potential vaccination
 
 mutable struct out
-    population_burden
-    sac_burden
-    adult_burden
-    pop_prev
-    sac_prev
-    adult_prev
-    sac_pop
-    adult_pop
-    final_ages
-    recorded_eggs
-    time
+    population_burden::Array{Float32}
+    sac_burden::Array{Float32}
+    adult_burden::Array{Float32}
+    pop_prev::Float32
+    sac_prev::Float32
+    adult_prev::Float32
+    sac_pop::Int64
+    adult_pop::Int64
+    final_ages::Array{Float32}
+    recorded_eggs::Array{Int64}
+    time::Float32
 end
+
+
 
 mutable struct mda_information
     coverage
@@ -96,16 +98,6 @@ function generate_ages_and_deaths(num_steps, ages, death_ages, death_prob_by_age
 end
 
 
-# function to return the correct death rate per time step based on individuals age
-
-function find_death_rate(age, death_rate_per_time_step)
-    if age < 1
-        return death_rate_per_time_step[1]
-    else
-        index = min(2 + trunc(Int, (age-1)/5),length(death_rate_per_time_step))
-        return death_rate_per_time_step[index]
-    end
-end
 
 
 
@@ -196,7 +188,7 @@ end
 """
     create_population
 
-    This will create the initial human population with randomly chosen age, and gender.
+This will create the initial human population with randomly chosen age, and gender.
      Predisposition is taken to be gamma distributed.
      There is also a male and female adjustment to predisposition adjusting for gender specific behaviour
          In addition to this, it will create the initial miracidia environment vector
@@ -465,7 +457,7 @@ end
         predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop,
         miracidia_maturity_time)
 
-    uptake cer
+uptake cer
 """
 function cercariae_uptake(env_miracidia, env_cercariae, time_step, contact_rate,
     community, community_contact_rate, female_worms, male_worms,
@@ -579,7 +571,7 @@ end
     worm_maturity(female_worms, male_worms, worm_stages,
         average_worm_lifespan, time_step)
 
-    function to kill worms, and if there is more than one stage for worm life,
+function to kill worms, and if there is more than one stage for worm life,
         to update how many worms are in each stage
 """
 function worm_maturity(female_worms, male_worms, worm_stages,
@@ -682,7 +674,7 @@ from the mean and aggregation in the function below
     egg_production(eggs, max_fecundity, r, worm_pairs,
                         density_dependent_fecundity, time_step)
 
-    function to produce eggs for individuals, dependent on how many worms they have
+function to produce eggs for individuals, dependent on how many worms they have
         and the max fecundity and density dependent fecundity of the population
 """
 function egg_production(eggs, max_fecundity, r, worm_pairs,
@@ -970,28 +962,28 @@ end
 
 
 
-
-# mature the larvae within humans into worms after 35 days
-
-
-function human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
-
-#=  loop over humans  =#
-    for i in 1:size(human_cercariae)[1]
-
-#=  if we there are non-zero larvae over the age of 35 days, then add
-     these to worms and remove from human_cercariae  =#
-        if length(human_cercariae[i]) > round(35/time_step, digits = 0)
-            females = rand(Binomial(human_cercariae[i][1], 0.5))[1]
-            @inbounds female_worms[i][1] += females
-            @inbounds male_worms[i][1] += human_cercariae[i][1] - females
-            @inbounds splice!(human_cercariae[i],1)
-        end
-    end
-
-#= return arrays  =#
-    return human_cercariae, female_worms, male_worms
-end
+#
+# # mature the larvae within humans into worms after 35 days
+#
+#
+# function human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
+#
+# #=  loop over humans  =#
+#     for i in 1:size(human_cercariae)[1]
+#
+# #=  if we there are non-zero larvae over the age of 35 days, then add
+#      these to worms and remove from human_cercariae  =#
+#         if length(human_cercariae[i]) > round(35/time_step, digits = 0)
+#             females = rand(Binomial(human_cercariae[i][1], 0.5))[1]
+#             @inbounds female_worms[i][1] += females
+#             @inbounds male_worms[i][1] += human_cercariae[i][1] - females
+#             @inbounds splice!(human_cercariae[i],1)
+#         end
+#     end
+#
+# #= return arrays  =#
+#     return human_cercariae, female_worms, male_worms
+# end
 
 
 

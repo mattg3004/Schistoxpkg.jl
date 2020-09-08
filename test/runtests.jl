@@ -46,6 +46,28 @@ end
 
 
 
+
+death_prob_by_age = [0.0656, 0.0093, 0.003, 0.0023, 0.0027, 0.0038, 0.0044, 0.0048, 0.0053,
+                                                0.0065, 0.0088, 0.0106, 0.0144, 0.021, 0.0333, 0.0529, 0.0851, 0.1366, 0.2183, 0.2998 , 0.3698, 1]
+
+ages_for_deaths = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
+                                              65, 70, 75, 80, 85, 90, 95, 100, 110]
+
+@testset "gen_ages_and_deaths" begin
+    @test generate_ages_and_deaths(1, [1.01,2.3,3.1,4.2,5.3], [2.1,1.2,4.3,2.3,6.0], death_prob_by_age, ages_for_deaths)[1][1] == 1.01 + 10/365
+end
+
+
+@testset "gen_ages_and_deaths" begin
+    @test generate_ages_and_deaths(1, [1.01,2.3,3.1,4.2,5.3], [2.1,1.2,4.3,2.3,6.0], death_prob_by_age, ages_for_deaths)[1][end-1] == 10/365
+end
+
+
+
+
+@test_throws ErrorException("max_age must be greater than 60") make_age_contact_rate_array(10, "high adult", [], [])
+
+
 @testset "make_age_contact_rate_array(max_age,scenario)" begin
     @test make_age_contact_rate_array(100, "high adult", [], [])[1] == 0.01
 end
@@ -304,6 +326,21 @@ end
 end
 
 
+out1 = out[]
+
+
+@testset "create_output" begin
+    push!(out1, out(1,2,3,4,5,6,7,8,9,10,11))
+    @test out1[1].adult_burden == 3
+end
+
+
+@testset "create_output" begin
+    push!(out1, out(1,2,35,4,5,6,7,8,9,10,11))
+    @test out1[end].adult_burden == 35
+end
+
+
 @testset "create_mda" begin
      mda_info = create_mda(0, .75, 1, 1, 5, 1, [0,1], [0,1], [0,1], .92)
     @test mda_info[end].time == 5
@@ -384,6 +421,18 @@ predis_weight = 1
 
 N_communities= 4
 community_probs = [1,2,1,3]
+
+@testset "create_pop" begin
+@test_throws ErrorException("must provide probabilities for membership of each community") create_population(N, max_age, 100, community_probs, initial_worms, contact_rates_by_age,
+worm_stages, female_factor, male_factor,
+    initial_miracidia, initial_miracidia_days, predis_aggregation, predis_weight, time_step,
+    mda_adherence, mda_access)
+end
+
+pop = create_population(N, max_age, N_communities, community_probs, initial_worms, contact_rates_by_age,
+worm_stages, female_factor, male_factor,
+    initial_miracidia, initial_miracidia_days, predis_aggregation, predis_weight, time_step,
+    mda_adherence, mda_access)
 
 pop = create_population(N, max_age, N_communities, community_probs, initial_worms, contact_rates_by_age,
 worm_stages, female_factor, male_factor,
@@ -491,4 +540,104 @@ use_kato_katz = 0
     [1,1,1], 1,
     1/24,1, 24, heavy_burden_threshold,
     kato_katz_par, use_kato_katz)[1] ==  [1+(num_time_steps*time_step/365),3+(num_time_steps*time_step/365),4+(num_time_steps*time_step/365)]
+end
+
+
+
+spec_ages = 7639, 7082, 6524, 5674, 4725, 4147, 3928, 3362,
+            2636, 1970, 1468, 1166, 943, 718, 455, 244
+ages_per_index = 5
+
+@testset "gen_age_dist" begin
+    @test generate_age_distribution(spec_ages, ages_per_index)[end] == 1
+end
+
+
+@testset "gen_age_dist" begin
+    @test generate_age_distribution(spec_ages, ages_per_index)[1] == spec_ages[1] / (sum(spec_ages)*5)
+end
+
+Random.seed!(25251)
+@testset "gen_age_dist" begin
+    @test specified_age_distribution(5, spec_ages, ages_per_index)[1] == 27
+end
+
+
+pop = create_population_specified_ages(N, N_communities, community_probs, initial_worms, contact_rates_by_age,
+        worm_stages, female_factor, male_factor,initial_miracidia,
+        initial_miracidia_days, predis_aggregation, predis_weight,
+        time_step,
+        spec_ages, ages_per_index, death_prob_by_age, ages_for_deaths,
+        mda_adherence, mda_access)
+        # These should all get give the initial value
+@testset "miracidia" begin
+    @test all(pop[14] .== initial_miracidia)
+end
+
+        # Worms should be 0:ininity
+        # Get first column of worms
+mworm1 = [pop[9][i][1] for i=1:length(pop[9])]
+fworm1 = [pop[10][i][1] for i=1:length(pop[10])]
+@testset "wormsm" begin
+    @test all(mworm1 .>= 0)
+end
+@testset "wormsf" begin
+    @test all(fworm1 .>= 0)
+end
+
+        # All vectors except the last should be length N?
+lens = [length(pop[i]) for i=1:(length(pop) - 3)]
+push!(lens, length(pop[end]))
+push!(lens, length(pop[end-1]))
+@testset "N" begin
+    @test all(lens .== N)
+end
+
+
+
+
+@testset "death_of_human_s_p" begin
+    @test death_of_human_save_predis([2,4], [0,6], [1,0], [0.0002,0.00005], [[2,3,4],[6,3,4]], [15,7],
+                                [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
+                                [0,0], [1,1], 1,
+                                [1,1], [1,1])[1] == [4]
+
+end
+
+
+a = death_of_human([2,4], [0,6], [1,0], [0.0002,0.00005], [[2,3,4],[6,3,4]], [15,7],
+                                [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
+                                [0,0], [1,1], 1,
+                                [1,1], [1,1])
+
+
+
+
+b = death_of_human_save_predis([2,4], [0,6], [1,0], [0.0002,0.00005], [[2,3,4],[6,3,4]], [15,7],
+                           [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
+                           [0,0], [1,1], 1,
+                           [1,1], [1,1])
+
+@testset "death_of_human_s_p" begin
+    @test length(a) == length(b)-1
+end
+
+
+
+
+@testset "birth_of_human_s_p" begin
+    @test birth_of_human_specified_predis([2,4], [0.44,0], [0,0], [1.1,1], [2,4],[[2,3,4],[6,3,4]], [15,7],
+                                [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
+                                [0,0], [1.1,1], 1, 1, [0.0002,0.00005], 2,1, 1, [1,1],
+                            death_prob_by_age, ages_for_deaths,[1,2,3,4], 0.8,[1,1], 0.9, 100)[1] == [2,4,0]
+end
+b1 = birth_of_human_specified_predis([2,4], [0.44,0], [0,0], [1.1,1], [2,4],[[2,3,4],[6,3,4]], [15,7],
+                            [0,0], [0,0], [[9,2],[5,3]], [[0,3],[1,12]],
+                            [0,0], [1.1,1], 1, 1, [0.0002,0.00005], 2,1, 1, [1,1],
+                        death_prob_by_age, ages_for_deaths,[1,2,3,4], 0.8,[1,1], 0.9, 100)
+
+
+
+@testset "birth_of_human_s_p" begin
+    @test b1[4][end]== 100
 end
