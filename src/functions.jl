@@ -1,3 +1,45 @@
+# the basic structure of the simulation is
+
+
+
+
+
+#define structs to hold the output, along with structs for holding information about mdas and potential vaccination
+
+mutable struct out
+    population_burden
+    sac_burden
+    adult_burden
+    pop_prev
+    sac_prev
+    adult_prev
+    sac_pop
+    adult_pop
+    final_ages
+    recorded_eggs
+    time
+end
+
+mutable struct mda_information
+    coverage
+    min_age
+    max_age
+    gender
+    effectiveness
+    time
+end
+
+
+mutable struct vaccine_information
+    coverage
+    min_age
+    max_age
+    gender
+    duration
+    time
+end
+
+
 ## ##########################
 # function to get age dependent death rate.
 # The first entry is for under 1's, and the rest are at 5 year intervals
@@ -255,6 +297,140 @@ end
 
 
 
+#= function to generate a distribution for ages based on a specified demography =#
+function generate_age_distribution(spec_ages, ages_per_index)
+
+    number_per_age = []
+    for i in 1:(length(spec_ages) * ages_per_index)
+        index = trunc(Int, (i-1)/ages_per_index) + 1
+        push!(number_per_age, spec_ages[index])
+    end
+    cumsum_spec_ages = cumsum(number_per_age)/sum(number_per_age)
+    return cumsum_spec_ages
+end
+
+
+#= function to construct the set of ages, with size N =#
+function specified_age_distribution(N, spec_ages, ages_per_index)
+
+    cumsum_spec_ages = generate_age_distribution(spec_ages, ages_per_index)
+    ages = Float32[]
+    for i in 1:N
+        x = rand()
+        k = findall(cumsum_spec_ages .> x)[1]
+        push!(ages, k-1)
+    end
+    return ages
+end
+
+
+
+#= same function to create the population as create_population
+    but with a pre-specified distribution of ages
+=#
+"""
+    create_population_specified_ages
+
+This will create the initial human population with an age distribution
+specified by the spec_ages variable
+Predisposition is taken to be gamma distributed. There is also a male and female
+adjustment to predisposition adjusting for gender specific behaviour
+In addition to this, it will create the initial miracidia environment vector
+"""
+function create_population_specified_ages(N, N_communities, community_probs, initial_worms, contact_rates_by_age,
+        worm_stages, female_factor, male_factor,initial_miracidia,
+        initial_miracidia_days, predis_aggregation, predis_weight,
+        time_step,
+        spec_ages, ages_per_index, death_prob_by_age, ages_for_deaths,
+        mda_adherence, mda_access)
+
+    if length(community_probs) != N_communities
+        error("must provide probabilities for membership of each community")
+    else
+        community_selection = 1
+    if N_communities > 1
+        community_selection = cumsum(community_probs)/sum(community_probs)
+    end
+        community =  Int64[]
+    # initialize all the arrays we will keep track of over time
+
+        female_worms = Array{Int64}[]
+        male_worms = Array{Int64}[]
+        human_cercariae = Array{Int64}[]
+        eggs = Int64[]
+        vac_status = Int64[]
+        treated = Int64[]
+        vaccinated = Int64[]
+        age_contact_rate = Float32[]
+        death_rate = Float32[]
+        gender = Int64[]
+        adherence = Int64[]
+        access = Int64[]
+        death_ages = Float32[]
+    #=  initialize the Gamma distribution for predisposition selection  =#
+        gamma_pre = Gamma(predis_aggregation, predis_weight/predis_aggregation)
+
+    #=  initialize and fill the environmental variable  =#
+        env_miracidia = Int64[]
+
+        for i in 1 : initial_miracidia_days
+            push!(env_miracidia, initial_miracidia )
+        end
+
+        predisposition = rand(gamma_pre,N)
+        ages = specified_age_distribution(N, spec_ages, ages_per_index)
+
+        for i in 1:N
+
+    #=  begin pushing entries to the data variables we keep track of  =#
+            push!(community, findall(community_selection .> rand())[1])
+            push!(death_ages, get_death_age(death_prob_by_age, ages_for_deaths))
+            push!(gender, rand([0,1]))
+            push!(human_cercariae,Int64[])
+            push!(eggs,0)
+            push!(vac_status, 0)
+            push!(treated,0)
+            push!(vaccinated, 0)
+            if rand() > mda_adherence
+                push!(adherence, 0)
+            else
+                push!(adherence, 1)
+            end
+            if rand() > mda_access
+                push!(access, 0)
+            else
+                push!(access, 1)
+            end
+    #=  everyone is initiated with a random number of worms in the first stage  =#
+            f_worms = fill(0, worm_stages)
+            f_worms[1] = round(rand()*initial_worms)
+            m_worms = fill(0, worm_stages)
+            m_worms[1] = round(rand()*initial_worms)
+            push!(female_worms, f_worms)
+            push!(male_worms, m_worms)
+
+    #=  age dependent contact rate is found for the given age  =#
+            age = (trunc(Int, ages[i]))
+            push!(age_contact_rate, contact_rates_by_age[age+1])
+            ages[i] += rand()
+
+    #=  if the person is chosen to be a male of female, then
+        adjust their predisposition based on the
+        male or female factor, adjusting for
+        behavioural differences according to gender  =#
+            x = gender[i]
+            predisposition[i] = predisposition[i] * (1-x) *female_factor + predisposition[i] * x *female_factor
+        end
+
+    #=  return all data that we will use to track the spread of the disease  =#
+        return ages , death_ages, gender, predisposition, community,
+            human_cercariae, eggs, vac_status,
+            treated, female_worms, male_worms, age_contact_rate,
+            vaccinated, env_miracidia, adherence, access
+    end
+end
+
+
 
 #= function to update the contact rate of individuals in the population =#
 """
@@ -284,10 +460,10 @@ end
 # and the number of larvae in the environment. number of larvae taken up is chosen
 # from a Poisson distribution
 """
-cercariae_uptake(env_miracidia, env_cercariae, time_step, contact_rate,
-    community, community_contact_rate, female_worms, male_worms,
-    predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop,
-    miracidia_maturity_time)
+    cercariae_uptake(env_miracidia, env_cercariae, time_step, contact_rate,
+        community, community_contact_rate, female_worms, male_worms,
+        predisposition, age_contact_rate, vac_status, vaccine_effectiveness, human_cercariae_prop,
+        miracidia_maturity_time)
 
     uptake cer
 """
@@ -400,11 +576,11 @@ end
 # pass between consecutive time points, twice as many worms age and die
 
 """
-worm_maturity(female_worms, male_worms, worm_stages,
-    average_worm_lifespan, time_step)
+    worm_maturity(female_worms, male_worms, worm_stages,
+        average_worm_lifespan, time_step)
 
-function to kill worms, and if there is more than one stage for worm life,
-    to update how many worms are in each stage
+    function to kill worms, and if there is more than one stage for worm life,
+        to update how many worms are in each stage
 """
 function worm_maturity(female_worms, male_worms, worm_stages,
     average_worm_lifespan, time_step)
@@ -503,11 +679,11 @@ from the mean and aggregation in the function below
 
 # r - aggregation factor for NB distribution
 """
-egg_production(eggs, max_fecundity, r, worm_pairs,
+    egg_production(eggs, max_fecundity, r, worm_pairs,
                         density_dependent_fecundity, time_step)
 
-function to produce eggs for individuals, dependent on how many worms they have
-    and the max fecundity and density dependent fecundity of the population
+    function to produce eggs for individuals, dependent on how many worms they have
+        and the max fecundity and density dependent fecundity of the population
 """
 function egg_production(eggs, max_fecundity, r, worm_pairs,
                         density_dependent_fecundity, time_step)
@@ -996,6 +1172,14 @@ function update_vaccine(vaccine_info, vaccine_round)
 end
 
 
+
+########
+
+# the main functions that we run to simulate the disease. There are several versions of this function, which do or do not
+# include births and deaths, and mda's
+# this version includes births and deaths at some specified rate, which is not equal (so population will change) and also includes interventions
+
+
 # function to update the variable arrays a given number of times (num_time_steps)
 
 function update_env(num_time_steps, ages, death_ages, community, community_contact_rate, community_probs,
@@ -1062,8 +1246,8 @@ function update_env(num_time_steps, ages, death_ages, community, community_conta
         ages = ages .+ time_step/365
 
 #=  mature larvae within humans  =#
-   human_cercariae, female_worms, male_worms =
-            human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
+   # human_cercariae, female_worms, male_worms =
+   #          human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
 
 
 #=  calculate the number of worm pairs in each human  =#
@@ -1147,7 +1331,7 @@ function update_env(num_time_steps, ages, death_ages, community, community_conta
         env_cercariae = cercariae_death(env_cercariae, env_cercariae_survival_prop, time_step)
 
  #=  choose from binomial distribution for the number of births in the population  =#
-        l = rand(Binomial(size(ages)[1], birth_rate))[1]
+        l = rand(Binomial(length(ages), birth_rate))
 
  #=  loop over the number of births that there are  =#
         if l > 0
@@ -1192,19 +1376,6 @@ end
 
 
 
-mutable struct out
-    population_burden
-    sac_burden
-    adult_burden
-    pop_prev
-    sac_prev
-    adult_prev
-    sac_pop
-    adult_pop
-    final_ages
-    recorded_eggs
-    time
-end
 
 
 function get_prevalences(ages, eggs, time, heavy_burden_threshold, kato_katz_par, use_kato_katz)
@@ -1292,25 +1463,6 @@ end
 
 
 
-
-mutable struct mda_information
-    coverage
-    min_age
-    max_age
-    gender
-    effectiveness
-    time
-end
-
-
-mutable struct vaccine_information
-    coverage
-    min_age
-    max_age
-    gender
-    duration
-    time
-end
 
 
 function load_population_from_file(filename, chosen_pop_size, full_size)
@@ -1492,151 +1644,8 @@ function run_simulation(N, max_age, initial_worms, time_step, worm_stages, femal
     adherence, record
 end
 
-##########################################################################################
-##########################################################################################
-##########################################################################################
-##########################################################################################
-##########################################################################################
-##########################################################################################
-##########################################################################################
-##########################################################################################
-##########################################################################################
 
 
-
-
-#= function to generate a distribution for ages based on a specified demography =#
-function generate_age_distribution(spec_ages, ages_per_index)
-
-    number_per_age = []
-    for i in 1:(length(spec_ages) * ages_per_index)
-        index = trunc(Int, (i-1)/ages_per_index) + 1
-        push!(number_per_age, spec_ages[index])
-    end
-    cumsum_spec_ages = cumsum(number_per_age)/sum(number_per_age)
-    return cumsum_spec_ages
-end
-
-
-#= function to construct the set of ages, with size N =#
-function specified_age_distribution(N, spec_ages, ages_per_index)
-
-    cumsum_spec_ages = generate_age_distribution(spec_ages, ages_per_index)
-    ages = Float32[]
-    for i in 1:N
-        x = rand()
-        k = findall(cumsum_spec_ages .> x)[1]
-        push!(ages, k-1)
-    end
-    return ages
-end
-
-
-
-#= same function to create the population as create_population
-    but with a pre-specified distribution of ages
-=#
-"""
-    create_population_specified_ages
-
-This will create the initial human population with an age distribution
-specified by the spec_ages variable
-Predisposition is taken to be gamma distributed. There is also a male and female
-adjustment to predisposition adjusting for gender specific behaviour
-In addition to this, it will create the initial miracidia environment vector
-"""
-function create_population_specified_ages(N, N_communities, community_probs, initial_worms, contact_rates_by_age,
-        worm_stages, female_factor, male_factor,initial_miracidia,
-        initial_miracidia_days, predis_aggregation, predis_weight,
-        time_step,
-        spec_ages, ages_per_index, death_prob_by_age, ages_for_deaths,
-        mda_adherence, mda_access)
-
-    if length(community_probs) != N_communities
-        error("must provide probabilities for membership of each community")
-    else
-        community_selection = 1
-    if N_communities > 1
-        community_selection = cumsum(community_probs)/sum(community_probs)
-    end
-        community =  Int64[]
-    # initialize all the arrays we will keep track of over time
-
-        female_worms = Array{Int64}[]
-        male_worms = Array{Int64}[]
-        human_cercariae = Array{Int64}[]
-        eggs = Int64[]
-        vac_status = Int64[]
-        treated = Int64[]
-        vaccinated = Int64[]
-        age_contact_rate = Float32[]
-        death_rate = Float32[]
-        gender = Int64[]
-        adherence = Int64[]
-        access = Int64[]
-        death_ages = Float32[]
-    #=  initialize the Gamma distribution for predisposition selection  =#
-        gamma_pre = Gamma(predis_aggregation, predis_weight/predis_aggregation)
-
-    #=  initialize and fill the environmental variable  =#
-        env_miracidia = Int64[]
-
-        for i in 1 : initial_miracidia_days
-            push!(env_miracidia, initial_miracidia )
-        end
-
-        predisposition = rand(gamma_pre,N)
-        ages = specified_age_distribution(N, spec_ages, ages_per_index)
-
-        for i in 1:N
-
-    #=  begin pushing entries to the data variables we keep track of  =#
-            push!(community, findall(community_selection .> rand())[1])
-            push!(death_ages, get_death_age(death_prob_by_age, ages_for_deaths))
-            push!(gender, rand([0,1]))
-            push!(human_cercariae,Int64[])
-            push!(eggs,0)
-            push!(vac_status, 0)
-            push!(treated,0)
-            push!(vaccinated, 0)
-            if rand() > mda_adherence
-                push!(adherence, 0)
-            else
-                push!(adherence, 1)
-            end
-            if rand() > mda_access
-                push!(access, 0)
-            else
-                push!(access, 1)
-            end
-    #=  everyone is initiated with a random number of worms in the first stage  =#
-            f_worms = fill(0, worm_stages)
-            f_worms[1] = round(rand()*initial_worms)
-            m_worms = fill(0, worm_stages)
-            m_worms[1] = round(rand()*initial_worms)
-            push!(female_worms, f_worms)
-            push!(male_worms, m_worms)
-
-    #=  age dependent contact rate is found for the given age  =#
-            age = (trunc(Int, ages[i]))
-            push!(age_contact_rate, contact_rates_by_age[age+1])
-            ages[i] += rand()
-
-    #=  if the person is chosen to be a male of female, then
-        adjust their predisposition based on the
-        male or female factor, adjusting for
-        behavioural differences according to gender  =#
-            x = gender[i]
-            predisposition[i] = predisposition[i] * (1-x) *female_factor + predisposition[i] * x *female_factor
-        end
-
-    #=  return all data that we will use to track the spread of the disease  =#
-        return ages , death_ages, gender, predisposition, community,
-            human_cercariae, eggs, vac_status,
-            treated, female_worms, male_worms, age_contact_rate,
-            vaccinated, env_miracidia, adherence, access
-    end
-end
 
 
 
@@ -1795,8 +1804,8 @@ function update_env_with_mda_no_births_deaths(num_time_steps, ages, death_ages,c
 
 
     #=  mature larvae within humans  =#
-       human_cercariae, female_worms, male_worms =
-                human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
+        human_cercariae, female_worms, male_worms =
+                 human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
 
 
     #=  calculate the number of worm pairs in each human  =#
@@ -1952,8 +1961,8 @@ function update_env_keep_population_same(num_time_steps, ages, death_ages,commun
 
         ages .+= time_step/365
 #=  mature larvae within humans  =#
-   human_cercariae, female_worms, male_worms =
-            human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
+   # human_cercariae, female_worms, male_worms =
+   #          human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
 
 
 #=  calculate the number of worm pairs in each human  =#
