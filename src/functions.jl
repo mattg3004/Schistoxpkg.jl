@@ -7,17 +7,17 @@
 #define structs to hold the output, along with structs for holding information about mdas and potential vaccination
 
 mutable struct out
-    population_burden::Array{Float32}
-    sac_burden::Array{Float32}
-    adult_burden::Array{Float32}
-    pop_prev::Float32
-    sac_prev::Float32
-    adult_prev::Float32
-    sac_pop::Int64
-    adult_pop::Int64
-    final_ages::Array{Float32}
-    recorded_eggs::Array{Int64}
-    time::Float32
+    population_burden
+    sac_burden
+    adult_burden
+    pop_prev
+    sac_prev
+    adult_prev
+    sac_pop
+    adult_pop
+    final_ages
+    recorded_eggs
+    time
 end
 
 
@@ -80,7 +80,7 @@ function get_death_age(death_prob_by_age, ages_for_deaths)
 end
 
 # function to age population and generating death ages
-function generate_ages_and_deaths(num_steps, ages, death_ages, death_prob_by_age, ages_for_deaths)
+function generate_ages_and_deaths(num_steps, ages, death_ages, death_prob_by_age, ages_for_deaths, time_step)
      for i in 1:num_steps
         x = findall(ages - death_ages .> 0)
         k = length(x)
@@ -942,9 +942,9 @@ function birth_of_human_specified_predis(ages, death_ages, gender, predispositio
     end
 # adjust predisposition based on gender specific behaviour parameters
     if gender[end] === 0
-        predisposition[end] = predisp * female_factor
+        predisposition[end] = specified_predis * female_factor
     else
-        predisposition[end] = predisp * male_factor
+        predisposition[end] = specified_predis * male_factor
     end
 
 #  return arrays

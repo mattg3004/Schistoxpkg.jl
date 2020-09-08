@@ -45,7 +45,7 @@ end
 end
 
 
-
+time_step = 10
 
 death_prob_by_age = [0.0656, 0.0093, 0.003, 0.0023, 0.0027, 0.0038, 0.0044, 0.0048, 0.0053,
                                                 0.0065, 0.0088, 0.0106, 0.0144, 0.021, 0.0333, 0.0529, 0.0851, 0.1366, 0.2183, 0.2998 , 0.3698, 1]
@@ -54,12 +54,12 @@ ages_for_deaths = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
                                               65, 70, 75, 80, 85, 90, 95, 100, 110]
 
 @testset "gen_ages_and_deaths" begin
-    @test generate_ages_and_deaths(1, [1.01,2.3,3.1,4.2,5.3], [2.1,1.2,4.3,2.3,6.0], death_prob_by_age, ages_for_deaths)[1][1] == 1.01 + 10/365
+    @test generate_ages_and_deaths(1, [1.01,2.3,3.1,4.2,5.3], [2.1,1.2,4.3,2.3,6.0], death_prob_by_age, ages_for_deaths, time_step)[1][1] == 1.01 + time_step/365
 end
 
 
 @testset "gen_ages_and_deaths" begin
-    @test generate_ages_and_deaths(1, [1.01,2.3,3.1,4.2,5.3], [2.1,1.2,4.3,2.3,6.0], death_prob_by_age, ages_for_deaths)[1][end-1] == 10/365
+    @test generate_ages_and_deaths(1, [1.01,2.3,3.1,4.2,5.3], [2.1,1.2,4.3,2.3,6.0], death_prob_by_age, ages_for_deaths, time_step)[1][end-1] == time_step/365
 end
 
 
@@ -561,6 +561,32 @@ Random.seed!(25251)
 @testset "gen_age_dist" begin
     @test specified_age_distribution(5, spec_ages, ages_per_index)[1] == 27
 end
+
+
+ mda_access = 1
+N = 1000
+max_age = 100
+initial_worms = 10
+time_step = 10
+worm_stages = 2
+female_factor = 1
+male_factor = 1
+initial_miracidia = 1
+initial_miracidia_days = trunc(Int,round(41/time_step, digits = 0))
+env_cercariae = 0
+#const contact_rate = 0.000005
+age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0.65,
+                           0.88, 1.06, 1.44, 2.1, 3.33, 5.29, 8.51, 13.66,
+                           21.83, 29.98, 36.98]
+predis_aggregation = 0.24
+mda_adherence = 0.8
+scenario = "high adult"
+contact_rates_by_age = make_age_contact_rate_array(max_age, scenario, [], [])
+
+predis_weight = 1
+
+N_communities= 4
+community_probs = [1,2,1,3]
 
 
 pop = create_population_specified_ages(N, N_communities, community_probs, initial_worms, contact_rates_by_age,
