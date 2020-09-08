@@ -2,8 +2,108 @@ using Schistoxpkg
 using Test
 using Distributions
 using Random
+using JLD
 
 
+
+# filename to save population in =#
+# filename = "equ_runs_1.jld"
+N = 1000
+max_age = 100
+initial_worms = 10
+time_step = 10
+worm_stages = 1
+female_factor = 1
+male_factor = 1
+contact_rate = 0.03
+ages_per_index = 5
+
+# if more than one community, then specify how many here
+#N_communities = 3
+N_communities = 1
+
+# next parameter is the relative probabilities of being in each community
+# if entries are all equal, then all communities are equally likely and will
+# be roughly the same size
+#community_probs = [1,1,1]
+community_probs = 1
+
+# community_contact_rate = [1,1,1]
+community_contact_rate = 1
+
+# parameter for proportion of people who are given mda who will take it
+mda_adherence = .9
+mda_access = .9
+
+heavy_burden_threshold = 16
+# number of days after which miracidia become cercariae
+miracidia_maturity_time = 24 # for S. mansoni
+# miracidia_maturity_time = 21 # for S. haemotobium
+
+env_cercariae = 0
+initial_miracidia = 50000*N/1000
+init_env_cercariae = 50000*N/1000
+initial_miracidia_days = trunc(Int,ceil(miracidia_maturity_time/time_step, digits = 0))
+
+# how long to run simulation for
+number_years_equ = 200
+
+max_fecundity = 0.34  # for S. mansoni [Toor et al JID paper SI]
+#max_fecundity = 0.3  # for S. haematobium [Toor et al JID paper SI]
+
+density_dependent_fecundity = 0.0007 # for S. mansoni [Toor et al JID paper SI]
+#density_dependent_fecundity = 0.0006 # for S. haematobium [Toor et al JID paper SI]
+
+r = 0.03 # aggregation parameter for negative binomial for egg production
+num_time_steps_equ = trunc(Int, 365*number_years_equ / time_step)
+
+# human birth rate
+birth_rate = 28*time_step/(1000*365)
+
+average_worm_lifespan = 5.7 # years for S. mansoni [Toor et al JID paper SI]
+#average_worm_lifespan = 4 # years for S. haematobium [Toor et al JID paper SI]
+
+# this is the aggregation parameter for the predisposition
+predis_aggregation = 0.24
+predis_weight = 1
+
+# what proportion of miracidias and cercariae survive each round
+env_miracidia_survival_prop = 1/2
+env_cercariae_survival_prop = 1/2
+mda_coverage = 0.8 # proportion of target age group reached by mda
+mda_round = 0
+
+# proportion of cercariae which can infect humans
+human_cercariae_prop = 1
+
+# gamma distribution for Kato-Katz method
+gamma_k = Gamma(0.87,1/0.87)
+
+vaccine_effectiveness = 0.95
+num_sims = 1
+
+# record the state of the population this often in years
+record_frequency = 1/24
+
+#= this is the number of thousands of people in 5 year (0-4, 5-9,...) intervals in Kenya
+and will be used to give a specified age structure when we run to equilibrium =#
+spec_ages = 7639, 7082, 6524, 5674, 4725, 4147, 3928, 3362,
+            2636, 1970, 1468, 1166, 943, 718, 455, 244
+
+#= number of deaths per 1000 individuals by age
+    first entry is for under 1's, then for 5 year intervals from then on =#
+
+
+death_prob_by_age = [0.0656, 0.0093, 0.003, 0.0023, 0.0027, 0.0038, 0.0044, 0.0048, 0.0053,
+                                                0.0065, 0.0088, 0.0106, 0.0144, 0.021, 0.0333, 0.0529, 0.0851, 0.1366, 0.2183, 0.2998 , 0.3698, 1]
+
+ages_for_deaths = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
+                                              65, 70, 75, 80, 85, 90, 95, 100, 110]
+
+use_kato_katz = 0
+kato_katz_par = 0.87
+drug_efficacy = 0.863
+scenario = "moderate "
 @testset "update_contact_rate" begin
     @test isapprox(update_contact_rate([5,10,3], [0,0,0], [1,2,3,4,5,6,7,8,9,10,11,12]), [6,11,4])
 end
@@ -67,6 +167,9 @@ end
 
 @test_throws ErrorException("max_age must be greater than 60") make_age_contact_rate_array(10, "high adult", [], [])
 
+@testset "make_age_contact_rate_array(max_age,scenario)" begin
+    @test contact_rates_by_age = make_age_contact_rate_array(max_age, scenario, [1,2,3], [3,5,6])[end] == 6
+end
 
 @testset "make_age_contact_rate_array(max_age,scenario)" begin
     @test make_age_contact_rate_array(100, "high adult", [], [])[1] == 0.01
@@ -542,6 +645,24 @@ use_kato_katz = 0
     kato_katz_par, use_kato_katz)[1] ==  [1+(num_time_steps*time_step/365),3+(num_time_steps*time_step/365),4+(num_time_steps*time_step/365)]
 end
 
+mda_info = create_mda(0, .75, 1, 0, 5, 2, [0,1], [0,1], [0,1], .92)
+push!(vaccine_info, vaccine_information(0.75, 4, 16, [0,1], 3, 0))
+@testset "update_env" begin
+    @test update_env(num_time_steps, [1,3,4], [2,5,8],community, community_contact_rate, community_probs, human_cercariae, female_worms, male_worms,
+    time_step, 5.7,
+    eggs, 0.34, 0.03, 2,
+    vac_status, gender, 0.24,predis_weight,
+    [0.2, 0.8,1], treated, vaccine_effectiveness,
+    0.0005, death_prob_by_age, ages_for_deaths,
+    [0,0,0], [0.02,0.04,0.03], env_miracidia,
+    env_cercariae, 0.0005, 1, 1,
+    1, 1, contact_rates_by_age,
+    28*time_step/(1000*365), mda_info, vaccine_info, [1,1,1], 1,
+    [1,1,1], 1,
+    1/24,1, 24, heavy_burden_threshold,
+    kato_katz_par, use_kato_katz)[1] ==  [1+(num_time_steps*time_step/365),3+(num_time_steps*time_step/365),4+(num_time_steps*time_step/365)]
+end
+
 
 
 spec_ages = 7639, 7082, 6524, 5674, 4725, 4147, 3928, 3362,
@@ -666,4 +787,171 @@ b1 = birth_of_human_specified_predis([2,4], [0.44,0], [0,0], [1.1,1], [2,4],[[2,
 
 @testset "birth_of_human_s_p" begin
     @test b1[4][end]== 100
+end
+
+
+
+gamma_k = Gamma(0.87,1/0.87)
+
+@testset "kato_katz" begin
+    @test  kato_katz(100, gamma_k) > 0
+end
+
+
+@testset "get_prev" begin
+    @test isapprox(get_prevalences(pop[1], pop[7], 0, 16, 0.87, 0).population_burden, [0,0,0])
+end
+
+for i in 1:length(pop[7])
+    pop[7][i] = 100
+end
+
+
+@testset "get_prev" begin
+    @test isapprox(get_prevalences(pop[1], pop[7], 0, 16, 0.87, 0).population_burden, [100,100,100])
+end
+
+for i in 1:length(pop[7])
+    pop[7][i] = 15
+end
+
+
+
+
+@testset "get_prev" begin
+    @test isapprox(get_prevalences(pop[1], pop[7], 0, 16, 0.87, 0).population_burden, [100,100,0])
+end
+
+
+ages , death_ages, gender, predisposition, community,
+   human_cercariae, eggs, vac_status,
+   treated, female_worms, male_worms, age_contact_rate,
+   vaccinated, env_miracidia, adherence, access = create_population_specified_ages(N, N_communities, community_probs, initial_worms, contact_rates_by_age,
+                worm_stages, female_factor, male_factor,initial_miracidia,
+                initial_miracidia_days, predis_aggregation, predis_weight,
+                time_step,
+                spec_ages, ages_per_index, death_prob_by_age, ages_for_deaths,
+                mda_adherence, mda_access)
+
+filename = "a.jld"
+
+
+save_population_to_file(filename, ages, gender, predisposition, community, human_cercariae, eggs, vac_status, treated,
+        female_worms, male_worms, vaccinated, age_contact_rate, death_ages, env_miracidia, env_cercariae, adherence, access)
+
+@testset "load_data" begin
+    aa  = load_population_from_file(filename, N, true)
+    @test isapprox(aa[1],ages)
+end
+
+max_fecundity = 0.34
+
+ages , death_ages, gender, predisposition, community,
+   human_cercariae, eggs, vac_status,
+   treated, female_worms, male_worms, age_contact_rate,
+   vaccinated, env_miracidia, adherence, access = create_population_specified_ages(N, 1, 1, initial_worms, contact_rates_by_age,
+                worm_stages, female_factor, male_factor,initial_miracidia,
+                initial_miracidia_days, predis_aggregation, predis_weight,
+                time_step,
+                spec_ages, ages_per_index, death_prob_by_age, ages_for_deaths,
+                mda_adherence, mda_access)
+
+                    death_ages = []
+                    for i in 1:N
+                         push!(death_ages, get_death_age(death_prob_by_age, ages_for_deaths))
+                    end
+                    mean(death_ages)
+                    ages, death_ages = generate_ages_and_deaths(2000, ages, death_ages, death_prob_by_age, ages_for_deaths, time_step)
+age_contact_rate = update_contact_rate(ages, age_contact_rate, contact_rates_by_age)
+
+mda_info = []
+vaccine_info = []
+
+
+@testset "update_env_same_pop" begin
+ages_equ, death_ages_equ, gender_equ, predisposition_equ, community_equ, human_cercariae_equ, eggs_equ,
+vac_status_equ, treated_equ, female_worms_equ, male_worms_equ,
+vaccinated_equ, age_contact_rate_equ,
+env_miracidia_equ, env_cercariae_equ, adherence_equ,access_equ,
+record = update_env_keep_population_same(1, copy(ages), copy(death_ages), copy(community), 1,1,
+    copy(human_cercariae), copy(female_worms), copy(male_worms),
+    time_step, average_worm_lifespan,
+    copy(eggs), max_fecundity, r, worm_stages,
+    copy(vac_status), copy(gender), predis_aggregation,predis_weight,
+    copy(predisposition), copy(treated), vaccine_effectiveness,
+    density_dependent_fecundity, death_prob_by_age, ages_for_deaths,
+    copy(vaccinated), copy(age_contact_rate), copy(env_miracidia),
+    copy(env_cercariae), contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
+    female_factor, male_factor, contact_rates_by_age,
+    birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
+    record_frequency, human_cercariae_prop, miracidia_maturity_time, heavy_burden_threshold,
+    kato_katz_par, use_kato_katz)
+
+
+@test env_miracidia_equ[end] > env_miracidia_equ[end-1]
+end
+
+
+@testset "update_env_same_pop_save_pre" begin
+ages_equ, death_ages_equ, gender_equ, predisposition_equ, community_equ, human_cercariae_equ, eggs_equ,
+vac_status_equ, treated_equ, female_worms_equ, male_worms_equ,
+vaccinated_equ, age_contact_rate_equ,
+env_miracidia_equ, env_cercariae_equ, adherence_equ,access_equ,
+record = update_env_keep_population_same_save_predisposition(1, copy(ages), copy(death_ages), copy(community), 1,1,
+    copy(human_cercariae), copy(female_worms), copy(male_worms),
+    time_step, average_worm_lifespan,
+    copy(eggs), max_fecundity, r, worm_stages,
+    copy(vac_status), copy(gender), predis_aggregation,predis_weight,
+    copy(predisposition), copy(treated), vaccine_effectiveness,
+    density_dependent_fecundity, death_prob_by_age, ages_for_deaths,
+    copy(vaccinated), copy(age_contact_rate), copy(env_miracidia),
+    copy(env_cercariae), contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
+    female_factor, male_factor, contact_rates_by_age,
+    birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
+    record_frequency, human_cercariae_prop, miracidia_maturity_time, heavy_burden_threshold,
+    kato_katz_par, use_kato_katz)
+
+
+@test env_miracidia_equ[end] > env_miracidia_equ[end-1]
+end
+
+
+@testset "update_env_to_equ" begin
+    ages_equ, gender_equ, predisposition_equ,  human_cercariae_equ, eggs_equ,
+    vac_status_equ, treated_equ, female_worms_equ, male_worms_equ,
+    vaccinated_equ, env_miracidia_equ, env_cercariae_equ, record_high =
+        update_env_to_equilibrium(1, copy(ages), copy(human_cercariae), copy(female_worms), copy(male_worms),
+            copy(community),1,
+            time_step, average_worm_lifespan,
+            copy(eggs), max_fecundity, r, worm_stages,
+            copy(vac_status), copy(gender), predis_aggregation,
+            copy(predisposition), copy(treated), vaccine_effectiveness,
+            density_dependent_fecundity, copy(vaccinated), copy(env_miracidia),
+            copy(env_cercariae), contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
+            female_factor, male_factor, contact_rates_by_age, record_frequency, copy(age_contact_rate),human_cercariae_prop,
+            miracidia_maturity_time, heavy_burden_threshold, kato_katz_par, use_kato_katz)
+    @test env_miracidia_equ[end] > env_miracidia_equ[end-1]
+end
+
+@testset "update_env_with_mda_no_births_deaths" begin
+ages_equ, death_ages_equ, gender_equ, predisposition_equ, community_equ, human_cercariae_equ, eggs_equ,
+vac_status_equ, treated_equ, female_worms_equ, male_worms_equ,
+vaccinated_equ, age_contact_rate_equ,
+env_miracidia_equ, env_cercariae_equ, adherence_equ,access_equ,
+record = update_env_with_mda_no_births_deaths(1, copy(ages), copy(death_ages), copy(community), 1, 1,
+    copy(human_cercariae), copy(female_worms), copy(male_worms),
+    time_step, average_worm_lifespan,
+    copy(eggs), max_fecundity, r, worm_stages,
+    copy(vac_status), copy(gender), predis_aggregation,predis_weight,
+    copy(predisposition), copy(treated), vaccine_effectiveness,
+    density_dependent_fecundity, death_prob_by_age, ages_for_deaths,
+    copy(vaccinated), copy(age_contact_rate), copy(env_miracidia),
+    copy(env_cercariae), contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
+    female_factor, male_factor, contact_rates_by_age,
+    birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
+    record_frequency, human_cercariae_prop, miracidia_maturity_time, heavy_burden_threshold,
+    kato_katz_par, use_kato_katz)
+
+
+@test env_miracidia_equ[end] > env_miracidia_equ[end-1]
 end

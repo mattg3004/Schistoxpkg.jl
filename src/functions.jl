@@ -1796,8 +1796,8 @@ function update_env_with_mda_no_births_deaths(num_time_steps, ages, death_ages,c
 
 
     #=  mature larvae within humans  =#
-        human_cercariae, female_worms, male_worms =
-                 human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
+        # human_cercariae, female_worms, male_worms =
+        #          human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
 
 
     #=  calculate the number of worm pairs in each human  =#
@@ -2135,9 +2135,9 @@ function update_env_keep_population_same_save_predisposition(num_time_steps, age
         sim_time += time_step/365
 
         ages .+= time_step/365
-#=  mature larvae within humans  =#
-   human_cercariae, female_worms, male_worms =
-            human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
+# #=  mature larvae within humans  =#
+#    human_cercariae, female_worms, male_worms =
+#             human_cercariae_maturity(human_cercariae, female_worms, male_worms, time_step)
 
 
 #=  calculate the number of worm pairs in each human  =#
