@@ -818,8 +818,21 @@ end
 
 
 
+
+
 @testset "get_prev" begin
     @test isapprox(get_prevalences(pop[1], pop[7], 0, 16, 0.87, 0).population_burden, [100,100,0])
+end
+
+
+
+for i in 1:length(pop[7])
+    pop[7][i] = 2
+end
+
+
+@testset "get_prev" begin
+    @test isapprox(get_prevalences(pop[1], pop[7], 0, 16, 0.87, 0).population_burden, [100,0,0])
 end
 
 
@@ -843,6 +856,13 @@ save_population_to_file(filename, ages, gender, predisposition, community, human
     aa  = load_population_from_file(filename, N, true)
     @test isapprox(aa[1],ages)
 end
+
+
+@testset "load_data" begin
+    aa  = load_population_from_file(filename, 100, false)
+    @test length(aa[1]) ==100
+end
+
 
 max_fecundity = 0.34
 
@@ -954,4 +974,48 @@ record = update_env_with_mda_no_births_deaths(1, copy(ages), copy(death_ages), c
 
 
 @test env_miracidia_equ[end] > env_miracidia_equ[end-1]
+end
+
+times = []
+prev = []
+sac_prev = []
+high_burden = []
+high_burden_sac =[]
+adult_prev = []
+high_adult_burden = []
+
+
+
+ages_equ, death_ages_equ, gender_equ, predisposition_equ, community_equ, human_cercariae_equ, eggs_equ,
+vac_status_equ, treated_equ, female_worms_equ, male_worms_equ,
+vaccinated_equ, age_contact_rate_equ,
+env_miracidia_equ, env_cercariae_equ, adherence_equ,access_equ,
+record = update_env_with_mda_no_births_deaths(100, copy(ages), copy(death_ages), copy(community), 1, 1,
+    copy(human_cercariae), copy(female_worms), copy(male_worms),
+    time_step, average_worm_lifespan,
+    copy(eggs), max_fecundity, r, worm_stages,
+    copy(vac_status), copy(gender), predis_aggregation,predis_weight,
+    copy(predisposition), copy(treated), vaccine_effectiveness,
+    density_dependent_fecundity, death_prob_by_age, ages_for_deaths,
+    copy(vaccinated), copy(age_contact_rate), copy(env_miracidia),
+    copy(env_cercariae), contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
+    female_factor, male_factor, contact_rates_by_age,
+    birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
+    record_frequency, human_cercariae_prop, miracidia_maturity_time, heavy_burden_threshold,
+    kato_katz_par, use_kato_katz)
+
+@testset "collect_prevs" begin
+    b = collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden, record, 1)
+    high_ad_burden = (p->p.adult_burden[3]).(record)
+    x = randperm(length(high_ad_burden))[1]
+    @test b[7][x][1] == high_ad_burden[x]
+end
+
+
+
+@testset "collect_prevs" begin
+    b = collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden, record, 2)
+    high_ad_burden = (p->p.adult_burden[3]).(record)
+    x = randperm(length(high_ad_burden))[1]
+    @test ((b[7][x][2] == b[7][x][1]) & (b[7][x][2] == high_ad_burden[x]))
 end
