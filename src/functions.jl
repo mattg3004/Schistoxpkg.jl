@@ -1584,60 +1584,6 @@ function find_mean_worms_by_age(ages, female_worms, male_worms, sim_number, mean
 end
 
 
-function run_simulation(N, max_age, initial_worms, time_step, worm_stages, female_factor, male_factor,
-    initial_miracidia, initial_miracidia_days,env_cercariae, contact_rate, max_fecundity,
-    density_dependent_fecundity, r, num_time_steps, birth_rate, average_worm_lifespan, predis_aggregation,
-    env_cercariae_survival_prop, env_miracidia_survival_prop, mda_coverage, mda_round, vaccine_effectiveness,
-    mda_info, vaccine_info, record_frequency, mda_adherence, scenario,human_cercariae_prop)
-
-
-    age_death_rate_per_1000 = [6.56, 0.93, 0.3, 0.23, 0.27, 0.38, 0.44, 0.48,0.53, 0.65,
-                               0.88, 1.06, 1.44, 2.1, 3.33, 5.29, 8.51, 13.66,
-                               21.83, 29.98, 36.98]
-
-
-    contact_rates_by_age = make_age_contact_rate_array(max_age, scenario, [], [])
-    death_rate_per_time_step = make_death_rate_array(age_death_rate_per_1000, time_step)
-        death_rate_per_time_step =     death_rate_per_time_step.*100
-
-
-    ages , gender, predisposition,  human_cercariae, eggs, vac_status,
-            treated, female_worms, male_worms, vaccinated,
-            age_contact_rate, env_miracidia, adherence, access =
-        create_population(N, max_age, N_communities, community_probs, initial_worms, contact_rates_by_age,
-            worm_stages, female_factor, male_factor,
-            initial_miracidia, initial_miracidia_days, predis_aggregation, predis_weight,
-             time_step,
-            mda_adherence, mda_access)
-
-
-
-            ages, death_ages, gender, predisposition, community, human_cercariae, eggs,
-            vac_status, treated, female_worms, male_worms,
-            vaccinated, age_contact_rate,
-            env_miracidia, env_cercariae, adherence,access,
-            record =
-        update_env(num_time_steps, ages, death_ages, community, community_contact_rate, community_probs,
-            human_cercariae, female_worms, male_worms,
-            time_step, average_worm_lifespan,
-            eggs, max_fecundity, r, worm_stages,
-            vac_status, gender, predis_aggregation,predis_weight,
-            predisposition, treated, vaccine_effectiveness,
-            density_dependent_fecundity, death_prob_by_age, ages_for_deaths,
-            vaccinated, age_contact_rate, env_miracidia,
-            env_cercariae, contact_rate, env_cercariae_survival_prop, env_miracidia_survival_prop,
-            female_factor, male_factor, contact_rates_by_age,
-            birth_rate, mda_info, vaccine_info, adherence, mda_adherence, access, mda_access,
-            record_frequency, human_cercariae_prop,miracidia_maturity_time)
-
-    return ages , gender, predisposition,  human_cercariae, eggs,
-    vac_status, treated, female_worms, male_worms, vaccinated,
-    age_contact_rate, death_rate, env_miracidia, env_cercariae,
-    adherence, record
-end
-
-
-
 
 
 
@@ -1658,7 +1604,7 @@ function update_env_to_equilibrium(num_time_steps, ages, human_cercariae, female
 
 
     sim_time = 0
-    record_time = record_frequency
+    record_time = 0
     record = out[]
 
 
