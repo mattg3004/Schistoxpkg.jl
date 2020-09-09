@@ -1,5 +1,8 @@
 # Schistoxpkg
 
+Go to https://mattg3004.github.io/Schistoxpkg.jl/dev/ for documentation
+
+
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://mattg3004.github.io/Schistoxpkg.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://mattg3004.github.io/Schistoxpkg.jl/dev)
 
@@ -21,4 +24,4 @@ This work is licensed under a
 [cc-by-shield]: https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg
 
 
-Go to https://mattg3004.github.io/Schistoxpkg.jl/dev/ for documentation
+
