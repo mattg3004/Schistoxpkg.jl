@@ -2,6 +2,9 @@ module Schistoxpkg
 include("parameters.jl")
 include("functions.jl")
 
+export Environment
+export Human
+export Parameters
 export create_population
 export make_age_contact_rate_array
 export make_death_rate_array
