@@ -343,7 +343,7 @@ end
 function create_population(pars)
 
 
-    if length(pars.community_probs) != pars.N_communities
+     if length(pars.community_probs) != pars.N_communities
         error("must provide probabilities for membership of each community")
     else
         community_selection = 1
@@ -352,7 +352,9 @@ function create_population(pars)
         community_selection = cumsum(pars.community_probs)/sum(pars.community_probs)
     end
 
-    humans = []
+    env = Environment()
+    humans = env.humans
+
 #=  initialize the Gamma distribution for predisposition selection  =#
     pre = Gamma(pars.predis_aggregation, 1/pars.predis_aggregation)
 
@@ -360,12 +362,13 @@ function create_population(pars)
     predisposition = rand(pre, pars.N)
 
 #=  initialize and fill the environmental variable  =#
-    miracidia = Int[]
 
+    miracidia = env.miracidia
     for i in 1 : pars.initial_miracidia_days
         push!(miracidia, pars.initial_miracidia)
     end
-
+    cercariae = env.cercariae
+    cercariae = pars.init_env_cercariae;
     for i in 1:pars.N
 
         f_worms = fill(0, pars.worm_stages)
@@ -389,9 +392,9 @@ function create_population(pars)
 
 # Human(age,gender, predisposition, female_worms, male_worms, eggs, vac_status, age_contact_rate, adherence, access, community)
         death_age = get_death_age(pars)
-        push!(humans, Human(rand()*pars.max_age, death_age, rand([0,1]), predisposition[i],
+        push!(humans, Human(pars.max_age*rand(), death_age, rand([0,1]), predisposition[i],
         f_worms, m_worms,
-        0, 0, 0, adherence, access, community, 0,0,0,0))
+        0, 0, 0, adherence, access, community, 0, 0,0,0))
 
         age = trunc(Int, humans[end].age)
 
@@ -411,9 +414,9 @@ function create_population(pars)
 
         humans[end].uptake_rate = humans[end].predisposition * pars.contact_rate * humans[end].age_contact_rate *
                                     pars.time_step * pars.community_contact_rate[community]
-
     end
-    return humans, miracidia
+    return humans, miracidia, cercariae
+
 end
 
 

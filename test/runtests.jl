@@ -56,6 +56,15 @@ kato_katz_par = 0
 heavy_burden_threshold = 16
 
 
+
+
+@testset "test_pars" begin
+    pars = Parameters()
+    @test pars.N == 1000
+end
+
+
+
 pars = Parameters(N, time_step, N_communities, community_probs, community_contact_rate,
         density_dependent_fecundity, average_worm_lifespan,
         max_age, initial_worms, initial_miracidia, initial_miracidia_days, init_env_cercariae,
@@ -66,7 +75,53 @@ pars = Parameters(N, time_step, N_communities, community_probs, community_contac
         spec_ages, ages_per_index, record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold)
 pars = make_age_contact_rate_array(pars, scenario, [],[]);
 
+
+@testset "test_human" begin
+    h = Human()
+    @test typeof(h) == Human
+end
+
+
+
+
+@testset "create_contacts_settings" begin
+    conts = create_contact_settings("low adult")
+    @test conts[4] == 0.02
+end
+
+
+@testset "create_contacts_settings" begin
+    conts = create_contact_settings("high adult")
+    @test conts[4] == 0.12
+end
+
+
+@testset "create_contacts_settings" begin
+    conts = create_contact_settings("moderate adult")
+    @test conts[4] == 0.06
+end
+
+pars.max_age = 5
+
+
+@test_throws ErrorException("max_age must be greater than 60") make_age_contact_rate_array(pars, "high adult", [], [])
+pars.max_age = 100
+pars = make_age_contact_rate_array(pars, "high adult", [], [])
+@testset "contact_array" begin
+
+    @test pars.contact_rate_by_age_array[1] == 0.01
+end
+
+
 humans, miracidia, cercariae = create_population_specified_ages(pars)
+
+@testset "create_population" begin
+    @test length(humans) == N
+end
+
+
+
+humans, miracidia, cercariae = create_population(pars)
 
 @testset "create_population" begin
     @test length(humans) == N
@@ -113,11 +168,19 @@ male_worms = (p->p.male_worms).(humans)
 end
 
 
+
+
 @testset "make_age_contact_rate_array(max_age,scenario)" begin
-    @test pars.contact_rate_by_age_array[1] == 0.032
+    @test pars.contact_rate_by_age_array[100] == 0.12
 end
 
 
-@testset "make_age_contact_rate_array(max_age,scenario)" begin
-    @test pars.contact_rate_by_age_array[100] == 0.06
+humans, miracidia, cercariae = create_population(pars)
+old_cercariae = cercariae
+old_length_miracidia = length(miracidia)
+
+
+humans, cercariae, miracidia = cercariae_uptake!(humans, cercariae, miracidia, pars)
+@testset "cerc_uptake" begin
+    @test length(miracidia) <  old_length_miracidia
 end
