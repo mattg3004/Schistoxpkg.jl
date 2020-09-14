@@ -1,18 +1,18 @@
 using Distributions
 using Random
 using JLD
-using DataFrames
+# using DataFrames
 #=
     set up a Human struct to contain information
 =#
-
-mutable struct Epi_distributions
-  age_histogram::DataFrames.DataFrame
-  burden_histogram::DataFrames.DataFrame
-  egg_histogram::DataFrames.DataFrame
-  prevalence_histogram::DataFrames.DataFrame
-  n_samples::Int64
-end
+#
+# mutable struct Epi_distributions
+#   age_histogram::DataFrames.DataFrame
+#   burden_histogram::DataFrames.DataFrame
+#   egg_histogram::DataFrames.DataFrame
+#   prevalence_histogram::DataFrames.DataFrame
+#   n_samples::Int64
+# end
 
 
 
@@ -751,70 +751,70 @@ function egg_production!(humans, pars)
 end
 
 
-
-# histograms collected from data, non-essential
-function get_distributions(humans)
-
-  eggs = (p->p.eggs).(humans)
-  burden = (p->p.male_worms).(humans) + (p->p.female_worms).(humans)
-  age = (p->p.age).(humans)
-  # prevalence = zeros(length(env.humans))
-  #
-  # for i in 1:length(env.humans)
-  #     burden[i] = 1.0*sum(env.humans[i].male_worms) + sum(env.humans[i].female_worms)
-  #     age[i] = 1.0*env.humans[i].age
-  #     eggs[i] = 1.0*env.humans[i].eggs
-  # end
-
-  df = DataFrame(Age = 1:length(humans),Burden = 1:length(humans), Eggs = 1:length(humans))
-  bins = collect(0.0:3.0:2*99.0)
-  ages = cut(round.(age),bins)
-  df[!, 1] = ages;
-  df[!, 2] = burden;
-  df[!, 3] = eggs;
-
-  burden_histogram = by(df, [:Age], df -> mean(df[:Burden]));
-  egg_histogram = by(df, [:Age], df -> mean(df[:Eggs]));
-  age_histogram = by(df, [:Age], df -> length(df[:Eggs]));
-  prevalence_histogram = by(df, [:Age], df -> sum(df[:Eggs].>0)/length(df[:Burden]))
-
-  dist = Epi_distributions(age_histogram,burden_histogram,egg_histogram,prevalence_histogram,1)
-  return dist
-end
-
-
-
-
-# histograms collected from data, non-essential
-function get_distributions_by_year(humans)
-
-  eggs = (p->p.eggs).(humans)
-  burden = (p->p.male_worms).(humans) + (p->p.female_worms).(humans)
-  age = (p->p.age).(humans)
-  # prevalence = zeros(length(env.humans))
-  #
-  # for i in 1:length(env.humans)
-  #     burden[i] = 1.0*sum(env.humans[i].male_worms) + sum(env.humans[i].female_worms)
-  #     age[i] = 1.0*env.humans[i].age
-  #     eggs[i] = 1.0*env.humans[i].eggs
-  # end
-
-  df = DataFrame(Age = 1:length(humans),Burden = 1:length(humans), Eggs = 1:length(humans))
-  bins = collect(0.0:1.0:120)
-  ages = cut(round.(age),bins)
-  df[!, 1] = ages;
-  df[!, 2] = burden;
-  df[!, 3] = eggs;
-
-  burden_histogram = by(df, [:Age], df -> mean(df[:Burden]));
-  egg_histogram = by(df, [:Age], df -> mean(df[:Eggs]));
-  age_histogram = by(df, [:Age], df -> length(df[:Eggs]));
-  prevalence_histogram = by(df, [:Age], df -> sum(df[:Eggs].>0)/length(df[:Burden]))
-
-  dist = Epi_distributions(age_histogram,burden_histogram,egg_histogram,prevalence_histogram,1)
-  return dist
-end
-
+#
+# # histograms collected from data, non-essential
+# function get_distributions(humans)
+#
+#   eggs = (p->p.eggs).(humans)
+#   burden = (p->p.male_worms).(humans) + (p->p.female_worms).(humans)
+#   age = (p->p.age).(humans)
+#   # prevalence = zeros(length(env.humans))
+#   #
+#   # for i in 1:length(env.humans)
+#   #     burden[i] = 1.0*sum(env.humans[i].male_worms) + sum(env.humans[i].female_worms)
+#   #     age[i] = 1.0*env.humans[i].age
+#   #     eggs[i] = 1.0*env.humans[i].eggs
+#   # end
+#
+#   df = DataFrame(Age = 1:length(humans),Burden = 1:length(humans), Eggs = 1:length(humans))
+#   bins = collect(0.0:3.0:2*99.0)
+#   ages = cut(round.(age),bins)
+#   df[!, 1] = ages;
+#   df[!, 2] = burden;
+#   df[!, 3] = eggs;
+#
+#   burden_histogram = by(df, [:Age], df -> mean(df[:Burden]));
+#   egg_histogram = by(df, [:Age], df -> mean(df[:Eggs]));
+#   age_histogram = by(df, [:Age], df -> length(df[:Eggs]));
+#   prevalence_histogram = by(df, [:Age], df -> sum(df[:Eggs].>0)/length(df[:Burden]))
+#
+#   dist = Epi_distributions(age_histogram,burden_histogram,egg_histogram,prevalence_histogram,1)
+#   return dist
+# end
+#
+#
+#
+#
+# # histograms collected from data, non-essential
+# function get_distributions_by_year(humans)
+#
+#   eggs = (p->p.eggs).(humans)
+#   burden = (p->p.male_worms).(humans) + (p->p.female_worms).(humans)
+#   age = (p->p.age).(humans)
+#   # prevalence = zeros(length(env.humans))
+#   #
+#   # for i in 1:length(env.humans)
+#   #     burden[i] = 1.0*sum(env.humans[i].male_worms) + sum(env.humans[i].female_worms)
+#   #     age[i] = 1.0*env.humans[i].age
+#   #     eggs[i] = 1.0*env.humans[i].eggs
+#   # end
+#
+#   df = DataFrame(Age = 1:length(humans),Burden = 1:length(humans), Eggs = 1:length(humans))
+#   bins = collect(0.0:1.0:120)
+#   ages = cut(round.(age),bins)
+#   df[!, 1] = ages;
+#   df[!, 2] = burden;
+#   df[!, 3] = eggs;
+#
+#   burden_histogram = by(df, [:Age], df -> mean(df[:Burden]));
+#   egg_histogram = by(df, [:Age], df -> mean(df[:Eggs]));
+#   age_histogram = by(df, [:Age], df -> length(df[:Eggs]));
+#   prevalence_histogram = by(df, [:Age], df -> sum(df[:Eggs].>0)/length(df[:Burden]))
+#
+#   dist = Epi_distributions(age_histogram,burden_histogram,egg_histogram,prevalence_histogram,1)
+#   return dist
+# end
+#
 
 
 
