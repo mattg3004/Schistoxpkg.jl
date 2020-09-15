@@ -57,7 +57,7 @@ export death_of_human_save_predis
 export birth_of_human_specified_predis
 export update_env_with_mda_no_births_deaths
 export run_repeated_sims_no_births_deaths
-
+export update_env_constant_population
 # using Distributions
 # using Random
 # using PoissonRandom

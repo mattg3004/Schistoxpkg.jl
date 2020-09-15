@@ -246,15 +246,17 @@ function make_age_contact_rate_array(pars, scenario, input_ages, input_contact_r
         end
 
         else
-            pars.contact_rate_by_age_array = [fill(input_contact_rates[end], trunc(Int,(pars.max_age+1)))]
-            pars.contact_rate_by_age_array = pars.contact_rate_by_age_array[1]
+            for i in 1:length(pars.contact_rate_by_age_array)
+                pars.contact_rate_by_age_array[i] = input_contact_rates[end]
+            end
+
             for i in 1 : length(input_contact_rates)
                 if i == 1
-                    for j in 1:(input_ages[i] + 1)
+                    for j in 1:trunc(Int,(input_ages[i] + 1))
                         pars.contact_rate_by_age_array[j] = input_contact_rates[i]
                     end
                 else
-                    for j in (input_ages[i-1]+2):(input_ages[i] + 1)
+                    for j in trunc(Int,(input_ages[i-1]+2)):trunc(Int,(input_ages[i] + 1))
                         pars.contact_rate_by_age_array[j] = input_contact_rates[i]
                     end
                 end
@@ -677,16 +679,6 @@ end
 # function calculate_worm_pairs(humans)
 #     return min(sum(humans.female_worms), sum(humans.male_worms))
 # end
-
-
-function calculate_worm_pairs(female_worms, male_worms)
-    worm_pairs = Int64[]
-    for i in 1:length(female_worms)
-        push!(worm_pairs, min(sum(female_worms[i]), sum(male_worms[i])))
-    end
-    return(worm_pairs)
-    #return min.(sum.(female_worms), sum.(male_worms))
-end
 
 
 function calculate_worm_pairs(female_worms, male_worms)
