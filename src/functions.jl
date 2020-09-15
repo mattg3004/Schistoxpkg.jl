@@ -1452,7 +1452,7 @@ end
 
 
 # when we run multiple simulations, we store them in an array. This function will store the prevalence and sac prevalence
-function collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, record, run)
+function collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden, record, run)
         if run == 1
             for i in 1 : length(record)
                 push!(times, record[i].time)
@@ -1461,6 +1461,7 @@ function collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adul
                 push!(high_burden, [record[i].population_burden[3]])
                 push!(high_burden_sac, [record[i].sac_burden[3]])
                 push!(adult_prev, [record[i].adult_prev])
+                push!(high_adult_burden, [record[i].adult_burden[3]])
             end
         else
             for i in 1 : length(record)
@@ -1469,9 +1470,10 @@ function collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adul
                 push!(high_burden[i], record[i].population_burden[3])
                 push!(high_burden_sac[i], record[i].sac_burden[3])
                 push!(adult_prev[i], record[i].adult_prev)
+                push!(high_adult_burden[i], record[i].adult_burden[3])
             end
         end
-    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev
+    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden
 end
 
 
@@ -1485,6 +1487,7 @@ function run_repeated_sims_no_population_change(filename, num_time_steps, mda_in
     high_burden = []
     high_burden_sac =[]
     adult_prev = []
+    high_adult_burden = []
 
 
     for run in 1:num_repeats
@@ -1498,12 +1501,12 @@ function run_repeated_sims_no_population_change(filename, num_time_steps, mda_in
 
 
 
-        times, prev, sac_prev, high_burden, high_burden_sac, adult_prev = collect_prevs(times, prev, sac_prev, high_burden,
-        high_burden_sac, adult_prev, record, run)
+        times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden = collect_prevs(times, prev, sac_prev, high_burden,
+        high_burden_sac, adult_prev, high_adult_burden, record, run)
 
     end
 
-    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev
+    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden
 end
 
 
