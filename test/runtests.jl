@@ -203,3 +203,90 @@ end
 @testset "calc_worm_pairs" begin
     @test isapprox(calculate_worm_pairs([[1,1],[2,3]], [[2,3],[5,3]]) , [2,5])
 end
+
+pars.mda_adherence = 1
+pars.mda_access = 1
+pars.initial_worms = 50
+Random.seed!(2525)
+humans, miracidia, cercariae = create_population(pars)
+
+
+humans = egg_production!(humans, pars)
+@testset "egg_prod" begin
+    @test mean((p->p.eggs).(humans)) == 5.547
+end
+
+@testset "mira_prod" begin
+    @test miracidia_production!(humans) == 82
+end
+
+humans = death_of_human(humans)
+@testset "death" begin
+    length(humans) < pars.N
+end
+
+
+humans = administer_drug(humans, 1:length(humans), 1)
+@testset "administer_drug" begin
+    @test sum((p->p.eggs).(humans)) == 0
+end
+
+
+@testset "administer_drug" begin
+    @test sum(sum.((p->p.female_worms).(humans))) == 0
+end
+
+
+administer_vaccine(humans, 1:length(humans), 1, 3)
+
+@testset "administer_vaccine" begin
+    @test sum(sum.((p->p.vac_status).(humans))) == 3*length(humans)
+end
+
+Random.seed!(2525)
+humans, miracidia, cercariae = create_population(pars)
+
+
+humans = egg_production!(humans, pars)
+
+mda(humans, 1, 0, 100, 1, [0,1])
+@testset "mda" begin
+    @test sum((p->p.eggs).(humans)) == 0
+end
+
+
+first_mda_time = 1
+last_mda_time = 10
+mda_info = create_mda(0, 0.75, 0, first_mda_time,
+    last_mda_time, 1, [0,1], [0,1], [0,1], 1)
+@testset "create_mda" begin
+    @test length(mda_info) == (last_mda_time - first_mda_time)*3
+end
+
+
+
+
+mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, next_mda_time, mda_gender = update_mda(mda_info, 0)
+@testset "update_mda" begin
+    @test [min_age_mda, max_age_mda] == [0,4]
+end
+
+
+@testset "update_mda" begin
+ @test update_mda(mda_info, 1)[1] == 0.75
+end
+
+@testset "vac_decay" begin
+    @test vac_decay(humans)[1].vac_status == -1
+end
+
+Random.seed!(33)
+@testset "Kato_katz" begin
+    @test kato_katz(10, Gamma(0.87, 1/0.87)) == 1
+end
+Random.seed!(33)
+humans, miracidia, cercariae = create_population(pars)
+humans = egg_production!(humans, pars)
+@testset "count_eggs" begin
+    @test count_eggs(humans) == 5765
+end
