@@ -184,3 +184,22 @@ humans, cercariae, miracidia = cercariae_uptake!(humans, cercariae, miracidia, p
 @testset "cerc_uptake" begin
     @test length(miracidia) <  old_length_miracidia
 end
+
+pars = make_age_contact_rate_array(pars, scenario, [4,9,15,pars.max_age], [10.1,2.1,4.2,6.2])
+@testset "new_contact_rate" begin
+    @test pars.contact_rate_by_age_array[1] == 10.1
+end
+start_worms = 10000
+for h in humans
+    h.female_worms = [start_worms]
+    h.male_worms = [start_worms]
+end
+humans = worm_maturity!(humans, pars)
+@testset "worm_maturity" begin
+    @test humans[1].female_worms[1] < start_worms
+end
+
+
+@testset "calc_worm_pairs" begin
+    @test isapprox(calculate_worm_pairs([[1,1],[2,3]], [[2,3],[5,3]]) , [2,5])
+end
