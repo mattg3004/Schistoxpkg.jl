@@ -24,6 +24,7 @@ export cercariae_death!
 export miracidia_death!
 export mda
 export administer_drug
+export administer_vaccine
 export update_contact_rate
 export update_death_rate
 export update_vaccine
