@@ -1001,13 +1001,13 @@ end
 
 function update_mda(mda_info, mda_round)
 
-    i = min(mda_round + 1, size(mda_info)[1])
+    i = min(mda_round + 1, length(mda_info))
     mda_coverage = mda_info[i].coverage
     min_age_mda =  mda_info[i].min_age
     max_age_mda =  mda_info[i].max_age
     mda_effectiveness =  mda_info[i].effectiveness
     mda_gender = mda_info[i].gender
-    if mda_round === size(mda_info)[1]
+    if mda_round === length(mda_info)
         next_mda_time = Inf
     else
         next_mda_time = mda_info[i].time

@@ -10,7 +10,7 @@ export make_age_contact_rate_array
 export make_death_rate_array
 export birth_of_human
 export cercariae_uptake!
-export worm_maturity
+export worm_maturity!
 export calculate_worm_pairs
 export calculate_total_worms
 export egg_production!
