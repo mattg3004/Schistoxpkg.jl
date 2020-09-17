@@ -17,6 +17,7 @@ export egg_production!
 export miracidia_production!
 export death_of_human
 export birth_of_human
+export count_eggs
 export human_cercariae_maturity
 export update_env
 export find_death_rate

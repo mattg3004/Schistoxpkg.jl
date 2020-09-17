@@ -287,6 +287,7 @@ end
 Random.seed!(33)
 humans, miracidia, cercariae = create_population(pars)
 humans = egg_production!(humans, pars)
+
 @testset "count_eggs" begin
     @test count_eggs(humans) == 5765
 end
