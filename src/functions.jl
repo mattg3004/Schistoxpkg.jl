@@ -432,6 +432,15 @@ end
     There is also a male and female adjustment to predisposition
     adjusting for gender specific behaviour
 =#
+"""
+    create_population_specified_ages
+
+This will create the initial human population with an age distribution
+specified by the spec_ages variable
+Predisposition is taken to be gamma distributed. There is also a male and female
+adjustment to predisposition adjusting for gender specific behaviour
+In addition to this, it will create the initial miracidia environment vector
+"""
 function create_population_specified_ages(pars)
 
 
@@ -545,11 +554,13 @@ end
     and the number of larvae in the environment
     input d here is the whole humans Array
 =#
-"""
-cercariae_uptake(humans, cercariae, miracidia, pars)
 
-    uptake cercariae into humans, whilst updating cercariae with miracidia.
-    Uptaken cercariae immediately become worms in this formulation
+
+"""
+    cercariae_uptake(humans, cercariae, miracidia, pars)
+
+uptake cercariae into humans, whilst updating cercariae with miracidia.
+Uptaken cercariae immediately become worms in this formulation
 """
 function cercariae_uptake!(humans, cercariae, miracidia, pars)
 
@@ -639,7 +650,13 @@ end
 # for human in humans
 #     println(human.eggs)
 # end
+"""
+    worm_maturity(female_worms, male_worms, worm_stages,
+        average_worm_lifespan, time_step)
 
+function to kill worms, and if there is more than one stage for worm life,
+        to update how many worms are in each stage
+"""
 function worm_maturity!(humans, pars)
 
     # probability of aging out of category/ dying
@@ -713,7 +730,13 @@ from the mean and aggregation in the function below
 
 # r - aggregation factor for NB distribution
 
+"""
+    egg_production(eggs, max_fecundity, r, worm_pairs,
+                        density_dependent_fecundity, time_step)
 
+function to produce eggs for individuals, dependent on how many worms they have
+        and the max fecundity and density dependent fecundity of the population
+"""
 function egg_production!(humans, pars)
     male_worms = (p->p.male_worms).(humans)
     female_worms = (p->p.female_worms).(humans)
