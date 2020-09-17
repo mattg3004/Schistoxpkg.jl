@@ -277,7 +277,7 @@ end
 end
 
 @testset "vac_decay" begin
-    @test vac_decay(humans)[1].vac_status == -1
+    @test vac_decay!(humans)[1].vac_status == -1
 end
 
 Random.seed!(33)

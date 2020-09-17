@@ -1098,7 +1098,7 @@ end
 # end
 
 
-function vac_decay(humans)
+function vac_decay!(humans)
     for h in humans
         h.vac_status -= 1
     end

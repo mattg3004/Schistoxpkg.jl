@@ -29,6 +29,7 @@ export update_contact_rate
 export update_death_rate
 export update_vaccine
 export vaccinate
+export vac_decay!
 export update_mda
 export load_population_from_file
 export kato_katz
