@@ -1,19 +1,6 @@
 using Distributions
 using Random
 using JLD
-# using DataFrames
-#=
-    set up a Human struct to contain information
-=#
-#
-# mutable struct Epi_distributions
-#   age_histogram::DataFrames.DataFrame
-#   burden_histogram::DataFrames.DataFrame
-#   egg_histogram::DataFrames.DataFrame
-#   prevalence_histogram::DataFrames.DataFrame
-#   n_samples::Int64
-# end
-
 
 
 mutable struct out
@@ -29,8 +16,6 @@ mutable struct out
     recorded_eggs
     time
 end
-
-
 
 
 mutable struct mda_information
@@ -82,24 +67,6 @@ mutable struct Human
 end
 
 
-# mutable struct Environment
-#     miracidia::Array{Int64,1}
-#     cercariae::Int64         # FOR COMPARISON WITH ICL MODEL
-#     humans::Array{Human,1}          # container for population
-#     time::Float64                     # in days
-
-#     # Constructors
-#     Environment() = new([],0,[],0)
-#     Environment(larvae,infective_larvae,humans,time) = new(larvae,infective_larvae,humans,time)
-# end
-
-# set up a parameters struct, then we don't need to keep track of multiple different parameter arguments
-#
-# N_communities, community_probs, initial_worms, contact_rates_by_age,
-#     death_rate_per_time_step,worm_stages, female_factor, male_factor,
-#     initial_miracidia, initial_miracidia_days, predis_aggregation, predis_weight,
-#      time_step,
-#     mda_adherence, mda_access
 
 mutable struct Parameters
     N::Int64
@@ -1236,30 +1203,6 @@ end
 
 
 
-
-function repeat_simulations(num_runs, num_sims, N, max_age,
-    initial_worms, worm_stages,max_fecundity, infective_larvae, time_step, contact_rate, r,
-    birth_rate, gamma_pre, female_factor, male_factor)
-
-    larvae = []
-    for i in 1 : initial_larvae_days
-        push!(larvae, initial_larvae)
-    end
-    age_contact_rates = make_age_contact_rate_array(max_age)
-    age_death_rate, death_rate_per_time_step = make_death_rate_array(time_step)
-
-    for i in 1:num_runs
-        humans = create_population(N, max_age, initial_worms, age_contact_rates,
-        death_rate_per_time_step,worm_stages)
-
-        humans = update_env(humans, max_fecundity, num_sims, larvae,
-        infective_larvae, time_step, contact_rate, r, birth_rate, gamma_pre, female_factor,
-        male_factor, age_contact_rates, death_rate_per_time_step)
-
-    j = get_distributions(humans, gamma_k)
-    println(j[1])
-    end
-end
 
 #
 # repeat_simulations(num_runs, num_sims, N, max_age,

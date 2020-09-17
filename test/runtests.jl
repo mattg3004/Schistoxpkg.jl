@@ -52,8 +52,9 @@ record_frequency = 1/24;
 predis_aggregation = 0.8
 scenario = "moderate adult";
 use_kato_katz = 0
-kato_katz_par = 0
+kato_katz_par = 0.87
 heavy_burden_threshold = 16
+filename = "ee.jld"
 
 
 
@@ -284,10 +285,35 @@ Random.seed!(33)
 @testset "Kato_katz" begin
     @test kato_katz(10, Gamma(0.87, 1/0.87)) == 1
 end
+
 Random.seed!(33)
 humans, miracidia, cercariae = create_population(pars)
 humans = egg_production!(humans, pars)
 
 @testset "count_eggs" begin
     @test count_eggs(humans) == 5765
+end
+
+
+record = get_prevalences!(humans, time, pars)
+@testset "get_prevs" begin
+    @test isapprox(record.sac_burden, [94.12, 52.94, 1.96])
+end
+save(filename, "humans", humans,  "miracidia", miracidia, "cercariae", cercariae, "pars", pars)
+
+humans_loaded,  miracidia_loaded, cercariae_loaded, pars_loaded = load_population_from_file(filename)
+
+@testset "load_pop" begin
+    @test humans_loaded[1].age == humans[1].age
+end
+
+@testset "update_env_to_equ" begin
+    @test update_env_to_equilibrium(1, humans, miracidia, cercariae, pars)[2][3] == 40
+end
+
+vaccine_info = []
+mda_info = create_mda(0, .75, 0, 0, 2, 1, [0,1], [0,1], [0,1], pars.drug_effectiveness)
+
+@testset "update_env_conbst_pop" begin
+    @test isapprox(update_env_constant_population(10, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2], [156, 2980, 3014])
 end
