@@ -2,6 +2,7 @@ using Schistoxpkg
 using Test
 using Distributions
 using Random
+using JLD
 
 
 env = Environment()
@@ -316,4 +317,11 @@ mda_info = create_mda(0, .75, 0, 0, 2, 1, [0,1], [0,1], [0,1], pars.drug_effecti
 
 @testset "update_env_conbst_pop" begin
     @test isapprox(update_env_constant_population(10, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2], [156, 2980, 3014])
+end
+
+
+
+
+@testset "update_env_no_birth_death" begin
+    @test isapprox(update_env_no_births_deaths(10, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2], [8415,8646,9114])
 end
