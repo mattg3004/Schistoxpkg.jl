@@ -1252,7 +1252,7 @@ function repeat_simulations(num_runs, num_sims, N, max_age,
         humans = create_population(N, max_age, initial_worms, age_contact_rates,
         death_rate_per_time_step,worm_stages)
 
-        @time humans = update_env(humans, max_fecundity, num_sims, larvae,
+        humans = update_env(humans, max_fecundity, num_sims, larvae,
         infective_larvae, time_step, contact_rate, r, birth_rate, gamma_pre, female_factor,
         male_factor, age_contact_rates, death_rate_per_time_step)
 
@@ -1420,7 +1420,7 @@ function update_env_constant_population(num_time_steps, humans,  miracidia, cerc
 
         push!(miracidia, miracidia_production!(humans))
 
-        humans = vac_decay(humans)
+        humans = vac_decay!(humans)
 
         humans = death_of_human(humans)
 
@@ -1429,6 +1429,111 @@ function update_env_constant_population(num_time_steps, humans,  miracidia, cerc
                 humans = birth_of_human(humans, pars)
             end
         end
+
+#=  uptake larvae into humans from the environment  =#
+        #=  uptake larvae into humans from the environment  =#
+        humans, cercariae, miracidia = cercariae_uptake!(humans, cercariae, miracidia, pars)
+
+
+#= check if we are at a point in time in which an mda is scheduled to take place =#
+        if sim_time >= next_mda_time
+
+#= perform mda =#
+            humans = mda(humans, mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, mda_gender)
+#= update information for the next round of mda =#
+            mda_round += 1
+            mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, next_mda_time, mda_gender =
+                            update_mda(mda_info, mda_round)
+
+        end
+
+
+#= check if we are at a point in time in which a vaccine is scheduled to take place =#
+        if sim_time >= next_vaccine_time
+
+#= perform vaccination =#
+            humans = vaccinate(humans, vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_effectiveness,
+                vaccine_gender, vaccine_duration, vaccine_round)
+#= update information for the next round of vaccination =#
+            vaccine_round += 1
+            vaccine_coverage, min_age_vaccine, max_age_vaccine, next_vaccine_time, vaccine_gender =
+                                        update_vaccine(vaccine_info, vaccine_round)
+        end
+
+
+
+#=  kill miracidia in the environment at specified death rate =#
+        miracidia =  miracidia_death!(miracidia, pars)
+#=  kill cercariae in the environment at specified death rate =#
+        cercariae =   cercariae_death!(cercariae, pars)
+
+    end
+    return humans, miracidia, cercariae, record
+end
+
+
+
+
+
+
+function update_env_no_births_deaths(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
+
+
+    update_contact_death_rates = 1/5
+    sim_time = 0
+    record_time = pars.record_frequency
+    record = []
+    print_time = 0
+
+    if size(mda_info)[1] > 0
+        mda_round = 0
+        mda_gender = mda_info[1].gender
+        mda_coverage = mda_info[1].coverage
+        min_age_mda =  mda_info[1].min_age
+        max_age_mda =  mda_info[1].max_age
+        mda_effectiveness =  mda_info[1].effectiveness
+        next_mda_time = mda_info[1].time
+    else
+        next_mda_time = Inf
+    end
+
+
+    if size(vaccine_info)[1] > 0
+        vaccine_round = 0
+        vaccine_coverage = vaccine_info[1].coverage
+        vaccine_gender = vaccine_info[1].gender
+        min_age_vaccine =  vaccine_info[1].min_age
+        max_age_vaccine =  vaccine_info[1].max_age
+        next_vaccine_time = vaccine_info[1].time
+        vaccine_duration = vaccine_info[1].duration
+    else
+        next_vaccine_time = Inf
+    end
+
+    for j in 1:num_time_steps
+
+        if sim_time >= update_contact_death_rates
+            humans = update_contact_rate(humans,  pars)
+            update_contact_death_rates += 1/5
+        end
+
+        if sim_time >= record_time
+            a = get_prevalences!(humans, sim_time, pars)
+            push!(record, a)
+            record_time += record_frequency
+        end
+
+        sim_time += time_step/365
+
+
+
+        humans =   egg_production!(humans, pars)
+
+        humans =  worm_maturity!(humans, pars)
+
+        push!(miracidia, miracidia_production!(humans))
+
+        humans = vac_decay!(humans)
 
 #=  uptake larvae into humans from the environment  =#
         #=  uptake larvae into humans from the environment  =#
@@ -1520,7 +1625,40 @@ function run_repeated_sims_no_population_change(filename, num_time_steps, mda_in
 
 
         humans, miracidia, cercariae, record =
-        @time update_env_constant_population(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info);
+            update_env_constant_population(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info);
+
+
+
+        times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden = collect_prevs(times, prev, sac_prev, high_burden,
+        high_burden_sac, adult_prev, high_adult_burden, record, run)
+
+    end
+
+    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden
+end
+
+
+
+# repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
+function run_repeated_sims_no_births_deaths(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
+
+    times = []
+    prev = []
+    sac_prev = []
+    high_burden = []
+    high_burden_sac =[]
+    adult_prev = []
+    high_adult_burden = []
+
+
+    for run in 1:num_repeats
+
+
+        humans,  miracidia, cercariae, pars = load_population_from_file(filename)
+
+
+        humans, miracidia, cercariae, record =
+            update_env_no_births_deaths(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
 
 
 
@@ -1597,7 +1735,7 @@ function update_env(num_time_steps, humans,  miracidia, cercariae, pars, mda_inf
 
         miracidia = miracidia_production(humans, miracidia)
 
-        humans = vac_decay(humans)
+        humans = vac_decay!(humans)
 
 # larvae = larvae_production(d, larvae)
         humans = death_of_human(humans, time_step)
