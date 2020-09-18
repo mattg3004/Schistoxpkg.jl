@@ -1,6 +1,6 @@
 # Schistoxpkg.jl
 
-A package to run an individual based mode of a schistosomiasis outbreak. Generally people uptake larvae based on a contact rate defined by their age, along with
+A package to run an individual based mode of a schistosomiasis outbreak based on original code from this [paper](https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-019-3749-4). Generally people uptake larvae based on a contact rate defined by their age, along with
 some predisposition which is chosen from a gamma distribution with mean 1, but some specified level of variance.
 
 All parameters are stored in the parameters.jl file in the src folder.
@@ -15,10 +15,10 @@ There is a chosen period at which contact rates are updated for each individual,
 level of contact has changed.
 
 We then calculate the total number of worms within each individual and the number of pairs of worms a person has.
-These numbers are used to calculate how many eggs someone will produce. The number of eggs is chosen from a negative binomial distribution with mean equal to the
+These numbers are used to calculate how many eggs someone will produce. The number of eggs is chosen from a poisson distribution with mean equal to the
 number of worm pairs multiplied by the max fecundity parameter and then multiplied by an exponential function which calculates the density dependent reduction in eggs produced,
 `λ wp exp(-wp z)`.
-We then kill the worms within human hosts at a given rate, which is based on average worm lifespan. 
+We then kill the worms within human hosts at a given rate, which is based on average worm lifespan.
 
 Eggs are then hatched into the environment, with egg release dependent on the age specific contact rate of each individual.
 Humans are given an age of death when they are born, which is based on some chosen death rates for each age group. We check each time step if anyone has outlived their age of death and if they have, they are then removed from the population.
