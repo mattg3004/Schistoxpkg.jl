@@ -684,25 +684,27 @@ function egg_production(eggs, max_fecundity, r, worm_pairs,
 # loop over individuals
     for i in 1 : length(eggs)
 
-wp = worm_pairs[i]
-wp = max(wp,0.000000001)
-                    @inbounds    mean_eggs =  max_fecundity * wp *
+        wp = worm_pairs[i]
+        wp = max(wp,0.000000001)
+
+        @inbounds    mean_eggs =  max_fecundity * wp *
                         exp(- density_dependent_fecundity *
                         (wp ))
 
 # calculate the number of successes
-                @inbounds      NB_r = r * wp
+        @inbounds  NB_r = r * wp
 
 # calculate the probability of a success
-                p = NB_r/(NB_r+mean_eggs)
+        p = NB_r/(NB_r+mean_eggs)
 
 # choose from NB
-
-                eggs_num = rand(NegativeBinomial(NB_r,p))[1]
+        eggs_num = rand(Poisson(mean_eggs))
+        #eggs_num = round((mean_eggs))
+                # eggs_num = rand(NegativeBinomial(NB_r,p))[1]
 
 # put this selected number of eggs into the eggs array
-            @inbounds eggs[i] = eggs_num
-        end
+        eggs[i] = eggs_num
+    end
 
 # return the eggs array
     return eggs
