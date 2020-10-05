@@ -55,6 +55,8 @@ scenario = "moderate adult";
 use_kato_katz = 0
 kato_katz_par = 0.87
 heavy_burden_threshold = 16
+rate_acquired_immunity = 0
+M0 = 15
 filename = "ee.jld"
 
 
