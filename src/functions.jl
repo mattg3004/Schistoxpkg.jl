@@ -56,14 +56,14 @@ mutable struct Human
     uptake_rate::Float64
     acquired_immunity::Float64 # level of acquired immunity
     total_worms::Int64 # total number of worms over lifetime
-
-    Human() = Human(0.0,100, 0,1.0,[],[],0,0,0.0,0,0,0,0, 0, 0, 0)
+    larvae::Array{Int64}
+    Human() = Human(0.0,100, 0,1.0,[],[],0,0,0.0,0,0,0,0, 0, 0, 0,[])
     Human(age,death_age, gender, predisposition, female_worms, male_worms, eggs, vac_status,
         age_contact_rate, adherence, access, community, relative_contact_rate, uptake_rate,
-        acquired_immunity, total_worms) =
+        acquired_immunity, total_worms, larvae) =
     new(age, death_age, gender, predisposition, female_worms, male_worms, eggs, vac_status,
         age_contact_rate, adherence, access, community, relative_contact_rate, uptake_rate,
-        acquired_immunity, total_worms)
+        acquired_immunity, total_worms, larvae)
 end
 
 
@@ -110,6 +110,7 @@ mutable struct Parameters
     heavy_burden_threshold::Int64
     rate_acquired_immunity::Float64
     M0::Float64 # mean worm burden
+    human_larvae_maturity_time::Int64
 
     # constructors with default values
     Parameters() =
@@ -126,7 +127,7 @@ mutable struct Parameters
         [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
                    65, 70, 75, 80, 85, 90, 95, 100, 110], 0.03, 1,1,
     [7639, 7082, 6524, 5674, 4725, 4147, 3928, 3362,
-              2636, 1970, 1468, 1166, 943, 718, 455, 244],5,1/24, 0, 0.87, 16, 0, 15)
+              2636, 1970, 1468, 1166, 943, 718, 455, 244],5,1/24, 0, 0.87, 16, 0, 15, 0)
 
     Parameters(N, time_step, N_communities, community_probs, community_contact_rate,
         density_dependent_fecundity, average_worm_lifespan,
@@ -136,7 +137,7 @@ mutable struct Parameters
         birth_rate, human_cercariae_prop, predis_aggregation, cercariae_survival, miracidia_survival,
         death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
         spec_ages, ages_per_index, record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold,
-        rate_acquired_immunity, M0) =
+        rate_acquired_immunity, M0, human_larvae_maturity_time) =
     new(N, time_step, N_communities, community_probs, community_contact_rate,
         density_dependent_fecundity, average_worm_lifespan,
         max_age, initial_worms, initial_miracidia, initial_miracidia_days,
@@ -145,7 +146,7 @@ mutable struct Parameters
         birth_rate, human_cercariae_prop, predis_aggregation,cercariae_survival, miracidia_survival,
                 death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
         spec_ages, ages_per_index,record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold,
-        rate_acquired_immunity, M0)
+        rate_acquired_immunity, M0, human_larvae_maturity_time)
 end
 
 
@@ -367,7 +368,7 @@ function create_population(pars)
         death_age = get_death_age(pars)
         push!(humans, Human(pars.max_age*rand(), death_age, rand([0,1]), predisposition[i],
         f_worms, m_worms,
-        0, 0, 0, adherence, access, community, 0, 0,0,0))
+        0, 0, 0, adherence, access, community, 0, 0,0,0, []))
 
         age = trunc(Int, humans[end].age)
 
@@ -466,7 +467,7 @@ function create_population_specified_ages(pars)
         death_age = get_death_age(pars)
         push!(humans, Human(ages[i]+rand(), death_age, rand([0,1]), predisposition[i],
         f_worms, m_worms,
-        0, 0, 0, adherence, access, community, 0, 0,0,0))
+        0, 0, 0, adherence, access, community, 0, 0,0,0, []))
 
         age = trunc(Int, humans[end].age)
 
@@ -551,7 +552,7 @@ we will uptake from choose from Poisson
 distribution. otherwise, just uptake 0. =#
      #   if cercariae > 0
 # calculate the rate of the poisson distribution
-        pois_rate  = h.uptake_rate * cercariae / k
+        pois_rate  = max(h.uptake_rate * (1-pars.rate_acquired_immunity * h.total_worms) *  cercariae / k, 0)
 
         # reduce the rate according to the effectiveness of the vaccine (if any is given)
         pois_rate = pois_rate * (1 - (h.vac_status > 0) * pars.vaccine_effectiveness) * (1 - h.acquired_immunity)
@@ -573,6 +574,69 @@ distribution. otherwise, just uptake 0. =#
 end
 
 
+
+"""
+    cercariae_uptake(humans, cercariae, miracidia, pars)
+
+uptake cercariae into humans, whilst updating cercariae with miracidia.
+Uptaken cercariae immediately become worms in this formulation
+"""
+function cercariae_uptake_with_human_larvae!(humans, cercariae, miracidia, pars)
+
+    humans = shuffle(humans)
+    k = length(humans)
+#= assign larvae which have been in the environment for 40 days to become infective.
+    then delete those larvae from the environmental larvae =#
+
+    if  length(miracidia) > (pars.miracidia_maturity / pars.time_step)
+        cercariae += (miracidia[1] * pars.human_cercariae_prop)
+        splice!(miracidia, 1)
+    end
+
+    @inbounds for h in humans
+#= if there are still infective larvae in the environment,
+we will uptake from choose from Poisson
+distribution. otherwise, just uptake 0. =#
+     #   if cercariae > 0
+# calculate the rate of the poisson distribution
+        pois_rate  = max(h.uptake_rate * (1-pars.rate_acquired_immunity * h.total_worms) *  cercariae / k, 0)
+
+        # reduce the rate according to the effectiveness of the vaccine (if any is given)
+        pois_rate = pois_rate * (1 - (h.vac_status > 0) * pars.vaccine_effectiveness) * (1 - h.acquired_immunity)
+
+        # choose from the Poisson distribution
+        uptake = rand(Poisson(pois_rate))
+            #println(uptake)
+        push!(h.larvae, uptake)
+
+        # # reduce the infective larvae by the number of larvae uptaken
+        cercariae -= uptake
+        cercariae = max(0, cercariae)
+    end
+    return humans, cercariae, miracidia
+end
+
+
+
+
+function human_larvae_maturity(humans, pars)
+
+#=  loop over humans  =#
+    @inbounds for h in humans
+
+#=  if we there are non-zero larvae over the age of 35 days, then add
+     these to worms and remove from human_cercariae  =#
+        if length(h.larvae) > round(pars.human_larvae_maturity_time/time_step, digits = 0)
+            females = rand(Binomial(h.larvae[1], 0.5))
+            h.female_worms[1] += females
+            h.male_worms[1] += h.larvae[1] - females
+            splice!(h.larvae, 1)
+        end
+    end
+
+#= return arrays  =#
+    return humans
+end
 
 
 
@@ -632,30 +696,30 @@ function worm_maturity!(humans, pars)
     # probability of aging out of category/ dying
     p = pars.time_step * pars.worm_stages/ (365 * pars.average_worm_lifespan)
 
-    for h in humans
+    @inbounds for h in humans
 
         # kill appropriate number of worms in the final stage
-        @inbounds n = h.female_worms[pars.worm_stages]
-        @inbounds h.female_worms[pars.worm_stages] = rand(Binomial(n, 1-p))
+         n = h.female_worms[pars.worm_stages]
+        h.female_worms[pars.worm_stages] = rand(Binomial(n, 1-p))
 
-        @inbounds n = h.male_worms[pars.worm_stages]
-        @inbounds h.male_worms[pars.worm_stages] = rand(Binomial(n, 1-p))
+        n = h.male_worms[pars.worm_stages]
+        h.male_worms[pars.worm_stages] = rand(Binomial(n, 1-p))
 
 #=
         for aging worms, we do this in reverse order, which ensures the
         correct order of aging is respected
 =#
 
-        for j in (pars.worm_stages-1):-1:1
+        @inbounds for j in (pars.worm_stages-1):-1:1
 #=   choose the number of male and female worms to age from one stage to the next   =#
-            @inbounds aging_females = rand(Binomial(h.female_worms[j], p))
-            @inbounds aging_males = rand(Binomial(h.male_worms[j], p))
+            aging_females = rand(Binomial(h.female_worms[j], p))
+            aging_males = rand(Binomial(h.male_worms[j], p))
 
 #=   add and subtract the number of worms from the appropriate categories   =#
-            @inbounds h.female_worms[j+1] += aging_females
-            @inbounds h.female_worms[j] -= aging_females
-            @inbounds h.male_worms[j+1] += aging_males
-            @inbounds h.male_worms[j] -= aging_males
+            h.female_worms[j+1] += aging_females
+            h.female_worms[j] -= aging_females
+            h.male_worms[j+1] += aging_males
+            h.male_worms[j] -= aging_males
         end
     end
     return humans
@@ -840,7 +904,7 @@ function birth_of_human(humans, pars)
 
     push!(humans, Human(0, death_age, rand([0,1]), predisp,
         f_worms, m_worms,
-        0, 0, 0, adherence, access, community,0,0,0,0))
+        0, 0, 0, adherence, access, community,0,0,0,0, []))
 
 
     humans[end].age_contact_rate = pars.age_contact_rates[1]
@@ -870,13 +934,13 @@ end
 
 function administer_drug(humans, indices, drug_effectiveness)
 
-    for i in 1:length(indices)
-        @inbounds index = indices[i]
+    @inbounds for i in 1:length(indices)
+         index = indices[i]
         p = 1 - (drug_effectiveness * humans[index].adherence)
-        @inbounds humans[index].female_worms = rand.(Binomial.(humans[index].female_worms,p))
-        @inbounds humans[index].male_worms = rand.(Binomial.(humans[index].male_worms, p))
+        humans[index].female_worms = rand.(Binomial.(humans[index].female_worms,p))
+        humans[index].male_worms = rand.(Binomial.(humans[index].male_worms, p))
 #         @inbounds humans[index].human_cercariae = rand.(Binomial.(humans[index].human_cercariae,p))
-        @inbounds humans[index].eggs = 0
+        humans[index].eggs = 0
     end
     return humans
 end
@@ -887,13 +951,13 @@ end
 
 function administer_vaccine(humans, indices, vaccine_effectiveness, vaccine_duration)
 
-    for i in 1:length(indices)
-        @inbounds index = indices[i]
+    @inbounds for i in 1:length(indices)
+         index = indices[i]
         p = 1 - (vaccine_effectiveness * humans[index].adherence)
-        @inbounds humans[index].female_worms = rand.(Binomial.(humans[index].female_worms,p))
-        @inbounds humans[index].male_worms = rand.(Binomial.(humans[index].male_worms, p))
-        @inbounds humans[index].eggs = 0
-        @inbounds humans[index].vac_status = vaccine_duration * humans[index].adherence
+        humans[index].female_worms = rand.(Binomial.(humans[index].female_worms,p))
+        humans[index].male_worms = rand.(Binomial.(humans[index].male_worms, p))
+        humans[index].eggs = 0
+        humans[index].vac_status = vaccine_duration * humans[index].adherence
     end
     return humans
 end
@@ -1246,6 +1310,49 @@ end
 
 
 
+
+
+function update_env_to_equilibrium_human_larvae(num_time_steps, humans, miracidia, cercariae, pars)
+
+
+
+    sim_time = 0
+    record_time = 0
+    env = Environment()
+    record = env.record
+
+
+    for j in 1:num_time_steps
+
+        if sim_time >= record_time
+            a = get_prevalences!(humans, sim_time, pars)
+            push!(record, a)
+            record_time += pars.record_frequency
+        end
+
+        sim_time += pars.time_step/365
+
+        humans =   egg_production!(humans, pars)
+
+        humans =  worm_maturity!(humans, pars)
+
+        push!(miracidia, miracidia_production!(humans))
+
+#=  uptake larvae into humans from the environment  =#
+        humans, cercariae, miracidia = cercariae_uptake_with_human_larvae!(humans, cercariae, miracidia, pars)
+        humans = human_larvae_maturity(humans, pars)
+#=  kill miracidia in the environment at specified death rate =#
+        miracidia =  miracidia_death!(miracidia, pars)
+#=  kill cercariae in the environment at specified death rate =#
+        cercariae =   cercariae_death!(cercariae, pars)
+
+
+    end
+    return humans, miracidia, cercariae, record
+end
+
+
+
 function update_env_to_equilibrium_increasing(num_time_steps, humans, miracidia, cercariae, pars)
 
 
@@ -1343,7 +1450,7 @@ function update_env_constant_population(num_time_steps, humans,  miracidia, cerc
 
         end
 
-        humans =   egg_production!(humans, pars)
+        humans =  egg_production!(humans, pars)
 
         humans =  worm_maturity!(humans, pars)
 
@@ -1394,7 +1501,121 @@ function update_env_constant_population(num_time_steps, humans,  miracidia, cerc
 #=  kill miracidia in the environment at specified death rate =#
         miracidia =  miracidia_death!(miracidia, pars)
 #=  kill cercariae in the environment at specified death rate =#
-        cercariae =   cercariae_death!(cercariae, pars)
+        cercariae =  cercariae_death!(cercariae, pars)
+
+    end
+    return humans, miracidia, cercariae, record
+end
+
+
+
+function update_env_constant_population_human_larvae(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
+
+
+    update_contact_death_rates = 1/5
+    sim_time = 0
+    record_time = pars.record_frequency
+    record = []
+    print_time = 0
+
+    if size(mda_info)[1] > 0
+        mda_round = 0
+        mda_gender = mda_info[1].gender
+        mda_coverage = mda_info[1].coverage
+        min_age_mda =  mda_info[1].min_age
+        max_age_mda =  mda_info[1].max_age
+        mda_effectiveness =  mda_info[1].effectiveness
+        next_mda_time = mda_info[1].time
+    else
+        next_mda_time = Inf
+    end
+
+
+    if size(vaccine_info)[1] > 0
+        vaccine_round = 0
+        vaccine_coverage = vaccine_info[1].coverage
+        vaccine_gender = vaccine_info[1].gender
+        min_age_vaccine =  vaccine_info[1].min_age
+        max_age_vaccine =  vaccine_info[1].max_age
+        next_vaccine_time = vaccine_info[1].time
+        vaccine_duration = vaccine_info[1].duration
+    else
+        next_vaccine_time = Inf
+    end
+
+    for j in 1:num_time_steps
+
+        if sim_time >= update_contact_death_rates
+            humans = update_contact_rate(humans,  pars)
+            update_contact_death_rates += 1/5
+        end
+
+        if sim_time >= record_time
+            a = get_prevalences!(humans, sim_time, pars)
+            push!(record, a)
+            record_time += record_frequency
+        end
+
+        sim_time += time_step/365
+
+        for h in humans
+            h.age += time_step/365
+
+        end
+
+        humans =  egg_production!(humans, pars)
+
+        humans =  worm_maturity!(humans, pars)
+
+        push!(miracidia, miracidia_production!(humans))
+
+        humans = vac_decay!(humans)
+
+        humans = death_of_human(humans)
+
+        if length(humans) < pars.N
+            for k in 1:(pars.N - length(humans))
+                humans = birth_of_human(humans, pars)
+            end
+        end
+
+#=  uptake larvae into humans from the environment  =#
+        #=  uptake larvae into humans from the environment  =#
+
+        humans, cercariae, miracidia = cercariae_uptake_with_human_larvae!(humans, cercariae, miracidia, pars)
+        humans = human_larvae_maturity(humans, pars)
+
+#= check if we are at a point in time in which an mda is scheduled to take place =#
+        if sim_time >= next_mda_time
+
+#= perform mda =#
+            humans = mda(humans, mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, mda_gender)
+#= update information for the next round of mda =#
+            mda_round += 1
+            mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, next_mda_time, mda_gender =
+                            update_mda(mda_info, mda_round)
+
+        end
+
+
+#= check if we are at a point in time in which a vaccine is scheduled to take place =#
+        if sim_time >= next_vaccine_time
+
+#= perform vaccination =#
+            humans = vaccinate(humans, vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_effectiveness,
+                vaccine_gender, vaccine_duration, vaccine_round)
+#= update information for the next round of vaccination =#
+            vaccine_round += 1
+            vaccine_coverage, min_age_vaccine, max_age_vaccine, next_vaccine_time, vaccine_gender =
+                                        update_vaccine(vaccine_info, vaccine_round)
+        end
+
+
+
+#=  kill miracidia in the environment at specified death rate =#
+        miracidia =  miracidia_death!(miracidia, pars)
+#=  kill cercariae in the environment at specified death rate =#
+        cercariae =  cercariae_death!(cercariae, pars)
 
     end
     return humans, miracidia, cercariae, record
@@ -1456,9 +1677,9 @@ function update_env_constant_population_increasing(num_time_steps, humans,  mira
 
         end
 
-        humans =   egg_production_increasing!(humans, pars)
+        humans = egg_production_increasing!(humans, pars)
 
-        humans =  worm_maturity!(humans, pars)
+        humans = worm_maturity!(humans, pars)
 
         push!(miracidia, miracidia_production!(humans))
 
@@ -1581,6 +1802,112 @@ function update_env_no_births_deaths(num_time_steps, humans,  miracidia, cercari
         #=  uptake larvae into humans from the environment  =#
         humans, cercariae, miracidia = cercariae_uptake!(humans, cercariae, miracidia, pars)
 
+
+#= check if we are at a point in time in which an mda is scheduled to take place =#
+        if sim_time >= next_mda_time
+
+#= perform mda =#
+            humans = mda(humans, mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, mda_gender)
+#= update information for the next round of mda =#
+            mda_round += 1
+            mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, next_mda_time, mda_gender =
+                            update_mda(mda_info, mda_round)
+
+        end
+
+
+#= check if we are at a point in time in which a vaccine is scheduled to take place =#
+        if sim_time >= next_vaccine_time
+
+#= perform vaccination =#
+            humans = vaccinate(humans, vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_effectiveness,
+                vaccine_gender, vaccine_duration, vaccine_round)
+#= update information for the next round of vaccination =#
+            vaccine_round += 1
+            vaccine_coverage, min_age_vaccine, max_age_vaccine, next_vaccine_time, vaccine_gender =
+                                        update_vaccine(vaccine_info, vaccine_round)
+        end
+
+
+
+#=  kill miracidia in the environment at specified death rate =#
+        miracidia =  miracidia_death!(miracidia, pars)
+#=  kill cercariae in the environment at specified death rate =#
+        cercariae =   cercariae_death!(cercariae, pars)
+
+    end
+    return humans, miracidia, cercariae, record
+end
+
+
+
+
+
+
+
+function update_env_no_births_deaths_human_larvae(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
+
+
+    update_contact_death_rates = 1/5
+    sim_time = 0
+    record_time = pars.record_frequency
+    record = []
+    print_time = 0
+
+    if size(mda_info)[1] > 0
+        mda_round = 0
+        mda_gender = mda_info[1].gender
+        mda_coverage = mda_info[1].coverage
+        min_age_mda =  mda_info[1].min_age
+        max_age_mda =  mda_info[1].max_age
+        mda_effectiveness =  mda_info[1].effectiveness
+        next_mda_time = mda_info[1].time
+    else
+        next_mda_time = Inf
+    end
+
+
+    if size(vaccine_info)[1] > 0
+        vaccine_round = 0
+        vaccine_coverage = vaccine_info[1].coverage
+        vaccine_gender = vaccine_info[1].gender
+        min_age_vaccine =  vaccine_info[1].min_age
+        max_age_vaccine =  vaccine_info[1].max_age
+        next_vaccine_time = vaccine_info[1].time
+        vaccine_duration = vaccine_info[1].duration
+    else
+        next_vaccine_time = Inf
+    end
+
+    for j in 1:num_time_steps
+
+        if sim_time >= update_contact_death_rates
+            humans = update_contact_rate(humans,  pars)
+            update_contact_death_rates += 1/5
+        end
+
+        if sim_time >= record_time
+            a = get_prevalences!(humans, sim_time, pars)
+            push!(record, a)
+            record_time += record_frequency
+        end
+
+        sim_time += time_step/365
+
+
+
+        humans =   egg_production!(humans, pars)
+
+        humans =  worm_maturity!(humans, pars)
+
+        push!(miracidia, miracidia_production!(humans))
+
+        humans = vac_decay!(humans)
+
+#=  uptake larvae into humans from the environment  =#
+        #=  uptake larvae into humans from the environment  =#
+        humans, cercariae, miracidia = cercariae_uptake_with_human_larvae!(humans, cercariae, miracidia, pars)
+        humans = human_larvae_maturity(humans, pars)
 
 #= check if we are at a point in time in which an mda is scheduled to take place =#
         if sim_time >= next_mda_time
@@ -1786,6 +2113,39 @@ end
 
 
 # repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
+function run_repeated_sims_no_population_change_human_larvae(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
+
+    times = []
+    prev = []
+    sac_prev = []
+    high_burden = []
+    high_burden_sac =[]
+    adult_prev = []
+    high_adult_burden = []
+
+
+    for run in 1:num_repeats
+
+
+        humans,  miracidia, cercariae, pars = load_population_from_file(filename)
+
+
+        humans, miracidia, cercariae, record =
+            update_env_constant_population_human_larvae(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info);
+
+
+
+        times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden = collect_prevs(times, prev, sac_prev, high_burden,
+        high_burden_sac, adult_prev, high_adult_burden, record, run)
+
+    end
+
+    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden
+end
+
+
+
+
 function run_repeated_sims_no_population_change_increasing(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
 
     times = []
@@ -1838,6 +2198,38 @@ function run_repeated_sims_no_births_deaths(filename, num_time_steps, mda_info, 
 
         humans, miracidia, cercariae, record =
             update_env_no_births_deaths(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
+
+
+
+        times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden = collect_prevs(times, prev, sac_prev, high_burden,
+        high_burden_sac, adult_prev, high_adult_burden, record, run)
+
+    end
+
+    return times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden
+end
+
+
+
+function run_repeated_sims_no_births_deaths_human_larvae(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
+
+    times = []
+    prev = []
+    sac_prev = []
+    high_burden = []
+    high_burden_sac =[]
+    adult_prev = []
+    high_adult_burden = []
+
+
+    for run in 1:num_repeats
+
+
+        humans,  miracidia, cercariae, pars = load_population_from_file(filename)
+
+
+        humans, miracidia, cercariae, record =
+            update_env_no_births_deaths_human_larvae(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
 
 
 

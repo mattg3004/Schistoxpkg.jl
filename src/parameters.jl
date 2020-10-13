@@ -55,3 +55,4 @@ contact_rate = 0.16
 max_fecundity = 0.14
 M0 = 15
 rate_acquired_immunity = 0
+human_larvae_maturity_time = 40
