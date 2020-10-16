@@ -17,19 +17,22 @@ pars = Parameters(N, time_step, N_communities, community_probs, community_contac
         birth_rate, human_cercariae_prop, predis_aggregation, cercariae_survival, miracidia_survival,
         death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
         spec_ages, ages_per_index, record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold,
-        rate_acquired_immunity, M0)
+        rate_acquired_immunity, M0, human_larvae_maturity_time)
 pars = make_age_contact_rate_array(pars, scenario, [],[]);
 
 # create the larvae variables along with the human structure
 humans, miracidia, cercariae = create_population_specified_ages(pars)
-
+#for h in humans
+        #h.larvae = ones(3)
+#end
+#humans=  human_larvae_maturity(humans, pars)
 # update the ages and death ages, so that there aren't any people with the death age lower than actual age
 humans = generate_ages_and_deaths(20000, humans, pars)
 humans = update_contact_rate(humans,  pars)
 
 
 #
-number_years_mda = 200
+number_years_mda = 100
 num_time_steps = trunc(Int, 365*number_years_mda / time_step)
 num_repeats = 1
 
@@ -38,11 +41,12 @@ num_repeats = 1
 mda_info = []
 
 vaccine_info = []
-
-humans, miracidia, cercariae, record =
-        update_env_no_births_deaths(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
+#
+# humans, miracidia, cercariae, record =
+#         update_env_no_births_deaths(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
 #@time update_env_constant_population(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info);
-
+@time humans, miracidia, cercariae, record =
+        update_env_no_births_deaths_human_larvae(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
 # save population
 save_population_to_file(filename, humans,  miracidia, cercariae, pars)
 
@@ -68,9 +72,10 @@ mda_info = create_mda(0, .75, 0, 1, number_years, 1, [0,1], [0,1], [0,1], pars.d
 
 
 vaccine_info = []
+# times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden =
+# run_repeated_sims_no_births_deaths(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
 times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden =
-run_repeated_sims_no_births_deaths(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
-#run_repeated_sims_no_population_change(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
+        run_repeated_sims_no_births_deaths_human_larvae(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
 
 clf()
 plt.plot(times, mean.(sac_prev))
