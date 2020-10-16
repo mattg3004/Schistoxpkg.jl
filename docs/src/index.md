@@ -1,6 +1,6 @@
 # Schistoxpkg.jl
 
-A package to run an individual based mode of a schistosomiasis outbreak based on original code from this [paper](https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-019-3749-4). Generally people uptake larvae based on a contact rate defined by their age, along with
+A package to run an individual based model of a schistosomiasis outbreak based on original code from this [paper](https://parasitesandvectors.biomedcentral.com/articles/10.1186/s13071-019-3749-4). Generally people uptake larvae based on a contact rate defined by their age, along with
 some predisposition which is chosen from a gamma distribution with mean 1, but some specified level of variance.
 
 All parameters are stored in the parameters.jl file in the src folder.
@@ -69,7 +69,7 @@ Cercariae from the environment are then uptaken to each surviving individual bas
 
 We then perform any interventions which are due to take place at this point in time after which we will cull the miracidia and cercariae in the environment by a chosen percentage. After this we will add births to the population which occur at some specified rate.
 
-A form of this is done by with the following function:
+A version of this is done by with the following function:
 ```
 number_years = 200
 num_time_steps = trunc(Int, 365*number_years / time_step)
@@ -79,7 +79,7 @@ update_env_no_births_deaths_human_larvae(num_time_steps, humans,  miracidia,
 ```
 
 There are other versions of this basic approach, where we don't age the population or include births and deaths and also where the population is aged but every death is simply matched with a birth, resulting in the population being kept constant.
-dfhfdhaergewadsazrgtsw
+
 
 
 ```@index
