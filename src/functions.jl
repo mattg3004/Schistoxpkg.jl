@@ -405,7 +405,7 @@ end
     adjusting for gender specific behaviour
 =#
 """
-    create_population_specified_ages
+    create_population_specified_ages(pars)
 
 This will create the initial human population with an age distribution
 specified by the spec_ages variable
@@ -786,7 +786,7 @@ from the mean and aggregation in the function below
 # r - aggregation factor for NB distribution
 
 """
-    egg_production(humans, pars)
+    egg_production!(humans, pars)
 
 function to produce eggs for individuals, dependent on how many worms they have
         and the max fecundity and density dependent fecundity of the population
@@ -830,7 +830,12 @@ end
 
 
 
+"""
+    egg_production_increasing!(humans, pars)
 
+function to produce eggs for individuals, dependent on how many worms they have
+        and the max fecundity and density dependent fecundity of the population
+"""
 function egg_production_increasing!(humans, pars)
     male_worms = (p->p.male_worms).(humans)
     female_worms = (p->p.female_worms).(humans)
