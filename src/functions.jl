@@ -576,10 +576,10 @@ end
 
 
 """
-    cercariae_uptake(humans, cercariae, miracidia, pars)
+    cercariae_uptake_human_larvae!(humans, cercariae, miracidia, pars)
 
 uptake cercariae into humans, whilst updating cercariae with miracidia.
-Uptaken cercariae immediately become worms in this formulation
+Uptaken cercariae become larvae within humans, rather than immmediately into worms with this function.
 """
 function cercariae_uptake_with_human_larvae!(humans, cercariae, miracidia, pars)
 
@@ -618,7 +618,12 @@ end
 
 
 
+"""
+    human_larvae_maturity(humans, pars)
 
+This will mature the human larvae into worms after a chosen number of days, which is specified
+by the human_larvae_maturity_time parameter in the pars struct
+"""
 function human_larvae_maturity(humans, pars)
 
 #=  loop over humans  =#
@@ -642,6 +647,12 @@ end
 
 
 # function to kill miracidia in the environment
+"""
+    miracidia_death!(miracidia, pars)
+
+Kill a chosen proportion of miracidia in the environment governed by the
+miracidia_survival parameter in the pars struct
+"""
 function miracidia_death!(miracidia, pars)
     #= as emiracidia is an array, we need to use . syntax to apply
     the functions to each element in the array =#
@@ -658,6 +669,12 @@ end
 
 
 # function to kill cercariae in the environment
+"""
+    cercariae_death!(miracidia, pars)
+
+Kill a chosen proportion of cercariae in the environment governed by the
+cercariae_survival parameter in the pars struct
+"""
 function cercariae_death!(cercariae, pars)
     # updated_cercariae = 0
     # for i in 1:time_step
@@ -686,10 +703,10 @@ end
 #     println(human.eggs)
 # end
 """
-    worm_maturity(humans, pars)
+    worm_maturity!(humans, pars)
 
-function to kill worms, and if there is more than one stage for worm life,
-        to update how many worms are in each stage
+function to kill worms within human hosts, and if there is more than one stage for worm life,
+to update how many worms are in each stage
 """
 function worm_maturity!(humans, pars)
 
@@ -731,7 +748,11 @@ end
 #     return min(sum(humans.female_worms), sum(humans.male_worms))
 # end
 
+"""
+    calculate_worm_pairs(female_worms, male_worms)
 
+calculate how many pairs of worms there are in each human host
+"""
 function calculate_worm_pairs(female_worms, male_worms)
     worm_pairs = Int64[]
     for i in 1:length(female_worms)
