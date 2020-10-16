@@ -22,22 +22,19 @@ pars = make_age_contact_rate_array(pars, scenario, [],[]);
 
 # create the larvae variables along with the human structure
 humans, miracidia, cercariae = create_population_specified_ages(pars)
-#for h in humans
-        #h.larvae = ones(3)
-#end
-#humans=  human_larvae_maturity(humans, pars)
+
 # update the ages and death ages, so that there aren't any people with the death age lower than actual age
 humans = generate_ages_and_deaths(20000, humans, pars)
 humans = update_contact_rate(humans,  pars)
 
 
 #
-number_years_mda = 100
-num_time_steps = trunc(Int, 365*number_years_mda / time_step)
+number_years = 200
+num_time_steps = trunc(Int, 365*number_years / time_step)
 num_repeats = 1
 
 # create mda information
-# mda_info = create_mda(0, .75, 0, 1, number_years_mda, 1, [0,1], [0,1], [0,1], pars.drug_effectiveness)
+
 mda_info = []
 
 vaccine_info = []
