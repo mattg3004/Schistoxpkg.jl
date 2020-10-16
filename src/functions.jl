@@ -552,7 +552,7 @@ we will uptake from choose from Poisson
 distribution. otherwise, just uptake 0. =#
      #   if cercariae > 0
 # calculate the rate of the poisson distribution
-        pois_rate  = max(h.uptake_rate * (1-pars.rate_acquired_immunity * h.total_worms) *  cercariae / k, 0)
+        pois_rate  = max(h.uptake_rate *  cercariae / k, 0)
 
         # reduce the rate according to the effectiveness of the vaccine (if any is given)
         pois_rate = pois_rate * (1 - (h.vac_status > 0) * pars.vaccine_effectiveness) * (1 - h.acquired_immunity)
@@ -1466,13 +1466,13 @@ function update_env_constant_population(num_time_steps, humans,  miracidia, cerc
         if sim_time >= record_time
             a = get_prevalences!(humans, sim_time, pars)
             push!(record, a)
-            record_time += record_frequency
+            record_time += pars.record_frequency
         end
 
-        sim_time += time_step/365
+        sim_time += pars.time_step/365
 
         for h in humans
-            h.age += time_step/365
+            h.age += pars.time_step/365
 
         end
 
@@ -1579,13 +1579,13 @@ function update_env_constant_population_human_larvae(num_time_steps, humans,  mi
         if sim_time >= record_time
             a = get_prevalences!(humans, sim_time, pars)
             push!(record, a)
-            record_time += record_frequency
+            record_time += pars.record_frequency
         end
 
-        sim_time += time_step/365
+        sim_time += pars.time_step/365
 
         for h in humans
-            h.age += time_step/365
+            h.age += pars.time_step/365
 
         end
 
@@ -1693,13 +1693,13 @@ function update_env_constant_population_increasing(num_time_steps, humans,  mira
         if sim_time >= record_time
             a = get_prevalences!(humans, sim_time, pars)
             push!(record, a)
-            record_time += record_frequency
+            record_time += pars.record_frequency
         end
 
-        sim_time += time_step/365
+        sim_time += pars.time_step/365
 
         for h in humans
-            h.age += time_step/365
+            h.age += pars.time_step/365
 
         end
 
@@ -1809,10 +1809,10 @@ function update_env_no_births_deaths(num_time_steps, humans,  miracidia, cercari
         if sim_time >= record_time
             a = get_prevalences!(humans, sim_time, pars)
             push!(record, a)
-            record_time += record_frequency
+            record_time += pars.record_frequency
         end
 
-        sim_time += time_step/365
+        sim_time += pars.time_step/365
 
 
 
@@ -1915,10 +1915,10 @@ function update_env_no_births_deaths_human_larvae(num_time_steps, humans,  mirac
         if sim_time >= record_time
             a = get_prevalences!(humans, sim_time, pars)
             push!(record, a)
-            record_time += record_frequency
+            record_time += pars.record_frequency
         end
 
-        sim_time += time_step/365
+        sim_time += pars.time_step/365
 
 
 
@@ -2018,10 +2018,10 @@ function update_env_no_births_deaths_increasing(num_time_steps, humans,  miracid
         if sim_time >= record_time
             a = get_prevalences!(humans, sim_time, pars)
             push!(record, a)
-            record_time += record_frequency
+            record_time += pars.record_frequency
         end
 
-        sim_time += time_step/365
+        sim_time += pars.time_step/365
 
 
 
@@ -2308,7 +2308,7 @@ function update_env(num_time_steps, humans,  miracidia, cercariae, pars, mda_inf
 
     update_contact_death_rates = 1/5
     sim_time = 0
-    record_time = record_frequency
+    record_time = pars.record_frequency
     record = []
     print_time = 0
 
@@ -2348,13 +2348,13 @@ function update_env(num_time_steps, humans,  miracidia, cercariae, pars, mda_inf
         if sim_time >= record_time
             a = get_prevalences!(humans, sim_time, pars)
             push!(record, a)
-            record_time += record_frequency
+            record_time += pars.record_frequency
         end
 
-        sim_time += time_step/365
+        sim_time += pars.time_step/365
 
         for h in humans
-            h.age += time_step/365
+            h.age += pars.time_step/365
 
         end
 #=  mature larvae within humans  =#
