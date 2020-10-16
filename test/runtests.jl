@@ -58,7 +58,7 @@ heavy_burden_threshold = 16
 rate_acquired_immunity = 0
 M0 = 15
 filename = "ee.jld"
-
+human_larvae_maturity_time = 40
 
 
 
@@ -75,7 +75,8 @@ pars = Parameters(N, time_step, N_communities, community_probs, community_contac
         ages_for_contacts, contact_rate_by_age_array, mda_adherence, mda_access,  female_factor, male_factor, miracidia_maturity,
         birth_rate, human_cercariae_prop, predis_aggregation, cercariae_survival, miracidia_survival,
         death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
-        spec_ages, ages_per_index, record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold, rate_acquired_immunity, M0)
+        spec_ages, ages_per_index, record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold, rate_acquired_immunity, M0,
+        human_larvae_maturity_time)
 pars = make_age_contact_rate_array(pars, scenario, [],[]);
 
 
@@ -313,10 +314,15 @@ end
     @test update_env_to_equilibrium(1, humans, miracidia, cercariae, pars)[2][3] == 40
 end
 
+Random.seed!(33)
+@testset "update_env_to_equ_inc" begin
+    @test update_env_to_equilibrium_increasing(1, humans, miracidia, cercariae, pars)[2][3] == 16
+end
+
 vaccine_info = []
 mda_info = create_mda(0, .75, 0, 0, 2, 1, [0,1], [0,1], [0,1], pars.drug_effectiveness)
 
-@testset "update_env_conbst_pop" begin
+@testset "update_env_const_pop" begin
     @test isapprox(update_env_constant_population(10, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2], [156, 2980, 3014])
 end
 
