@@ -1,5 +1,7 @@
 # Schistoxpkg
 
+Go to https://mattg3004.github.io/Schistoxpkg.jl/dev/ for documentation
+
 ## Installation
 
 The package can be installed with the Julia package manager.
@@ -13,7 +15,7 @@ Alternatively directly from Julia REPL run:
 julia> using Pkg
 julia> Pkg.add("Schistoxpkg")
 ```
-Go to https://mattg3004.github.io/Schistoxpkg.jl/dev/ for documentation
+
 
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://mattg3004.github.io/Schistoxpkg.jl/stable)
