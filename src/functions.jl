@@ -1058,7 +1058,11 @@ end
 
 # function to update the mda information
 
+"""
+    update_mda(mda_info, mda_round)
 
+update when the next mda will take place
+"""
 function update_mda(mda_info, mda_round)
 
     i = min(mda_round + 1, length(mda_info))
@@ -1084,6 +1088,17 @@ end
     specify the proportion of pre SAC, SAC and adults at each of these time points
     also specify genders for these differect age groups, along with the effectiveness of mda
 =#
+"""
+    create_mda(pre_SAC_prop, SAC_prop, adult_prop, first_mda_time,
+            last_mda_time, regularity, pre_SAC_gender, SAC_gender, adult_gender, mda_effectiveness)
+
+function to create a set of mda's which will be performed regularly
+        first_mda_time specifies when this will first occur in years,
+        last_mda_time is the final mda in this block
+        regularity is how often to perform the mda in years.
+        specify the proportion of pre SAC, SAC and adults at each of these time points
+        also specify genders for these differect age groups, along with the effectiveness of mda
+"""
 function create_mda(pre_SAC_prop, SAC_prop, adult_prop, first_mda_time,
     last_mda_time, regularity, pre_SAC_gender, SAC_gender, adult_gender, mda_effectiveness)
 
@@ -1157,7 +1172,11 @@ end
 
 # end
 
+"""
+    vac_decay!(humans)
 
+decrease vaccination status for each person by 1 each day
+"""
 function vac_decay!(humans)
     for h in humans
         h.vac_status -= 1
@@ -1165,7 +1184,12 @@ function vac_decay!(humans)
     return humans
 end
 
+"""
+    kato_katz(eggs, gamma_k)
 
+calculate number of eggs using kato katz method. Gamma_k is a gamma distribution with shape and scale
+defined by pars.kato_katz_par
+"""
 function kato_katz(eggs, gamma_k)
     gamma1 = rand(gamma_k)[1]
     gamma2 = rand(gamma_k)[1]

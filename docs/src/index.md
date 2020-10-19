@@ -80,7 +80,7 @@ update_env_no_births_deaths_human_larvae(num_time_steps, humans,  miracidia,
 
 There are other versions of this basic approach, where we don't age the population or include births and deaths and also where the population is aged but every death is simply matched with a birth, resulting in the population being kept constant.
 
-
+## Functions
 
 ```@index
 ```
