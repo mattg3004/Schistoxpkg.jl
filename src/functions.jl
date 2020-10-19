@@ -872,6 +872,12 @@ end
 
 
 # function
+"""
+    miracidia_production!(humans)
+
+release eggs from individuals into the environment as miracidia. Release is relative to the contact rate with
+the environment for each individual.
+"""
 function miracidia_production!(humans)
     released_eggs = 0
     @inbounds for h in humans
@@ -882,7 +888,11 @@ end
 
 
 
+"""
+    death_of_human(humans)
 
+remove individuals from the population whose age is greater than their death age
+"""
 function death_of_human(humans)
 
     for i in length(humans):-1:1
@@ -894,6 +904,12 @@ function death_of_human(humans)
 end
 
 
+
+"""
+    birth_of_human(humans, pars)
+
+add an individual to the population
+"""
 function birth_of_human(humans, pars)
     if length(pars.community_probs) != pars.N_communities
         error("must provide probabilities for membership of each community")
@@ -958,6 +974,13 @@ end
 # function to administer drug to a specific variable (e.g. female_worms or eggs).
 # input the variable, the indices to apply to and the effectiveness of treatment
 
+
+"""
+    administer_drug(humans, indices, drug_effectiveness)
+
+administer mda drugs to chosen individuals in the population. If they adhere to the drugs, then they
+reduce male and female worms with a given efficacy alongside removing eggs
+"""
 function administer_drug(humans, indices, drug_effectiveness)
 
     @inbounds for i in 1:length(indices)
@@ -974,12 +997,18 @@ end
 
 # function to administer drug to a specific variable (e.g. female_worms or eggs).
 # input the variable, the indices to apply to and the effectiveness of treatment
+"""
+    administer_vaccine(humans, indices, vaccine_effectiveness, vaccine_duration)
 
+administer vaccine to chosen individuals in the population.
+reduce male and female worms with a given efficacy alongside removing eggs and
+adding to their vaccine status signifying that they will have increased immunity for a chosen period of time
+"""
 function administer_vaccine(humans, indices, vaccine_effectiveness, vaccine_duration)
 
     @inbounds for i in 1:length(indices)
          index = indices[i]
-        p = 1 - (vaccine_effectiveness * humans[index].adherence)
+        p = 1 - (vaccine_effectiveness)
         humans[index].female_worms = rand.(Binomial.(humans[index].female_worms,p))
         humans[index].male_worms = rand.(Binomial.(humans[index].male_worms, p))
         humans[index].eggs = 0
@@ -991,7 +1020,12 @@ end
 
 # function for mass drug administration
 # currently there is no correlation between individuals chosen each time
+"""
+    mda(humans, mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, mda_gender)
 
+administer mda in the population. This includes choosing individuals between specified ages,
+having a certain level of coverage and taking access and adherence into consideration
+"""
 function mda(humans, mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, mda_gender)
 
     ages = (p->p.age).(humans)
