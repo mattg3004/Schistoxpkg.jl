@@ -1,5 +1,14 @@
 # Schistoxpkg
 
+## Installation
+
+The package can be installed with the Julia package manager.
+From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
+
+```
+pkg> add Schistoxpkg
+```
+
 Go to https://mattg3004.github.io/Schistoxpkg.jl/dev/ for documentation
 
 
