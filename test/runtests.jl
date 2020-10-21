@@ -404,3 +404,7 @@ high_adult_burden = []
 
 times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden =
 collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden, record, 1)
+
+
+times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden =
+collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden, record, 2)
