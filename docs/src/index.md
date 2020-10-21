@@ -90,13 +90,7 @@ The first 3 entries of the create_mda function specify the proportion of individ
 
 ```@contents
 Pages = [
-    "man/guide.md",
-    "man/examples.md",
-    "man/syntax.md",
-    "man/doctests.md",
-    "man/hosting.md",
-    "man/latex.md",
-    "man/contributing.md",
+    "man/functions.md",
 ]
 Depth = 1
 ```
