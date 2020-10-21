@@ -184,9 +184,40 @@ old_cercariae = cercariae
 old_length_miracidia = length(miracidia)
 
 
+
 humans, cercariae, miracidia = cercariae_uptake!(humans, cercariae, miracidia, pars)
 @testset "cerc_uptake" begin
     @test length(miracidia) <  old_length_miracidia
+end
+
+human_larvae = (p->p.larvae).(humans)
+
+
+
+@testset "cerc_uptake" begin
+    @test length(miracidia) <  old_length_miracidia
+end
+
+@testset "human_larvae" begin
+    @test sum(sum.(human_larvae)) == 0
+end
+
+humans, cercariae, miracidia  = cercariae_uptake_with_human_larvae!(humans, cercariae, miracidia, pars)
+
+
+human_larvae = (p->p.larvae).(humans)
+
+@testset "human_larvae" begin
+    @test sum(sum.(human_larvae)) > 0
+end
+
+human_larvae = (p->p.larvae).(humans)
+x = sum(sum.(human_larvae))
+humans = human_larvae_maturity(humans, pars)
+human_larvae = (p->p.larvae).(humans)
+
+@testset "human_larvae_maturity" begin
+    @test sum(sum.(human_larvae)) == x
 end
 
 pars = make_age_contact_rate_array(pars, scenario, [4,9,15,pars.max_age], [10.1,2.1,4.2,6.2])
@@ -314,6 +345,7 @@ end
     @test update_env_to_equilibrium(1, humans, miracidia, cercariae, pars)[2][3] == 40
 end
 
+
 Random.seed!(33)
 @testset "update_env_to_equ_inc" begin
     @test update_env_to_equilibrium_increasing(1, humans, miracidia, cercariae, pars)[2][3] == 16
@@ -331,4 +363,14 @@ end
 
 @testset "update_env_no_birth_death" begin
     @test isapprox(update_env_no_births_deaths(10, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2], [8612, 8953, 9351])
+end
+
+
+
+
+
+
+
+@testset "update_env_human_larvae" begin
+@test isapprox(update_env_to_equilibrium_human_larvae(5, humans, miracidia, cercariae, pars)[2],[9715,9552,9614])
 end
