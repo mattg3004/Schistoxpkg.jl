@@ -2368,118 +2368,118 @@ function run_repeated_sims_no_births_deaths_increasing(filename, num_time_steps,
 end
 
 
-
-function update_env(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
-
-
-    update_contact_death_rates = 1/5
-    sim_time = 0
-    record_time = pars.record_frequency
-    record = []
-    print_time = 0
-
-    if size(mda_info)[1] > 0
-        mda_round = 0
-        mda_gender = mda_info[1].gender
-        mda_coverage = mda_info[1].coverage
-        min_age_mda =  mda_info[1].min_age
-        max_age_mda =  mda_info[1].max_age
-        mda_effectiveness =  mda_info[1].effectiveness
-        next_mda_time = mda_info[1].time
-    else
-        next_mda_time = Inf
-    end
-
-
-    if size(vaccine_info)[1] > 0
-        vaccine_round = 0
-        vaccine_coverage = vaccine_info[1].coverage
-        vaccine_gender = vaccine_info[1].gender
-        min_age_vaccine =  vaccine_info[1].min_age
-        max_age_vaccine =  vaccine_info[1].max_age
-        next_vaccine_time = vaccine_info[1].time
-        vaccine_duration = vaccine_info[1].duration
-    else
-        next_vaccine_time = Inf
-    end
-
-    for j in 1:num_time_steps
-
-        if sim_time >= update_contact_death_rates
-            humans = update_death_rate(humans, death_rate_per_time_step)
-            humans = update_contact_rate(humans,  contact_rates_by_age)
-            update_contact_death_rates += 1/5
-        end
-
-        if sim_time >= record_time
-            a = get_prevalences!(humans, sim_time, pars)
-            push!(record, a)
-            record_time += pars.record_frequency
-        end
-
-        sim_time += pars.time_step/365
-
-        for h in humans
-            h.age += pars.time_step/365
-
-        end
-#=  mature larvae within humans  =#
-        humans = human_cercariae_maturity(humans, time_step)
-
-        humans = egg_production(humans, max_fecundity, r, density_dependent_fecundity)
-
-        humans = worm_maturity(humans, worm_stages, average_worm_lifespan, time_step)
-
-        miracidia = miracidia_production(humans, miracidia)
-
-        humans = vac_decay!(humans)
-
-# larvae = larvae_production(d, larvae)
-        humans = death_of_human(humans, time_step)
-
-#=  uptake larvae into humans from the environment  =#
-        humans, cercariae, miracidia = cercariae_uptake(humans, cercariae, miracidia, pars)
-
-#= check if we are at a point in time in which an mda is scheduled to take place =#
-        if sim_time >= next_mda_time
-
-#= perform mda =#
-            humans = mda(humans, mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, mda_gender)
-#= update information for the next round of mda =#
-            mda_round += 1
-            mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, next_mda_time, mda_gender =
-                            update_mda(mda_info, mda_round)
-
-        end
-
-
-#= check if we are at a point in time in which a vaccine is scheduled to take place =#
-        if sim_time >= next_vaccine_time
-
-#= perform vaccination =#
-            humans = vaccinate(humans, vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_effectiveness,
-                vaccine_gender, vaccine_duration, vaccine_round)
-#= update information for the next round of vaccination =#
-            vaccine_round += 1
-            vaccine_coverage, min_age_vaccine, max_age_vaccine, next_vaccine_time, vaccine_gender =
-                                        update_vaccine(vaccine_info, vaccine_round)
-        end
-
-
-
-#=  kill miracidia in the environment at specified death rate =#
-        miracidia = miracidia_death(miracidia, pars)
-
-#=  kill cercariae in the environment at specified death rate =#
-        cercariae = cercariae_death(cercariae, env_cercariae_death_rate, time_step)
-
-
-        l = rand(Binomial(length(humans), birth_rate))[1]
-        if l > 0
-            for i in 1:l
-                humans = birth_of_human(humans, pars)
-            end
-        end
-    end
-    return humans, miracidia, cercariae, record
-end
+#
+# function update_env(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
+#
+#
+#     update_contact_death_rates = 1/5
+#     sim_time = 0
+#     record_time = pars.record_frequency
+#     record = []
+#     print_time = 0
+#
+#     if size(mda_info)[1] > 0
+#         mda_round = 0
+#         mda_gender = mda_info[1].gender
+#         mda_coverage = mda_info[1].coverage
+#         min_age_mda =  mda_info[1].min_age
+#         max_age_mda =  mda_info[1].max_age
+#         mda_effectiveness =  mda_info[1].effectiveness
+#         next_mda_time = mda_info[1].time
+#     else
+#         next_mda_time = Inf
+#     end
+#
+#
+#     if size(vaccine_info)[1] > 0
+#         vaccine_round = 0
+#         vaccine_coverage = vaccine_info[1].coverage
+#         vaccine_gender = vaccine_info[1].gender
+#         min_age_vaccine =  vaccine_info[1].min_age
+#         max_age_vaccine =  vaccine_info[1].max_age
+#         next_vaccine_time = vaccine_info[1].time
+#         vaccine_duration = vaccine_info[1].duration
+#     else
+#         next_vaccine_time = Inf
+#     end
+#
+#     for j in 1:num_time_steps
+#
+#         if sim_time >= update_contact_death_rates
+#             humans = update_death_rate(humans, death_rate_per_time_step)
+#             humans = update_contact_rate(humans,  contact_rates_by_age)
+#             update_contact_death_rates += 1/5
+#         end
+#
+#         if sim_time >= record_time
+#             a = get_prevalences!(humans, sim_time, pars)
+#             push!(record, a)
+#             record_time += pars.record_frequency
+#         end
+#
+#         sim_time += pars.time_step/365
+#
+#         for h in humans
+#             h.age += pars.time_step/365
+#
+#         end
+# #=  mature larvae within humans  =#
+#         humans = human_cercariae_maturity(humans, time_step)
+#
+#         humans = egg_production(humans, max_fecundity, r, density_dependent_fecundity)
+#
+#         humans = worm_maturity(humans, worm_stages, average_worm_lifespan, time_step)
+#
+#         miracidia = miracidia_production(humans, miracidia)
+#
+#         humans = vac_decay!(humans)
+#
+# # larvae = larvae_production(d, larvae)
+#         humans = death_of_human(humans, time_step)
+#
+# #=  uptake larvae into humans from the environment  =#
+#         humans, cercariae, miracidia = cercariae_uptake(humans, cercariae, miracidia, pars)
+#
+# #= check if we are at a point in time in which an mda is scheduled to take place =#
+#         if sim_time >= next_mda_time
+#
+# #= perform mda =#
+#             humans = mda(humans, mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, mda_gender)
+# #= update information for the next round of mda =#
+#             mda_round += 1
+#             mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, next_mda_time, mda_gender =
+#                             update_mda(mda_info, mda_round)
+#
+#         end
+#
+#
+# #= check if we are at a point in time in which a vaccine is scheduled to take place =#
+#         if sim_time >= next_vaccine_time
+#
+# #= perform vaccination =#
+#             humans = vaccinate(humans, vaccine_coverage, min_age_vaccine, max_age_vaccine, vaccine_effectiveness,
+#                 vaccine_gender, vaccine_duration, vaccine_round)
+# #= update information for the next round of vaccination =#
+#             vaccine_round += 1
+#             vaccine_coverage, min_age_vaccine, max_age_vaccine, next_vaccine_time, vaccine_gender =
+#                                         update_vaccine(vaccine_info, vaccine_round)
+#         end
+#
+#
+#
+# #=  kill miracidia in the environment at specified death rate =#
+#         miracidia = miracidia_death(miracidia, pars)
+#
+# #=  kill cercariae in the environment at specified death rate =#
+#         cercariae = cercariae_death(cercariae, env_cercariae_death_rate, time_step)
+#
+#
+#         l = rand(Binomial(length(humans), birth_rate))[1]
+#         if l > 0
+#             for i in 1:l
+#                 humans = birth_of_human(humans, pars)
+#             end
+#         end
+#     end
+#     return humans, miracidia, cercariae, record
+# end

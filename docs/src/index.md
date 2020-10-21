@@ -103,10 +103,3 @@ Depth = 1
 
 
 ## Functions
-
-```@index
-```
-
-```@autodocs
-Modules = [Schistoxpkg]
-```
