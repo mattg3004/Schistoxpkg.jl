@@ -374,3 +374,33 @@ end
 @testset "update_env_human_larvae" begin
 @test isapprox(update_env_to_equilibrium_human_larvae(5, humans, miracidia, cercariae, pars)[2],[9715,9552,9614])
 end
+
+@testset "update_env_human_larvae_constant_pop" begin
+    @test isapprox(update_env_constant_population_human_larvae(5, humans,  miracidia,
+                    cercariae, pars, mda_info, vaccine_info)[2],
+                        [14002,14386,14722])
+end
+
+@testset "update_env_no_births_deaths_human_larvae" begin
+@test isapprox(update_env_no_births_deaths_human_larvae(5, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2],[17962,18478,18794])
+end
+
+
+@testset "update_env_no_births_deaths_increasing" begin
+@test isapprox(update_env_no_births_deaths_increasing(5, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2],[839,865,840])
+end
+
+
+humans, miracidia, cercariae, record =
+    update_env_constant_population(25, humans,  miracidia, cercariae, pars, mda_info, vaccine_info);
+
+times = []
+prev = []
+sac_prev = []
+high_burden = []
+high_burden_sac =[]
+adult_prev = []
+high_adult_burden = []
+
+times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden =
+collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden, record, 1)
