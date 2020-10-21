@@ -94,6 +94,3 @@ Pages = [
 ]
 Depth = 1
 ```
-
-
-## Functions
