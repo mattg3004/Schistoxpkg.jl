@@ -80,6 +80,13 @@ update_env_no_births_deaths_human_larvae(num_time_steps, humans,  miracidia,
 
 There are other versions of this basic approach, where we don't age the population or include births and deaths and also where the population is aged but every death is simply matched with a birth, resulting in the population being kept constant.
 
+To consider interventions such as MDA, we can run the following function:
+
+```
+mda_info = create_mda(0, .75, 0, 1, 10, 1, [0,1], [0,1], [0,1], pars.drug_effectiveness)
+```
+The first 3 entries of the create_mda function specify the proportion of individuals in the pre-SAC, SAC and adults. The fourth and fifth entries specifies the time point at which the first and last MDA with take place and the sixth entry specifies how many will take place per year in the intervening time period. The next 3 entries specify the gender to be included in the pre-SAC, SAC and adult MDA programs and the final entry is the efficacy of the drug used. 
+
 ## Functions
 
 ```@index

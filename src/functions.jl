@@ -1199,7 +1199,11 @@ function kato_katz(eggs, gamma_k)
 end
 
 
+"""
+    count_eggs(humans)
 
+count the total number of eggs in the human population
+"""
 function count_eggs(humans)
     eggs = 0
     for h in humans
@@ -1212,7 +1216,11 @@ end
 
 
 
+"""
+    get_prevalences!(humans, time, pars)
 
+calculate the desired prevalences in the human population.
+"""
 function get_prevalences!(humans, time, pars)
 
     pop_burden = [0,0,0]
