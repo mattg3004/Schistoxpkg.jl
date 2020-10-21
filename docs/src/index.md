@@ -85,7 +85,22 @@ To consider interventions such as MDA, we can run the following function:
 ```
 mda_info = create_mda(0, .75, 0, 1, 10, 1, [0,1], [0,1], [0,1], pars.drug_effectiveness)
 ```
-The first 3 entries of the create_mda function specify the proportion of individuals in the pre-SAC, SAC and adults. The fourth and fifth entries specifies the time point at which the first and last MDA with take place and the sixth entry specifies how many will take place per year in the intervening time period. The next 3 entries specify the gender to be included in the pre-SAC, SAC and adult MDA programs and the final entry is the efficacy of the drug used. 
+The first 3 entries of the create_mda function specify the proportion of individuals in the pre-SAC, SAC and adults. The fourth and fifth entries specifies the time point at which the first and last MDA with take place and the sixth entry specifies how many will take place per year in the intervening time period. The next 3 entries specify the gender to be included in the pre-SAC, SAC and adult MDA programs and the final entry is the efficacy of the drug used.
+
+
+```@contents
+Pages = [
+    "man/guide.md",
+    "man/examples.md",
+    "man/syntax.md",
+    "man/doctests.md",
+    "man/hosting.md",
+    "man/latex.md",
+    "man/contributing.md",
+]
+Depth = 1
+```
+
 
 ## Functions
 
