@@ -5,6 +5,12 @@ makedocs(
     format=Documenter.HTML(),
     pages=[
         "Home" => "index.md",
+        "Functions" => Any[
+           "man/functions.md",
+         ],
+         "Parameters" => Any[
+           "man/parameters.md",
+         ]
     ],
     sitename="Schistoxpkg.jl",
     authors="Matthew",
