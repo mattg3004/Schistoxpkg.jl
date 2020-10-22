@@ -3,7 +3,7 @@ using Random
 using JLD
 
 """
-    out struct
+    out
 
 This struct contains the different outputs we are interested in recording. This is the
     overall population burden, with categories for low, moderate and heavy burdens, along with
@@ -26,7 +26,7 @@ end
 
 
 """
-    mda_information struct
+    mda_information
 
 This struct contains the information for the mda, storing the coverage, minimum and maximum age targeted,
     gender, drug efficacy and the time for the mda to be done
@@ -41,7 +41,7 @@ mutable struct mda_information
 end
 
 """
-    vaccine_information struct
+    vaccine_information
 
 This struct contains the information for the vaccine, storing the coverage, minimum and maximum age targeted,
     gender, drug efficacy and the time for the vaccine to be done along with how long the vaccine provides protection for
@@ -57,10 +57,12 @@ end
 
 
 """
-    Human struct
+    Human
 
-This struct contains the information for the vaccine, storing the coverage, minimum and maximum age targeted,
-    gender, drug efficacy and the time for the vaccine to be done along with how long the vaccine provides protection for
+This struct contains the information about a human individual. This contains age, the pre determined age of death, community they are in,
+    their gender, predisposition to picking up cercariae, the number of larvae, female and male worms and eggs in the individual along with
+    a count of total lifetime eggs. Also it has their age dependent contact rate, adherence and access to interventions.
+
 """
 mutable struct Human
     age::Float64
@@ -91,6 +93,11 @@ end
 
 
 
+"""
+    Parameters
+
+This struct containing all of the parameters for a given simulation.
+"""
 mutable struct Parameters
     N::Int64
     time_step::Float64
@@ -174,11 +181,16 @@ end
 
 
 
+"""
+    Environment
+
+This struct contains hold the Human population along with the number of miracidia and larvae, the time and the recorded outputs
+"""
 mutable struct Environment
      miracidia::Array{Int64}
      cercariae::Int64
      humans::Array{Human}          # container for population
-     time::Int64                     # in years
+     time::Float64
      record::Array{out}
      # Constructors
      Environment() = Environment([],0,[],0, [])
@@ -189,6 +201,12 @@ end
 
 
 # create the age specific contact settings given the scenario
+"""
+    create_contact_settings(scenario)
+
+This will create age dependent contact rates based on the scenario for simulation which is input. This is either
+    "low adult", "moderate adult" or "high adult"
+"""
 function create_contact_settings(scenario)
     if scenario == "low adult"
         age_contact_rates = [0.01, 1.2, 1, 0.02]
@@ -207,7 +225,16 @@ end
 # "What is required in terms of mass drug administration to interrupt the transmission
 #     of schistosome parasites in regions of endemic infection?" paper
 # at some point we may change this to be an input from a file instead
+"""
+    make_age_contact_rate_array(pars, scenario, input_ages, input_contact_rates)
 
+This will make the contact rate array for each age of individual in the population, based either on a scenario basis
+    ("low adult", "moderate adult" or "high adult"), through the create_contact_settings function, or through
+    specifying an array of age breaks and the desired contact rates for the ages specified by the ages, using the
+        input_ages and input_contact_rates variables.
+    For example: input_contact_rates = [0.02,0.61, 1,0.06], input_ages= [4,9,15,100] will make 0-4 year olds have contact rate 0.02,
+    5-9 will have rate 0.61, 10-15 rate 1 and 16+ 0.06
+"""
 function make_age_contact_rate_array(pars, scenario, input_ages, input_contact_rates)
     if pars.max_age < 60
         error("max_age must be greater than 60")
@@ -269,6 +296,14 @@ end
 
 
 # function to generate an age for death of an individual
+"""
+    create_population(pars)
+
+This will create the initial human population with randomly chosen age, and gender.
+Predisposition is taken to be gamma distributed
+There is also a male and female adjustment to predisposition adjusting for gender specific behaviour
+In addition to this, it will create the initial miracidia environment vector
+"""
 function get_death_age(pars)
         age = 0
         k = 1
@@ -298,6 +333,13 @@ end
 
 
 # function to age population and generating death ages
+"""
+    generate_ages_and_deaths(num_steps, humans, pars)
+
+Step forward the population by a number of steps, where we will go through aging and removing individuals when they
+pass their age of death. This will generate an age distribution in the population which corresponds to the death_prob_by_age and
+ages_for_deaths parameters, which specify the probability of dying at each age.
+"""
 function generate_ages_and_deaths(num_steps, humans, pars)
      for i in 1:num_steps
         x = []
@@ -330,7 +372,7 @@ end
     adjusting for gender specific behaviour
 =#
 """
-    create_population
+    create_population(pars)
 
 This will create the initial human population with randomly chosen age, and gender.
 Predisposition is taken to be gamma distributed
@@ -601,7 +643,7 @@ end
 """
     cercariae_uptake_human_larvae!(humans, cercariae, miracidia, pars)
 
-uptake cercariae into humans, whilst updating cercariae with miracidia.
+uptake cercariae into humans, whilst updating cercariae with matured miracidia.
 Uptaken cercariae become larvae within humans, rather than immmediately into worms with this function.
 """
 function cercariae_uptake_with_human_larvae!(humans, cercariae, miracidia, pars)
@@ -1242,7 +1284,7 @@ end
 """
     get_prevalences!(humans, time, pars)
 
-calculate the desired prevalences in the human population.
+calculate the desired prevalences in the human population, and store them in an out struct
 """
 function get_prevalences!(humans, time, pars)
 
@@ -1336,11 +1378,21 @@ end
 
 
 
+"""
+    save_population_to_file(filename, humans, miracidia, cercariae, pars)
+
+save the enironment variables in a specified file
+"""
 function save_population_to_file(filename, humans, miracidia, cercariae, pars)
     save(filename, "humans", humans,  "miracidia", miracidia, "cercariae", cercariae, "pars", pars)
 end
 
 
+"""
+    load_population_from_file(filename)
+
+load the environmental variables saved in the specified file
+"""
 function load_population_from_file(filename)
 
     d = load(filename)
