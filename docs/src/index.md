@@ -9,7 +9,7 @@ The model has a parameter which defines the time step that we take forward each 
 time step which simulate the run of the outbreak. This is repeated until we reach a specified number of steps, usually corresponding
 to stepping forward a chosen number of years into the future.
 
-
+## Model description
 
 
 The standard approach is given by the following set of processes which all have their own function to execute them. First, load required packages and include the parameters file which stores the parameters for the model.
