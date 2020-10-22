@@ -25,6 +25,12 @@ mutable struct out
 end
 
 
+"""
+    mda_information struct
+
+This struct contains the information for the mda, storing the coverage, minimum and maximum age targeted,
+    gender, drug efficacy and the time for the mda to be done
+"""
 mutable struct mda_information
     coverage
     min_age
@@ -34,7 +40,12 @@ mutable struct mda_information
     time
 end
 
+"""
+    vaccine_information struct
 
+This struct contains the information for the vaccine, storing the coverage, minimum and maximum age targeted,
+    gender, drug efficacy and the time for the vaccine to be done along with how long the vaccine provides protection for
+"""
 mutable struct vaccine_information
     coverage
     min_age
@@ -45,7 +56,12 @@ mutable struct vaccine_information
 end
 
 
+"""
+    Human struct
 
+This struct contains the information for the vaccine, storing the coverage, minimum and maximum age targeted,
+    gender, drug efficacy and the time for the vaccine to be done along with how long the vaccine provides protection for
+"""
 mutable struct Human
     age::Float64
     death_age::Float64
