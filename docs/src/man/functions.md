@@ -1,10 +1,7 @@
 
 # Functions
 
-```@index
-```
-
-the list of functions included in the package
+Functions included in the Schistoxpkg.
 
 
 ```@autodocs

@@ -2,7 +2,14 @@ using Distributions
 using Random
 using JLD
 
+"""
+    out struct
 
+This struct contains the different outputs we are interested in recording. This is the
+    overall population burden, with categories for low, moderate and heavy burdens, along with
+    separate categories for the school age children and adults. Along with these, the time of each
+    result is recorded, so we can subsequently see the prevalence of the otubreak over time.
+"""
 mutable struct out
     population_burden
     sac_burden
