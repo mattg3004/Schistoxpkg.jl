@@ -1238,13 +1238,13 @@ end
 # end
 
 """
-    vac_decay!(humans)
+    vac_decay!(humans, pars)
 
 decrease vaccination status for each person by 1 each day
 """
-function vac_decay!(humans)
+function vac_decay!(humans, pars)
     for h in humans
-        h.vac_status -= 1
+        h.vac_status -= pars.time_step
     end
     return humans
 end
@@ -1655,7 +1655,7 @@ function update_env_constant_population(num_time_steps, humans,  miracidia, cerc
 
         push!(miracidia, miracidia_production!(humans))
 
-        humans = vac_decay!(humans)
+        humans = vac_decay!(humans, pars)
 
         humans = death_of_human(humans)
 
@@ -1774,7 +1774,7 @@ function update_env_constant_population_human_larvae(num_time_steps, humans,  mi
 
         push!(miracidia, miracidia_production!(humans))
 
-        humans = vac_decay!(humans)
+        humans = vac_decay!(humans, pars)
 
         humans = death_of_human(humans)
 
@@ -1894,7 +1894,7 @@ function update_env_constant_population_increasing(num_time_steps, humans,  mira
 
         push!(miracidia, miracidia_production!(humans))
 
-        humans = vac_decay!(humans)
+        humans = vac_decay!(humans, pars)
 
         humans = death_of_human(humans)
 
@@ -2013,7 +2013,7 @@ function update_env_no_births_deaths(num_time_steps, humans,  miracidia, cercari
 
         push!(miracidia, miracidia_production!(humans))
 
-        humans = vac_decay!(humans)
+        humans = vac_decay!(humans, pars)
 
 #=  uptake larvae into humans from the environment  =#
         #=  uptake larvae into humans from the environment  =#
@@ -2126,7 +2126,7 @@ function update_env_no_births_deaths_human_larvae(num_time_steps, humans,  mirac
 
         push!(miracidia, miracidia_production!(humans))
 
-        humans = vac_decay!(humans)
+        humans = vac_decay!(humans, pars)
 
 #=  uptake larvae into humans from the environment  =#
         #=  uptake larvae into humans from the environment  =#
@@ -2234,7 +2234,7 @@ function update_env_no_births_deaths_increasing(num_time_steps, humans,  miracid
 
         push!(miracidia, miracidia_production!(humans))
 
-        humans = vac_decay!(humans)
+        humans = vac_decay!(humans, pars)
 
 #=  uptake larvae into humans from the environment  =#
         #=  uptake larvae into humans from the environment  =#
