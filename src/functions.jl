@@ -1409,6 +1409,12 @@ end
 
 
 #= function to generate a distribution for ages based on a specified demography =#
+
+"""
+    generate_age_distribution(pars)
+
+generate population numbers for each age in
+"""
 function generate_age_distribution(pars)
 
     number_per_age = []
@@ -1422,6 +1428,11 @@ end
 
 
 #= function to construct the set of ages, with size N =#
+"""
+    specified_age_distribution(pars)
+
+output ages according to a specified age distribution
+"""
 function specified_age_distribution(pars)
 
     cumsum_spec_ages = generate_age_distribution(pars)
@@ -1436,7 +1447,11 @@ end
 
 
 
+"""
+    update_env_to_equilibrium(num_time_steps, humans, miracidia, cercariae, pars)
 
+update the population for a given length of time. Here we do not age the population or include birth, deaths or interventions.
+"""
 function update_env_to_equilibrium(num_time_steps, humans, miracidia, cercariae, pars)
 
 
@@ -1479,6 +1494,12 @@ end
 
 
 
+"""
+    update_env_to_equilibrium_human_larvae(num_time_steps, humans, miracidia, cercariae, pars)
+
+update the population for a given length of time. Here we do not age the population or include birth, deaths or interventions and for this
+function larvae are uptaken from the environment into a larvae category in the humans, rather than immediately becoming worms
+"""
 function update_env_to_equilibrium_human_larvae(num_time_steps, humans, miracidia, cercariae, pars)
 
 
@@ -1520,6 +1541,12 @@ end
 
 
 
+"""
+    update_env_to_equilibrium_increasing(num_time_steps, humans, miracidia, cercariae, pars)
+
+update the population for a given length of time. Here we do not age the population or include birth, deaths or interventions and for this
+function larvae are uptaken from the environment immediately to worms and eggs are produced using a monotonically increasing function
+"""
 function update_env_to_equilibrium_increasing(num_time_steps, humans, miracidia, cercariae, pars)
 
 
@@ -1562,7 +1589,12 @@ end
 
 
 
+"""
+    update_env_constant_population(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
 
+update the population for a given length of time. Here we include deaths and for each death an individual is immediately born.
+    Interventions are included in this function and larvae are immediately uptaken as worms
+"""
 function update_env_constant_population(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
 
 
@@ -1676,6 +1708,12 @@ end
 
 
 
+"""
+    update_env_constant_population_human_larvae(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
+
+update the population for a given length of time. Here we include deaths and for each death an individual is immediately born.
+Interventions are included in this function and larvae are uptaken as larvae in the humans.
+"""
 function update_env_constant_population_human_larvae(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
 
 
@@ -1790,6 +1828,12 @@ end
 
 
 
+"""
+    update_env_constant_population_increasing(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
+
+update the population for a given length of time. Here we include deaths and for each death an individual is immediately born.
+Interventions are included in this function and larvae are uptaken immediately as worms and egg production follows a monotonically increasing function
+"""
 function update_env_constant_population_increasing(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
 
 
@@ -1906,6 +1950,12 @@ end
 
 
 
+"""
+    update_env_no_births_deaths(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
+
+update the population for a given length of time. Here we do not include births or deaths and individuals do not age
+Interventions are included in this function and larvae are uptaken immediately as worms
+"""
 function update_env_no_births_deaths(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
 
 
@@ -2012,6 +2062,13 @@ end
 
 
 
+
+"""
+    update_env_no_births_deaths_human_larvae(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
+
+update the population for a given length of time. Here we do not include births or deaths and individuals do not age
+Interventions are included in this function and larvae are uptaken as larvae in humans
+"""
 function update_env_no_births_deaths_human_larvae(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
 
 
@@ -2114,7 +2171,12 @@ end
 
 
 
+"""
+    update_env_no_births_deaths_increasing(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
 
+update the population for a given length of time. Here we do not include births or deaths and individuals do not age
+Interventions are included in this function and larvae are uptaken as immediately as worms and egg production is monotonically increasing
+"""
 function update_env_no_births_deaths_increasing(num_time_steps, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)
 
 
@@ -2219,6 +2281,12 @@ end
 
 
 # when we run multiple simulations, we store them in an array. This function will store the prevalence and sac prevalence
+
+"""
+    collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden, record, run)
+
+collect multiple prevalences within the population and store in appropriate arrays
+"""
 function collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden, record, run)
         if run == 1
             for i in 1 : length(record)
@@ -2246,6 +2314,12 @@ end
 
 
 # repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
+
+"""
+    run_repeated_sims_no_population_change(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
+
+run multiple simulations where aging of the population is aged, but each death is replaced by a birth and larvae are uptaken by humans as worms`
+"""
 function run_repeated_sims_no_population_change(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
 
     times = []
@@ -2280,6 +2354,11 @@ end
 
 
 # repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
+"""
+    run_repeated_sims_no_population_change_human_larvae(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
+
+run multiple simulations where the population is aged, but each death is replaced by a birth and larvae are uptaken by humans as larvae
+"""
 function run_repeated_sims_no_population_change_human_larvae(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
 
     times = []
@@ -2312,7 +2391,11 @@ end
 
 
 
+"""
+    run_repeated_sims_no_population_change(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
 
+run multiple simulations where aging of the population is not included, larvae are uptaken by humans as worms
+"""
 function run_repeated_sims_no_population_change_increasing(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
 
     times = []
@@ -2346,6 +2429,11 @@ end
 
 
 # repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
+"""
+    run_repeated_sims_no_births_deaths(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
+
+run multiple simulations where aging of the population is not included and larvae are uptaken by humans as worms
+"""
 function run_repeated_sims_no_births_deaths(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
 
     times = []
@@ -2377,7 +2465,11 @@ function run_repeated_sims_no_births_deaths(filename, num_time_steps, mda_info, 
 end
 
 
+"""
+    run_repeated_sims_no_births_deaths_human_larvae(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
 
+run multiple simulations where aging of the population is not included and larvae are uptaken by humans as larvae
+"""
 function run_repeated_sims_no_births_deaths_human_larvae(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
 
     times = []
@@ -2412,6 +2504,13 @@ end
 
 
 # repeat simulations where we allow mdas and vaccination, but keep the population the same by adding a birth for every death
+
+"""
+    run_repeated_sims_no_births_deaths_human_larvae(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
+
+run multiple simulations where aging of the population is not included and larvae are uptaken by humans as worms, and egg production is
+monotonically increasing
+"""
 function run_repeated_sims_no_births_deaths_increasing(filename, num_time_steps, mda_info, vaccine_info, num_repeats)
 
     times = []
