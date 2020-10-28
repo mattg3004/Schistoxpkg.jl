@@ -312,7 +312,7 @@ end
 end
 
 @testset "vac_decay" begin
-    @test vac_decay!(humans)[1].vac_status == -1
+    @test vac_decay!(humans,pars)[1].vac_status == -pars.time_step
 end
 
 Random.seed!(33)
