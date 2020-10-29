@@ -51,8 +51,8 @@ filename = "eq_runs.jld";
 use_kato_katz = 1
 # main parameters that we change
 predis_aggregation = 0.24
-contact_rate = 0.16
-max_fecundity = 0.14
+contact_rate = 0.1
+max_fecundity = 0.24
 M0 = 15
 rate_acquired_immunity = 0
 human_larvae_maturity_time = 40

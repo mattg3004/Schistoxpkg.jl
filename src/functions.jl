@@ -181,23 +181,6 @@ end
 
 
 
-"""
-    Environment
-
-This struct contains hold the Human population along with the number of miracidia and larvae, the time and the recorded outputs
-"""
-mutable struct Environment
-     miracidia::Array{Int64}
-     cercariae::Int64
-     humans::Array{Human}          # container for population
-     time::Float64
-     record::Array{out}
-     # Constructors
-     Environment() = Environment([],0,[],0, [])
-     Environment(miracidia, cercariae, humans, time, record) = new(miracidia, cercariae, humans, time, record)
-end
-
-
 
 
 # create the age specific contact settings given the scenario
@@ -391,8 +374,15 @@ function create_population(pars)
         community_selection = cumsum(pars.community_probs)/sum(pars.community_probs)
     end
 
-    env = Environment()
-    humans = env.humans
+    humans::Array{Human} = []
+
+    #=  initialize and fill the environmental variable  =#
+
+    miracidia::Array{Int64} = []
+    for i in 1 : pars.initial_miracidia_days
+        push!(miracidia, pars.initial_miracidia)
+    end
+    cercariae::Int64 = pars.init_env_cercariae;
 
 #=  initialize the Gamma distribution for predisposition selection  =#
     pre = Gamma(pars.predis_aggregation, 1/pars.predis_aggregation)
@@ -400,14 +390,7 @@ function create_population(pars)
 #= select all predispositions =#
     predisposition = rand(pre, pars.N)
 
-#=  initialize and fill the environmental variable  =#
 
-    miracidia = env.miracidia
-    for i in 1 : pars.initial_miracidia_days
-        push!(miracidia, pars.initial_miracidia)
-    end
-    cercariae = env.cercariae
-    cercariae = pars.init_env_cercariae;
     for i in 1:pars.N
 
         f_worms = fill(0, pars.worm_stages)
@@ -490,23 +473,21 @@ function create_population_specified_ages(pars)
         community_selection = cumsum(pars.community_probs)/sum(pars.community_probs)
     end
     ages = specified_age_distribution(pars)
-    env = Environment()
-    humans = env.humans
 
+    humans::Array{Human} = []
+    #=  initialize and fill the environmental variable  =#
+    miracidia::Array{Int64} = []
+    for i in 1 : pars.initial_miracidia_days
+        push!(miracidia, pars.initial_miracidia)
+    end
+    cercariae::Int64 = pars.init_env_cercariae;
 #=  initialize the Gamma distribution for predisposition selection  =#
     pre = Gamma(pars.predis_aggregation, 1/pars.predis_aggregation)
 
 #= select all predispositions =#
     predisposition = rand(pre, pars.N)
 
-#=  initialize and fill the environmental variable  =#
 
-    miracidia = env.miracidia
-    for i in 1 : pars.initial_miracidia_days
-        push!(miracidia, pars.initial_miracidia)
-    end
-    cercariae = env.cercariae
-    cercariae = pars.init_env_cercariae;
     for i in 1:pars.N
 
         f_worms = fill(0, pars.worm_stages)
@@ -1458,9 +1439,7 @@ function update_env_to_equilibrium(num_time_steps, humans, miracidia, cercariae,
 
     sim_time = 0
     record_time = 0
-    env = Environment()
-    record = env.record
-
+    record::Array{out} = []
 
     for j in 1:num_time_steps
 
@@ -1506,9 +1485,7 @@ function update_env_to_equilibrium_human_larvae(num_time_steps, humans, miracidi
 
     sim_time = 0
     record_time = 0
-    env = Environment()
-    record = env.record
-
+    record::Array{out} = []
 
     for j in 1:num_time_steps
 
@@ -1553,9 +1530,7 @@ function update_env_to_equilibrium_increasing(num_time_steps, humans, miracidia,
 
     sim_time = 0
     record_time = 0
-    env = Environment()
-    record = env.record
-
+    record::Array{out} = []
 
     for j in 1:num_time_steps
 

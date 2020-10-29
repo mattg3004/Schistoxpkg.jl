@@ -29,7 +29,7 @@ humans = update_contact_rate(humans,  pars)
 
 
 #
-number_years = 200
+number_years = 100
 num_time_steps = trunc(Int, 365*number_years / time_step)
 num_repeats = 1
 
@@ -60,7 +60,7 @@ gcf()
 
 # do simulations with mda for school age children every year for 20 years
 
-num_repeats = 10 #number of simulations to run
+num_repeats = 50 #number of simulations to run
 number_years = 20
 drug_efficacy = 0.863 #Toor et al. JID paper in SI: drug efficacy 86.3% for S. mansoni and 94% for S. haematobium
 num_time_steps = 365*number_years / time_step
