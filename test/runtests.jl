@@ -5,8 +5,7 @@ using Random
 using JLD
 
 
-env = Environment()
-humans = env.humans
+
 
 N = 1000    #population size
 time_step = 10.0
@@ -79,7 +78,7 @@ pars = Parameters(N, time_step, N_communities, community_probs, community_contac
         human_larvae_maturity_time)
 pars = make_age_contact_rate_array(pars, scenario, [],[]);
 
-
+humans, miracidia, cercariae = create_population_specified_ages(pars)
 @testset "test_human" begin
     h = Human()
     @test typeof(h) == Human
