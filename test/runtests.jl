@@ -389,9 +389,13 @@ end
 @test isapprox(update_env_no_births_deaths_increasing(5, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2],[839,865,840])
 end
 
+@testset "update_env_constant_population_increasing" begin
+@test isapprox(update_env_constant_population_increasing(5, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2],[847,881,850])
+end
 
 humans, miracidia, cercariae, record =
     update_env_constant_population(25, humans,  miracidia, cercariae, pars, mda_info, vaccine_info);
+
 
 times = []
 prev = []
@@ -407,3 +411,26 @@ collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, h
 
 times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden =
 collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden, record, 2)
+
+
+
+@testset "run_repeated_sims_no_population_change" begin
+@test run_repeated_sims_no_population_change(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 64.6
+end
+
+@testset "run_repeated_sims_no_population_change" begin
+@test run_repeated_sims_no_population_change_increasing(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 60.8
+end
+
+@testset "run_repeated_sims_no_population_change" begin
+@test run_repeated_sims_no_births_deaths(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 86.8
+end
+
+@testset "run_repeated_sims_no_births_deaths_human_larvae" begin
+@test run_repeated_sims_no_births_deaths_human_larvae(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 80.1
+end
+
+
+@testset "run_repeated_sims_no_births_deaths_increasing" begin
+@test run_repeated_sims_no_births_deaths_increasing(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 75.2
+end
