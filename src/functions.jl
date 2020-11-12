@@ -598,10 +598,10 @@ we will uptake from choose from Poisson
 distribution. otherwise, just uptake 0. =#
      #   if cercariae > 0
 # calculate the rate of the poisson distribution
-        pois_rate  = max(h.uptake_rate *  cercariae / k, 0)
+        pois_rate  = max(h.uptake_rate * (1-pars.rate_acquired_immunity * h.total_worms) *  cercariae / k, 0)
 
         # reduce the rate according to the effectiveness of the vaccine (if any is given)
-        pois_rate = pois_rate * (1 - (h.vac_status > 0) * pars.vaccine_effectiveness) * (1 - h.acquired_immunity)
+        pois_rate = pois_rate * (1 - (h.vac_status > 0) * pars.vaccine_effectiveness)
 
         # choose from the Poisson distribution
         uptake = rand(Poisson(pois_rate))
@@ -681,6 +681,7 @@ function human_larvae_maturity(humans, pars)
             females = rand(Binomial(h.larvae[1], 0.5))
             h.female_worms[1] += females
             h.male_worms[1] += h.larvae[1] - females
+            h.total_worms += h.larvae[1]
             splice!(h.larvae, 1)
         end
     end
