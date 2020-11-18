@@ -141,7 +141,7 @@ mutable struct Parameters
     rate_acquired_immunity::Float64
     M0::Float64 # mean worm burden
     human_larvae_maturity_time::Int64
-
+    egg_sample_size::Float64
     # constructors with default values
     Parameters() =
           Parameters(1000,1, 1, [1.0], [1.0],
@@ -157,7 +157,7 @@ mutable struct Parameters
         [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
                    65, 70, 75, 80, 85, 90, 95, 100, 110], 0.03, 1,1,
     [7639, 7082, 6524, 5674, 4725, 4147, 3928, 3362,
-              2636, 1970, 1468, 1166, 943, 718, 455, 244],5,1/24, 0, 0.87, 16, 0, 15, 0)
+              2636, 1970, 1468, 1166, 943, 718, 455, 244],5,1/24, 0, 0.87, 16, 0, 15, 0, 1)
 
     Parameters(N, time_step, N_communities, community_probs, community_contact_rate,
         density_dependent_fecundity, average_worm_lifespan,
@@ -167,7 +167,7 @@ mutable struct Parameters
         birth_rate, human_cercariae_prop, predis_aggregation, cercariae_survival, miracidia_survival,
         death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
         spec_ages, ages_per_index, record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold,
-        rate_acquired_immunity, M0, human_larvae_maturity_time) =
+        rate_acquired_immunity, M0, human_larvae_maturity_time, egg_sample_size) =
     new(N, time_step, N_communities, community_probs, community_contact_rate,
         density_dependent_fecundity, average_worm_lifespan,
         max_age, initial_worms, initial_miracidia, initial_miracidia_days,
@@ -176,7 +176,7 @@ mutable struct Parameters
         birth_rate, human_cercariae_prop, predis_aggregation,cercariae_survival, miracidia_survival,
                 death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
         spec_ages, ages_per_index,record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold,
-        rate_acquired_immunity, M0, human_larvae_maturity_time)
+        rate_acquired_immunity, M0, human_larvae_maturity_time, egg_sample_size)
 end
 
 
@@ -1260,9 +1260,6 @@ function count_eggs(humans)
 end
 
 
-
-
-
 """
     get_prevalences!(humans, time, pars)
 
@@ -1285,7 +1282,11 @@ function get_prevalences!(humans, time, pars)
     for h in humans
         push!(final_ages, h.age);
         # final_eggs = kato_katz(eggs[i], gamma_k)
-        final_eggs = h.eggs * (1-pars.use_kato_katz) + kato_katz(h.eggs, gamma_k) * pars.use_kato_katz
+        # take a sample of the eggs of the individual. For urine sample this may be ~ 1/100 and is defined
+        # by the egg_sample_size parameter.
+        sampled_eggs = rand(Binomial(h.eggs, pars.egg_sample_size))
+        final_eggs = sampled_eggs * (1-pars.use_kato_katz) + kato_katz(sampled_eggs, gamma_k) * pars.use_kato_katz
+
         push!(recorded_eggs, final_eggs)
         if h.age > 5 && h.age < 15
             sac_pop = sac_pop + 1;

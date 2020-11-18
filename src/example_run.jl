@@ -17,7 +17,7 @@ pars = Parameters(N, time_step, N_communities, community_probs, community_contac
         birth_rate, human_cercariae_prop, predis_aggregation, cercariae_survival, miracidia_survival,
         death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
         spec_ages, ages_per_index, record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold,
-        rate_acquired_immunity, M0, human_larvae_maturity_time)
+        rate_acquired_immunity, M0, human_larvae_maturity_time, egg_sample_size)
 pars = make_age_contact_rate_array(pars, scenario, [],[]);
 
 # create the larvae variables along with the human structure

@@ -56,6 +56,7 @@ kato_katz_par = 0.87
 heavy_burden_threshold = 16
 rate_acquired_immunity = 0
 M0 = 15
+egg_sample_size  = 1
 filename = "ee.jld"
 human_larvae_maturity_time = 40
 
@@ -75,7 +76,7 @@ pars = Parameters(N, time_step, N_communities, community_probs, community_contac
         birth_rate, human_cercariae_prop, predis_aggregation, cercariae_survival, miracidia_survival,
         death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
         spec_ages, ages_per_index, record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold, rate_acquired_immunity, M0,
-        human_larvae_maturity_time)
+        human_larvae_maturity_time, egg_sample_size)
 pars = make_age_contact_rate_array(pars, scenario, [],[]);
 
 humans, miracidia, cercariae = create_population_specified_ages(pars)
@@ -339,9 +340,9 @@ humans_loaded,  miracidia_loaded, cercariae_loaded, pars_loaded = load_populatio
 @testset "load_pop" begin
     @test humans_loaded[1].age == humans[1].age
 end
-
+Random.seed!(33)
 @testset "update_env_to_equ" begin
-    @test update_env_to_equilibrium(1, humans, miracidia, cercariae, pars)[2][3] == 40
+    @test update_env_to_equilibrium(1, humans, miracidia, cercariae, pars)[2][3] == 42
 end
 
 
@@ -354,14 +355,14 @@ vaccine_info = []
 mda_info = create_mda(0, .75, 0, 0, 2, 1, [0,1], [0,1], [0,1], pars.drug_effectiveness)
 Random.seed!(33)
 @testset "update_env_const_pop" begin
-    @test isapprox(update_env_constant_population(10, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2], [132, 2772, 2753])
+    @test isapprox(update_env_constant_population(10, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2], [148, 2808, 2867])
 end
 
 
 
 
 @testset "update_env_no_birth_death" begin
-    @test isapprox(update_env_no_births_deaths(10, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2], [8612, 8953, 9351])
+    @test isapprox(update_env_no_births_deaths(10, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2], [8498, 8754, 9266])
 end
 
 
@@ -371,26 +372,26 @@ end
 
 
 @testset "update_env_human_larvae" begin
-@test isapprox(update_env_to_equilibrium_human_larvae(5, humans, miracidia, cercariae, pars)[2],[9715,9552,9614])
+@test isapprox(update_env_to_equilibrium_human_larvae(5, humans, miracidia, cercariae, pars)[2],[9589, 9530, 9536])
 end
 
 @testset "update_env_human_larvae_constant_pop" begin
     @test isapprox(update_env_constant_population_human_larvae(5, humans,  miracidia,
                     cercariae, pars, mda_info, vaccine_info)[2],
-                        [14002,14386,14722])
+                        [13366, 13792, 14150])
 end
 
 @testset "update_env_no_births_deaths_human_larvae" begin
-@test isapprox(update_env_no_births_deaths_human_larvae(5, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2],[17962,18478,18794])
+@test isapprox(update_env_no_births_deaths_human_larvae(5, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2],[18030, 18354, 18704])
 end
 
 
 @testset "update_env_no_births_deaths_increasing" begin
-@test isapprox(update_env_no_births_deaths_increasing(5, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2],[839,865,840])
+@test isapprox(update_env_no_births_deaths_increasing(5, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2],[865, 864, 866])
 end
 
 @testset "update_env_constant_population_increasing" begin
-@test isapprox(update_env_constant_population_increasing(5, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2],[847,881,850])
+@test isapprox(update_env_constant_population_increasing(5, humans,  miracidia, cercariae, pars, mda_info, vaccine_info)[2],[855, 853, 844])
 end
 
 humans, miracidia, cercariae, record =
