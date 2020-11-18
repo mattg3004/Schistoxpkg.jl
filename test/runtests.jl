@@ -334,7 +334,7 @@ record = get_prevalences!(humans, time, pars)
     @test isapprox(record.sac_burden, [94.12, 52.94, 1.96])
 end
 #
-# save(filename, "humans", humans,  "miracidia", miracidia, "cercariae", cercariae, "pars", pars)
+save(filename, "humans", humans,  "miracidia", miracidia, "cercariae", cercariae, "pars", pars)
 #
 # humans_loaded,  miracidia_loaded, cercariae_loaded, pars_loaded = load_population_from_file(filename)
 #
