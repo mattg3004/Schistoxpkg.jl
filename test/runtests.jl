@@ -333,13 +333,14 @@ record = get_prevalences!(humans, time, pars)
 @testset "get_prevs" begin
     @test isapprox(record.sac_burden, [94.12, 52.94, 1.96])
 end
-save(filename, "humans", humans,  "miracidia", miracidia, "cercariae", cercariae, "pars", pars)
-
-humans_loaded,  miracidia_loaded, cercariae_loaded, pars_loaded = load_population_from_file(filename)
-
-@testset "load_pop" begin
-    @test humans_loaded[1].age == humans[1].age
-end
+#
+# save(filename, "humans", humans,  "miracidia", miracidia, "cercariae", cercariae, "pars", pars)
+#
+# humans_loaded,  miracidia_loaded, cercariae_loaded, pars_loaded = load_population_from_file(filename)
+#
+# @testset "load_pop" begin
+#     @test humans_loaded[1].age == humans[1].age
+# end
 Random.seed!(33)
 @testset "update_env_to_equ" begin
     @test update_env_to_equilibrium(1, humans, miracidia, cercariae, pars)[2][3] == 42
