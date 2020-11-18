@@ -415,24 +415,24 @@ times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burd
 collect_prevs(times, prev, sac_prev, high_burden, high_burden_sac, adult_prev, high_adult_burden, record, 2)
 
 
-
-@testset "run_repeated_sims_no_population_change" begin
-@test run_repeated_sims_no_population_change(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 64.6
-end
-
-@testset "run_repeated_sims_no_population_change" begin
-@test run_repeated_sims_no_population_change_increasing(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 60.8
-end
-
-@testset "run_repeated_sims_no_population_change" begin
-@test run_repeated_sims_no_births_deaths(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 86.8
-end
-
-@testset "run_repeated_sims_no_births_deaths_human_larvae" begin
-@test run_repeated_sims_no_births_deaths_human_larvae(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 80.1
-end
-
-
-@testset "run_repeated_sims_no_births_deaths_increasing" begin
-@test run_repeated_sims_no_births_deaths_increasing(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 75.2
-end
+#
+# @testset "run_repeated_sims_no_population_change" begin
+# @test run_repeated_sims_no_population_change(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 64.6
+# end
+#
+# @testset "run_repeated_sims_no_population_change" begin
+# @test run_repeated_sims_no_population_change_increasing(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 60.8
+# end
+#
+# @testset "run_repeated_sims_no_population_change" begin
+# @test run_repeated_sims_no_births_deaths(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 86.8
+# end
+#
+# @testset "run_repeated_sims_no_births_deaths_human_larvae" begin
+# @test run_repeated_sims_no_births_deaths_human_larvae(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 80.1
+# end
+#
+#
+# @testset "run_repeated_sims_no_births_deaths_increasing" begin
+# @test run_repeated_sims_no_births_deaths_increasing(filename, 5, mda_info, vaccine_info, 1)[2][1][1] == 75.2
+# end
