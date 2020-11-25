@@ -665,25 +665,41 @@ end
 
 This will mature the human larvae into worms after a chosen number of days, which is specified
 by the human_larvae_maturity_time parameter in the pars struct
-"""
+# """
+# function human_larvae_maturity(humans, pars)
+#
+#     a = "enact_maturity_function_"
+# #=  loop over humans  =#
+#     @inbounds for h in humans
+#
+# #=  if we there are non-zero larvae over the age of 35 days, then add
+#      these to worms and remove from human_cercariae  =#
+#         fn = a * string(length(h.larvae) > round(pars.human_larvae_maturity_time/pars.time_step, digits = 0))
+#         h = getfield(Schistoxpkg, Symbol(fn))(h)
+#     end
+#
+# #= return arrays  =#
+#     return humans
+# end
 function human_larvae_maturity(humans, pars)
 
-    a = "enact_maturity_function_"
 #=  loop over humans  =#
     @inbounds for h in humans
 
 #=  if we there are non-zero larvae over the age of 35 days, then add
      these to worms and remove from human_cercariae  =#
-        fn = a * string(length(h.larvae) > round(pars.human_larvae_maturity_time/pars.time_step, digits = 0))
-        h = getfield(Schistoxpkg, Symbol(fn))(h)
+        if length(h.larvae) > round(pars.human_larvae_maturity_time/time_step, digits = 0)
+            females = rand(Binomial(h.larvae[1], 0.5))
+            h.female_worms[1] += females
+            h.male_worms[1] += h.larvae[1] - females
+            h.total_worms += h.larvae[1]
+            splice!(h.larvae, 1)
+        end
     end
 
 #= return arrays  =#
     return humans
 end
-
-
-
 # function to kill miracidia in the environment
 """
     miracidia_death!(miracidia, pars)
