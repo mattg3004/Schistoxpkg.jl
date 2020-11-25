@@ -464,14 +464,13 @@ In addition to this, it will create the initial miracidia environment vector
 function create_population_specified_ages(pars)
 
 
-     if length(pars.community_probs) != pars.N_communities
+    if length(pars.community_probs) != pars.N_communities
         error("must provide probabilities for membership of each community")
     else
         community_selection = 1
     end
-    if pars.N_communities > 1
-        community_selection = cumsum(pars.community_probs)/sum(pars.community_probs)
-    end
+    community_selection = cumsum(pars.community_probs)/sum(pars.community_probs)
+
     ages = specified_age_distribution(pars)
 
     humans::Array{Human} = []
@@ -495,17 +494,10 @@ function create_population_specified_ages(pars)
         m_worms = fill(0, pars.worm_stages)
         m_worms[1] = trunc(Int,round(rand()*pars.initial_worms))
 
-        if rand() > pars.mda_adherence
-            adherence = 0
-        else
-            adherence = 1
-        end
+        adherence = 1 - 1*(rand() > pars.mda_adherence)
 
-        if rand() > pars.mda_access
-            access = 0
-        else
-            access = 1
-        end
+        access = 1 - 1*(rand() > pars.mda_access)
+
 
         community = findall(community_selection .> rand())[1]
 
@@ -523,16 +515,7 @@ function create_population_specified_ages(pars)
         humans[end].age_contact_rate = pars.age_contact_rates[contact_rate_age]
         humans[end].relative_contact_rate = humans[end].age_contact_rate *  pars.community_contact_rate[humans[end].community]/
         (maximum(pars.community_contact_rate) * maximum(pars.contact_rate_by_age_array))
-
-
-        if humans[end].gender == 0
-            humans[end].predisposition = humans[end].predisposition * pars.female_factor
-        else
-            humans[end].predisposition = humans[end].predisposition * pars.male_factor
-        end
-
-        humans[end].uptake_rate = humans[end].predisposition * pars.contact_rate * humans[end].age_contact_rate *
-                                    pars.time_step * pars.community_contact_rate[community]
+        humans[end].predisposition = humans[end].predisposition * ((1-humans[end].gender)* pars.female_factor + humans[end].gender* pars.male_factor)
     end
     return humans, miracidia, cercariae
 
@@ -663,6 +646,19 @@ distribution. otherwise, just uptake 0. =#
 end
 
 
+function enact_maturity_function_false(h)
+    return h
+end
+
+function enact_maturity_function_true(h)
+    females = rand(Binomial(h.larvae[1], 0.5))
+    h.female_worms[1] += females
+    h.male_worms[1] += h.larvae[1] - females
+    h.total_worms += h.larvae[1]
+    splice!(h.larvae, 1)
+    return h
+end
+
 
 """
     human_larvae_maturity(humans, pars)
@@ -672,24 +668,19 @@ by the human_larvae_maturity_time parameter in the pars struct
 """
 function human_larvae_maturity(humans, pars)
 
+    a = "enact_maturity_function_"
 #=  loop over humans  =#
     @inbounds for h in humans
 
 #=  if we there are non-zero larvae over the age of 35 days, then add
      these to worms and remove from human_cercariae  =#
-        if length(h.larvae) > round(pars.human_larvae_maturity_time/time_step, digits = 0)
-            females = rand(Binomial(h.larvae[1], 0.5))
-            h.female_worms[1] += females
-            h.male_worms[1] += h.larvae[1] - females
-            h.total_worms += h.larvae[1]
-            splice!(h.larvae, 1)
-        end
+        fn = a * string(length(h.larvae) > round(pars.human_larvae_maturity_time/pars.time_step, digits = 0))
+        h = getfield(Schistoxpkg, Symbol(fn))(h)
     end
 
 #= return arrays  =#
     return humans
 end
-
 
 
 

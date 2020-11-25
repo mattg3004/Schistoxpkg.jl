@@ -75,7 +75,8 @@ export update_env_constant_population_human_larvae
 export update_env_no_births_deaths_human_larvae
 export run_repeated_sims_no_population_change_human_larvae
 export run_repeated_sims_no_births_deaths_human_larvae
-
+export enact_maturity_function_false
+export enact_maturity_function_true
 # using Distributions
 # using Random
 # using PoissonRandom
