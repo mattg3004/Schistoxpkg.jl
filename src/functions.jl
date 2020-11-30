@@ -581,23 +581,25 @@ we will uptake from choose from Poisson
 distribution. otherwise, just uptake 0. =#
      #   if cercariae > 0
 # calculate the rate of the poisson distribution
-        pois_rate  = max(h.uptake_rate * (1-pars.rate_acquired_immunity * h.total_worms) *  cercariae / k, 0)
+        if (h.uptake_rate > 0)
+            pois_rate  = max(h.uptake_rate * (1-pars.rate_acquired_immunity * h.total_worms) *  cercariae / k, 0)
 
         # reduce the rate according to the effectiveness of the vaccine (if any is given)
-        pois_rate = pois_rate * (1 - (h.vac_status > 0) * pars.vaccine_effectiveness)
+            pois_rate = pois_rate * (1 - (h.vac_status > 0) * pars.vaccine_effectiveness)
 
         # choose from the Poisson distribution
-        uptake = rand(Poisson(pois_rate))
+            uptake = rand(Poisson(pois_rate))
             #println(uptake)
-        n = rand(Binomial(uptake, 0.5))
+            n = rand(Binomial(uptake, 0.5))
 
-        h.female_worms[1] += n
-        h.male_worms[1] += uptake - n
-        h.total_worms += uptake
+            h.female_worms[1] += n
+            h.male_worms[1] += uptake - n
+            h.total_worms += uptake
 
         # # reduce the infective larvae by the number of larvae uptaken
-        cercariae -= uptake
-        cercariae = max(0, cercariae)
+            cercariae -= uptake
+            cercariae = max(0, cercariae)
+        end
     end
     return humans, cercariae, miracidia
 end
@@ -628,19 +630,21 @@ we will uptake from choose from Poisson
 distribution. otherwise, just uptake 0. =#
      #   if cercariae > 0
 # calculate the rate of the poisson distribution
-        pois_rate  = max(h.uptake_rate * (1-pars.rate_acquired_immunity * h.total_worms) *  cercariae / k, 0)
+        if h.uptake_rate > 0
+            pois_rate  = max(h.uptake_rate * (1-pars.rate_acquired_immunity * h.total_worms) *  cercariae / k, 0)
 
-        # reduce the rate according to the effectiveness of the vaccine (if any is given)
-        pois_rate = pois_rate * (1 - (h.vac_status > 0) * pars.vaccine_effectiveness) * (1 - h.acquired_immunity)
+            # reduce the rate according to the effectiveness of the vaccine (if any is given)
+            pois_rate = pois_rate * (1 - (h.vac_status > 0) * pars.vaccine_effectiveness) * (1 - h.acquired_immunity)
 
-        # choose from the Poisson distribution
-        uptake = rand(Poisson(pois_rate))
-            #println(uptake)
-        push!(h.larvae, uptake)
+            # choose from the Poisson distribution
+            uptake = rand(Poisson(pois_rate))
+                #println(uptake)
+            push!(h.larvae, uptake)
 
-        # # reduce the infective larvae by the number of larvae uptaken
-        cercariae -= uptake
-        cercariae = max(0, cercariae)
+            # # reduce the infective larvae by the number of larvae uptaken
+            cercariae -= uptake
+            cercariae = max(0, cercariae)
+        end
     end
     return humans, cercariae, miracidia
 end
@@ -853,7 +857,7 @@ function egg_production!(humans, pars)
     for i in 1 : length(humans)
 #        wp = calculate_worm_pairs(humans[i])
         wp = worm_pairs[i]
-        wp = max(wp,0.000000001)
+        wp = max(wp, 1E-10)
 #= if we have a positive number of worms, then make calculation,
         otherwise the number of eggs is trivially 0 =#
 #         if worm_pairs > 0
@@ -862,7 +866,7 @@ function egg_production!(humans, pars)
 # calculate the mean number of eggs we would expect
     #    mean_eggs = pars.max_fecundity * wp *
     #            exp(- pars.density_dependent_fecundity  * female_worms[i][1])
-    mean_eggs = pars.max_fecundity * wp *
+        mean_eggs = pars.max_fecundity * wp *
                 exp(- pars.density_dependent_fecundity  * wp)
 
 
