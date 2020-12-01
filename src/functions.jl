@@ -82,13 +82,14 @@ mutable struct Human
     acquired_immunity::Float64 # level of acquired immunity
     total_worms::Int64 # total number of worms over lifetime
     larvae::Array{Int64}
+    last_uptake::Int64
     Human() = Human(0.0,100, 0,1.0,[],[],0,0,0.0,0,0,0,0, 0, 0, 0,[])
     Human(age,death_age, gender, predisposition, female_worms, male_worms, eggs, vac_status,
         age_contact_rate, adherence, access, community, relative_contact_rate, uptake_rate,
-        acquired_immunity, total_worms, larvae) =
+        acquired_immunity, total_worms, larvae, last_uptake) =
     new(age, death_age, gender, predisposition, female_worms, male_worms, eggs, vac_status,
         age_contact_rate, adherence, access, community, relative_contact_rate, uptake_rate,
-        acquired_immunity, total_worms, larvae)
+        acquired_immunity, total_worms, larvae, 0)
 end
 
 
@@ -416,7 +417,7 @@ function create_population(pars)
         death_age = get_death_age(pars)
         push!(humans, Human(pars.max_age*rand(), death_age, rand([0,1]), predisposition[i],
         f_worms, m_worms,
-        0, 0, 0, adherence, access, community, 0, 0,0,0, []))
+        0, 0, 0, adherence, access, community, 0, 0,0,0, [], 0))
 
         age = trunc(Int, humans[end].age)
 
@@ -505,7 +506,7 @@ function create_population_specified_ages(pars)
         death_age = get_death_age(pars)
         push!(humans, Human(ages[i]+rand(), death_age, rand([0,1]), predisposition[i],
         f_worms, m_worms,
-        0, 0, 0, adherence, access, community, 0, 0,0,0, []))
+        0, 0, 0, adherence, access, community, 0, 0,0,0, [], 0))
 
         age = trunc(Int, humans[end].age)
 
@@ -581,6 +582,7 @@ we will uptake from choose from Poisson
 distribution. otherwise, just uptake 0. =#
      #   if cercariae > 0
 # calculate the rate of the poisson distribution
+        h.last_uptake += pars.time_step
         if (h.uptake_rate > 0)
             pois_rate  = max(h.uptake_rate * (1-pars.rate_acquired_immunity * h.total_worms) *  cercariae / k, 0)
 
@@ -589,16 +591,20 @@ distribution. otherwise, just uptake 0. =#
 
         # choose from the Poisson distribution
             uptake = rand(Poisson(pois_rate))
+            if uptake > 0
+                h.last_uptake = -1
             #println(uptake)
-            n = rand(Binomial(uptake, 0.5))
+                n = rand(Binomial(uptake, 0.5))
 
-            h.female_worms[1] += n
-            h.male_worms[1] += uptake - n
-            h.total_worms += uptake
+                h.female_worms[1] += n
+                h.male_worms[1] += uptake - n
+                h.total_worms += uptake
 
         # # reduce the infective larvae by the number of larvae uptaken
-            cercariae -= uptake
-            cercariae = max(0, cercariae)
+                cercariae -= uptake
+                cercariae = max(0, cercariae)
+            end
+
         end
     end
     return humans, cercariae, miracidia
@@ -630,6 +636,7 @@ we will uptake from choose from Poisson
 distribution. otherwise, just uptake 0. =#
      #   if cercariae > 0
 # calculate the rate of the poisson distribution
+        h.last_uptake += pars.time_step
         if h.uptake_rate > 0
             pois_rate  = max(h.uptake_rate * (1-pars.rate_acquired_immunity * h.total_worms) *  cercariae / k, 0)
 
@@ -640,7 +647,9 @@ distribution. otherwise, just uptake 0. =#
             uptake = rand(Poisson(pois_rate))
                 #println(uptake)
             push!(h.larvae, uptake)
-
+            if uptake > 0
+                h.last_uptake = 0
+            end
             # # reduce the infective larvae by the number of larvae uptaken
             cercariae -= uptake
             cercariae = max(0, cercariae)
@@ -772,29 +781,35 @@ function worm_maturity!(humans, pars)
     p = pars.time_step * pars.worm_stages/ (365 * pars.average_worm_lifespan)
 
     @inbounds for h in humans
-
+        if h.last_uptake > 365*pars.average_worm_lifespan
+            for j in 1:pars.worm_stages
+                h.female_worms[j] = 0
+                h.male_worms[j] = 0
+            end
+        else
         # kill appropriate number of worms in the final stage
-         n = h.female_worms[pars.worm_stages]
-        h.female_worms[pars.worm_stages] = rand(Binomial(n, 1-p))
+            n = h.female_worms[pars.worm_stages]
+            h.female_worms[pars.worm_stages] = rand(Binomial(n, 1-p))
 
-        n = h.male_worms[pars.worm_stages]
-        h.male_worms[pars.worm_stages] = rand(Binomial(n, 1-p))
+            n = h.male_worms[pars.worm_stages]
+            h.male_worms[pars.worm_stages] = rand(Binomial(n, 1-p))
 
 #=
         for aging worms, we do this in reverse order, which ensures the
         correct order of aging is respected
 =#
 
-        @inbounds for j in (pars.worm_stages-1):-1:1
-#=   choose the number of male and female worms to age from one stage to the next   =#
-            aging_females = rand(Binomial(h.female_worms[j], p))
-            aging_males = rand(Binomial(h.male_worms[j], p))
+            @inbounds for j in (pars.worm_stages-1):-1:1
+    #=   choose the number of male and female worms to age from one stage to the next   =#
+                aging_females = rand(Binomial(h.female_worms[j], p))
+                aging_males = rand(Binomial(h.male_worms[j], p))
 
-#=   add and subtract the number of worms from the appropriate categories   =#
-            h.female_worms[j+1] += aging_females
-            h.female_worms[j] -= aging_females
-            h.male_worms[j+1] += aging_males
-            h.male_worms[j] -= aging_males
+    #=   add and subtract the number of worms from the appropriate categories   =#
+                h.female_worms[j+1] += aging_females
+                h.female_worms[j] -= aging_females
+                h.male_worms[j+1] += aging_males
+                h.male_worms[j] -= aging_males
+            end
         end
     end
     return humans
@@ -1004,7 +1019,7 @@ function birth_of_human(humans, pars)
 
     push!(humans, Human(0, death_age, rand([0,1]), predisp,
         f_worms, m_worms,
-        0, 0, 0, adherence, access, community,0,0,0,0, []))
+        0, 0, 0, adherence, access, community,0,0,0,0, [], 0))
 
 
     humans[end].age_contact_rate = pars.contact_rate_by_age_array[1]
@@ -1634,7 +1649,7 @@ function update_env_constant_population(num_time_steps, humans,  miracidia, cerc
 
         for h in humans
             h.age += pars.time_step/365
-            humans = update_contact_rate(humans,  pars)
+
         end
 
         humans =  egg_production!(humans, pars)
