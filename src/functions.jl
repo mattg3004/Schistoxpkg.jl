@@ -1007,7 +1007,7 @@ function birth_of_human(humans, pars)
         0, 0, 0, adherence, access, community,0,0,0,0, []))
 
 
-    humans[end].age_contact_rate = pars.age_contact_rates[1]
+    humans[end].age_contact_rate = pars.contact_rate_by_age_array[1]
 
 
 
@@ -1634,7 +1634,7 @@ function update_env_constant_population(num_time_steps, humans,  miracidia, cerc
 
         for h in humans
             h.age += pars.time_step/365
-
+            humans = update_contact_rate(humans,  pars)
         end
 
         humans =  egg_production!(humans, pars)
