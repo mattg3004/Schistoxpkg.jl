@@ -781,7 +781,7 @@ function worm_maturity!(humans, pars)
     p = pars.time_step * pars.worm_stages/ (365 * pars.average_worm_lifespan)
 
     @inbounds for h in humans
-        if h.last_uptake > 365*pars.average_worm_lifespan
+        if h.last_uptake > 1.5 * 365*pars.average_worm_lifespan
             for j in 1:pars.worm_stages
                 h.female_worms[j] = 0
                 h.male_worms[j] = 0
