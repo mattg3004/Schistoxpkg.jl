@@ -1,7 +1,7 @@
 name = "Schistoxpkg"
 uuid = "ee8521ae-8f6d-4bf5-8f15-d671735ac7b0"
 authors = ["Matthew"]
-version = "1.2.7"
+version = "1.2.8"
 
 [deps]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
