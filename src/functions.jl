@@ -32,7 +32,7 @@ mutable struct Human
     last_uptake::Int64
 
     Human() = Human(0.0,100, 0,1.0,[],[],0,0,0.0,0,0,0,0, 0, 0, 0,[], 0)
-    
+
     Human(age,death_age, gender, predisposition, female_worms, male_worms, eggs, vac_status,
         age_contact_rate, adherence, access, community, relative_contact_rate, uptake_rate,
         acquired_immunity, total_worms, larvae, last_uptake) =
@@ -98,8 +98,7 @@ mutable struct Parameters
           0.0007, 5.7, 100, 0,
           1000, 2, 1000,
           1,  0.03, 0.34,[0.032,0.61, 1,0.06],[4,9,15,100],fill(0,101),
-          # gamma_r::Distributions.Gamma{Float64}     # distribution of lifelong predisposition factor
-          # gamma_k::Distributions.Gamma{Float64}     # distribution for kato_katz test
+          
           1.0, 1.0, 1.0,
           1.0, 24, 1.0, 1.0, 0.24, 0.5, 0.5,
         [0.0656, 0.0093, 0.003, 0.0023, 0.0027, 0.0038, 0.0044, 0.0048, 0.0053,
