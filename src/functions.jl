@@ -92,13 +92,16 @@ mutable struct Parameters
     M0::Float64 # mean worm burden
     human_larvae_maturity_time::Int64
     egg_sample_size::Float64
+
+
     # constructors with default values
+
     Parameters() =
           Parameters(1000,1, 1, [1.0], [1.0],
           0.0007, 5.7, 100, 0,
           1000, 2, 1000,
           1,  0.03, 0.34,[0.032,0.61, 1,0.06],[4,9,15,100],fill(0,101),
-          
+
           1.0, 1.0, 1.0,
           1.0, 24, 1.0, 1.0, 0.24, 0.5, 0.5,
         [0.0656, 0.0093, 0.003, 0.0023, 0.0027, 0.0038, 0.0044, 0.0048, 0.0053,
@@ -394,7 +397,6 @@ function create_population(pars)
 
 #=  initialize the Gamma distribution for predisposition selection  =#
     pre = Gamma(pars.predis_aggregation, 1/pars.predis_aggregation)
-pars.predis_aggregation = 9999999
 #= select all predispositions =#
     predisposition = rand(pre, pars.N)
 
