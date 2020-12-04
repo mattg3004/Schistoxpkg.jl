@@ -2,59 +2,6 @@ using Distributions
 using Random
 using JLD
 
-"""
-    out
-
-This struct contains the different outputs we are interested in recording. This is the
-    overall population burden, with categories for low, moderate and heavy burdens, along with
-    separate categories for the school age children and adults. Along with these, the time of each
-    result is recorded, so we can subsequently see the prevalence of the otubreak over time.
-"""
-mutable struct out
-    population_burden
-    sac_burden
-    adult_burden
-    pop_prev
-    sac_prev
-    adult_prev
-    sac_pop
-    adult_pop
-    final_ages
-    recorded_eggs
-    time
-end
-
-
-"""
-    mda_information
-
-This struct contains the information for the mda, storing the coverage, minimum and maximum age targeted,
-    gender, drug efficacy and the time for the mda to be done
-"""
-mutable struct mda_information
-    coverage
-    min_age
-    max_age
-    gender
-    effectiveness
-    time
-end
-
-"""
-    vaccine_information
-
-This struct contains the information for the vaccine, storing the coverage, minimum and maximum age targeted,
-    gender, drug efficacy and the time for the vaccine to be done along with how long the vaccine provides protection for
-"""
-mutable struct vaccine_information
-    coverage
-    min_age
-    max_age
-    gender
-    duration
-    time
-end
-
 
 """
     Human
@@ -83,13 +30,15 @@ mutable struct Human
     total_worms::Int64 # total number of worms over lifetime
     larvae::Array{Int64}
     last_uptake::Int64
-    Human() = Human(0.0,100, 0,1.0,[],[],0,0,0.0,0,0,0,0, 0, 0, 0,[])
+
+    Human() = Human(0.0,100, 0,1.0,[],[],0,0,0.0,0,0,0,0, 0, 0, 0,[], 0)
+    
     Human(age,death_age, gender, predisposition, female_worms, male_worms, eggs, vac_status,
         age_contact_rate, adherence, access, community, relative_contact_rate, uptake_rate,
         acquired_immunity, total_worms, larvae, last_uptake) =
     new(age, death_age, gender, predisposition, female_worms, male_worms, eggs, vac_status,
         age_contact_rate, adherence, access, community, relative_contact_rate, uptake_rate,
-        acquired_immunity, total_worms, larvae, 0)
+        acquired_immunity, total_worms, larvae, last_uptake)
 end
 
 
@@ -179,6 +128,65 @@ mutable struct Parameters
         spec_ages, ages_per_index,record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold,
         rate_acquired_immunity, M0, human_larvae_maturity_time, egg_sample_size)
 end
+
+
+
+
+"""
+    out
+
+This struct contains the different outputs we are interested in recording. This is the
+    overall population burden, with categories for low, moderate and heavy burdens, along with
+    separate categories for the school age children and adults. Along with these, the time of each
+    result is recorded, so we can subsequently see the prevalence of the otubreak over time.
+"""
+mutable struct out
+    population_burden
+    sac_burden
+    adult_burden
+    pop_prev
+    sac_prev
+    adult_prev
+    sac_pop
+    adult_pop
+    final_ages
+    recorded_eggs
+    time
+end
+
+
+"""
+    mda_information
+
+This struct contains the information for the mda, storing the coverage, minimum and maximum age targeted,
+    gender, drug efficacy and the time for the mda to be done
+"""
+mutable struct mda_information
+    coverage
+    min_age
+    max_age
+    gender
+    effectiveness
+    time
+end
+
+"""
+    vaccine_information
+
+This struct contains the information for the vaccine, storing the coverage, minimum and maximum age targeted,
+    gender, drug efficacy and the time for the vaccine to be done along with how long the vaccine provides protection for
+"""
+mutable struct vaccine_information
+    coverage
+    min_age
+    max_age
+    gender
+    duration
+    time
+end
+
+
+
 
 
 
@@ -387,7 +395,7 @@ function create_population(pars)
 
 #=  initialize the Gamma distribution for predisposition selection  =#
     pre = Gamma(pars.predis_aggregation, 1/pars.predis_aggregation)
-
+pars.predis_aggregation = 9999999
 #= select all predispositions =#
     predisposition = rand(pre, pars.N)
 

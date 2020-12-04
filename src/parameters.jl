@@ -57,3 +57,4 @@ M0 = 15
 rate_acquired_immunity = 0
 human_larvae_maturity_time = 40
 egg_sample_size = 1
+last_uptake = 0
