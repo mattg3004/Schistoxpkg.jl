@@ -933,7 +933,7 @@ function egg_production_increasing!(humans, pars)
 # calculate the mean number of eggs we would expect
 
 
-         mean_eggs = 0.5*(pars.max_fecundity * pars.M0)/(pars.M0 + M) * (1-exp(-pars.M0*log(2)*M)) * M
+         mean_eggs = max(1E-10, 0.5*(pars.max_fecundity * pars.M0)/(pars.M0 + M) * (1-exp(-pars.M0*log(2)*M)) * M)
 # calculate the number of successes
 
 
