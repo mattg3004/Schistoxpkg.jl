@@ -16,7 +16,10 @@ julia> using Pkg
 julia> Pkg.add("Schistoxpkg")
 ```
 
-
+Additionally, there is an issue with the save and load package JLD, which will produce an error if you have the latest versions of all libraries installed. To get around this problem, you need to install a previous version "HFD5_jll" library as follows:
+```
+julia> Pkg.add(Pkg.PackageSpec(;name="HDF5_jll", version="1.10.5"))
+```
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://mattg3004.github.io/Schistoxpkg.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://mattg3004.github.io/Schistoxpkg.jl/dev)
