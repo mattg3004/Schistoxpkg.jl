@@ -1319,7 +1319,9 @@ function get_prevalences!(humans, time, pars)
         # final_eggs = kato_katz(eggs[i], gamma_k)
         # take a sample of the eggs of the individual. For urine sample this may be ~ 1/100 and is defined
         # by the egg_sample_size parameter.
-        sampled_eggs = rand(Binomial(h.eggs, pars.egg_sample_size))
+        sampled_eggs1 = rand(Binomial(h.eggs, pars.egg_sample_size))
+        sampled_eggs2 = rand(Binomial(h.eggs, pars.egg_sample_size))
+        sampled_eggs = 0.5 * (sampled_eggs1 + sampled_eggs2)
         final_eggs = sampled_eggs * (1-pars.use_kato_katz) + kato_katz(sampled_eggs, gamma_k) * pars.use_kato_katz
 
         push!(recorded_eggs, final_eggs)
