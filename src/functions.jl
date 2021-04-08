@@ -1310,7 +1310,7 @@ function get_prevalences!(humans, time, pars)
     adult_prev = 0
     sac_pop = 0
     adult_pop = 0
-    recorded_eggs = Int64[]
+    recorded_eggs = Float32[]
     final_ages = Float32[]
     gamma_k  = Gamma(pars.kato_katz_par, 1/kato_katz_par)
     num_humans = length(humans)
