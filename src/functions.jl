@@ -63,6 +63,7 @@ mutable struct Parameters
     init_env_cercariae::Int64
     worm_stages::Int64
     contact_rate::Float64
+    max_fec_contact_rate_product::Float64
     max_fecundity::Float64
     age_contact_rates::Array{Float64}
     ages_for_contacts::Array{Int64}
@@ -100,7 +101,7 @@ mutable struct Parameters
           Parameters(1000,1, 1, [1.0], [1.0],
           0.0007, 5.7, 100, 0,
           1000, 2, 1000,
-          1,  0.03, 0.34,[0.032,0.61, 1,0.06],[4,9,15,100],fill(0,101),
+          1,  0.03, 0.1, 0.34,[0.032,0.61, 1,0.06],[4,9,15,100],fill(0,101),
 
           1.0, 1.0, 1.0,
           1.0, 24, 1.0, 1.0, 0.24, 0.5, 0.5,
@@ -114,7 +115,7 @@ mutable struct Parameters
     Parameters(N, time_step, N_communities, community_probs, community_contact_rate,
         density_dependent_fecundity, average_worm_lifespan,
         max_age, initial_worms, initial_miracidia, initial_miracidia_days, init_env_cercariae,
-        worm_stages, contact_rate, max_fecundity, age_contact_rates,
+        worm_stages, contact_rate,max_fec_contact_rate_product, max_fecundity, age_contact_rates,
         ages_for_contacts, contact_rate_by_age_array, mda_adherence, mda_access,  female_factor, male_factor, miracidia_maturity,
         birth_rate, human_cercariae_prop, predis_aggregation, cercariae_survival, miracidia_survival,
         death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
@@ -123,7 +124,8 @@ mutable struct Parameters
     new(N, time_step, N_communities, community_probs, community_contact_rate,
         density_dependent_fecundity, average_worm_lifespan,
         max_age, initial_worms, initial_miracidia, initial_miracidia_days,
-        init_env_cercariae, worm_stages, contact_rate, max_fecundity, age_contact_rates,
+        init_env_cercariae, worm_stages, contact_rate, max_fec_contact_rate_product,
+        max_fecundity, age_contact_rates,
         ages_for_contacts, contact_rate_by_age_array, mda_adherence, mda_access,  female_factor, male_factor, miracidia_maturity,
         birth_rate, human_cercariae_prop, predis_aggregation,cercariae_survival, miracidia_survival,
                 death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,

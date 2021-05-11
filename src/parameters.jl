@@ -18,18 +18,25 @@ worm_stages = 1
 
 female_factor = 1
 male_factor = 1
-age_contact_rates = [0.032,0.61, 1,0.06]
+age_contact_rates = [0.1094983,
+0.4363393,
+0.4291753,
+0.02498713]
+c1 = age_contact_rates[1]
+c2 = age_contact_rates[2]
+c3 = age_contact_rates[3]
+c4 = age_contact_rates[4]
 ages_for_contacts = [4,9,15,100]
 contact_rate_by_age_array = fill(0.09, trunc(Int,(max_age+1)))
-mda_adherence = 0.9
-mda_access = 0.9
+mda_adherence = 1
+mda_access = 1
 female_factor = 1
 male_factor = 1
 birth_rate = 28*time_step/(1000*365)
 human_cercariae_prop = 1
 predis_aggregation = 0.24
-cercariae_survival = 1/2
-miracidia_survival = 1/2
+cercariae_survival = 0.5
+miracidia_survival = 0.5
 miracidia_maturity = 24
 death_prob_by_age = [0.0656, 0.0093, 0.003, 0.0023, 0.0027, 0.0038, 0.0044, 0.0048, 0.0053,
                      0.0065, 0.0088, 0.0106, 0.0144, 0.021, 0.0333, 0.0529, 0.0851, 0.1366, 0.2183, 0.2998 , 0.3698, 1]
@@ -50,11 +57,31 @@ scenario = "moderate adult";
 filename = "eq_runs.jld";
 use_kato_katz = 1
 # main parameters that we change
-predis_aggregation = 0.24
-contact_rate = 0.1
-max_fecundity = 0.24
-M0 = 15
+contact_rate = 0.007068083
+predis_aggregation = 	0.08489151
+max_fecundity = 0.34
+
+
+
+M0 = 1000
 rate_acquired_immunity = 0
 human_larvae_maturity_time = 40
-egg_sample_size = 1
+egg_sample_size = 1/100
 last_uptake = 0
+
+egg_multiplier = 100
+
+sd_decrease = 1
+max_fec_contact_rate_product = 0.1
+contact_rate = max_fec_contact_rate_product/max_fecundity
+
+pars = Parameters(N, time_step, N_communities, community_probs, community_contact_rate,
+        density_dependent_fecundity, average_worm_lifespan,
+        max_age, initial_worms, initial_miracidia, initial_miracidia_days, init_env_cercariae,
+        worm_stages, contact_rate, max_fec_contact_rate_product, max_fecundity, age_contact_rates,
+        ages_for_contacts, contact_rate_by_age_array, mda_adherence, mda_access,  female_factor, male_factor, miracidia_maturity,
+        birth_rate, human_cercariae_prop, predis_aggregation, cercariae_survival, miracidia_survival,
+        death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
+        spec_ages, ages_per_index, record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold,
+        rate_acquired_immunity, M0, human_larvae_maturity_time, egg_sample_size)
+pars = make_age_contact_rate_array(pars, scenario, [],[]);
