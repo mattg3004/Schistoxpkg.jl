@@ -2,7 +2,7 @@ using Schistoxpkg
 using Random
 using JLD
 using Distributions
-using Plots
+#-using Plots
 
 # include parameters and add a file name
 # include("parameters.jl")
