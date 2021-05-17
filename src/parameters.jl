@@ -57,11 +57,11 @@ scenario = "moderate adult";
 filename = "eq_runs.jld";
 use_kato_katz = 1
 # main parameters that we change
-contact_rate = 0.007068083
+# contact_rate = 0.007068083
 predis_aggregation = 	0.08489151
-max_fecundity = 0.34
-
-
+max_fecundity = 5
+max_fec_contact_rate_product = 1/2
+contact_rate = max_fec_contact_rate_product/max_fecundity
 
 M0 = 1000
 rate_acquired_immunity = 0
