@@ -8,7 +8,7 @@ include(&quot;parameters.jl&quot;)</code></pre><p>After this, we must initialize
                   density_dependent_fecundity, average_worm_lifespan,
                   max_age, initial_worms, initial_miracidia, 
                   initial_miracidia_days, init_env_cercariae,
-                  worm_stages, contact_rate, max_fecundity, age_contact_rates,
+                  worm_stages, contact_rate, max_fec_contact_rate_product, max_fecundity, age_contact_rates,
                   ages_for_contacts, contact_rate_by_age_array, mda_adherence, 
                   mda_access,  female_factor, male_factor, miracidia_maturity,
                   birth_rate, human_cercariae_prop, predis_aggregation, 
@@ -17,7 +17,7 @@ include(&quot;parameters.jl&quot;)</code></pre><p>After this, we must initialize
                   vaccine_effectiveness, drug_effectiveness,
                   spec_ages, ages_per_index, record_frequency, 
                   use_kato_katz, kato_katz_par, heavy_burden_threshold,
-                  rate_acquired_immunity, M0, human_larvae_maturity_time)
+                  rate_acquired_immunity, M0, human_larvae_maturity_time, egg_sample_size)
 
 pars = make_age_contact_rate_array(pars, scenario, [],[]);</code></pre><p>We then counstruct the initial host population and initialize the environment cercariae and mircacidia larvae. We also age the population forward for a certain number of steps (here 20,000), so that there are no individuals in the population whose death age is lower than their actual age, and the death rate dynamics have time to achieve a desired age distribution. We also update the age based contact rates according to the new ages in the population.</p><pre><code class="language-none">humans, miracidia, cercariae = create_population_specified_ages(pars)
 humans = generate_ages_and_deaths(20000, humans, pars)
