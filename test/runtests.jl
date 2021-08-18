@@ -6,7 +6,7 @@ using JLD
 
 
 
-
+egg_production_distribution = "Poisson"
 N = 1000    #population size
 time_step = 10.0
 N_communities = 1
@@ -78,7 +78,7 @@ pars = Parameters(N, time_step, N_communities, community_probs, community_contac
         birth_rate, human_cercariae_prop, predis_aggregation, cercariae_survival, miracidia_survival,
         death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
         spec_ages, ages_per_index, record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold, rate_acquired_immunity, M0,
-        human_larvae_maturity_time, egg_sample_size)
+        human_larvae_maturity_time, egg_sample_size, egg_production_distribution)
 pars = make_age_contact_rate_array(pars, scenario, [],[]);
 
 humans, miracidia, cercariae = create_population_specified_ages(pars)
