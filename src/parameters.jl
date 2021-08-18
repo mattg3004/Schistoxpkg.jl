@@ -15,7 +15,7 @@ initial_miracidia_days = 3
 initial_miracidia = 50000*N/1000
 init_env_cercariae = 50000*N/1000
 worm_stages = 1
-
+egg_production_distribution = "NegBin"
 female_factor = 1
 male_factor = 1
 age_contact_rates = [0.1094983,

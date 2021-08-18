@@ -93,7 +93,7 @@ mutable struct Parameters
     M0::Float64 # mean worm burden
     human_larvae_maturity_time::Int64
     egg_sample_size::Float64
-
+    egg_production_distribution::String
 
     # constructors with default values
 
@@ -110,7 +110,7 @@ mutable struct Parameters
         [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60,
                    65, 70, 75, 80, 85, 90, 95, 100, 110], 0.03, 1,1,
     [7639, 7082, 6524, 5674, 4725, 4147, 3928, 3362,
-              2636, 1970, 1468, 1166, 943, 718, 455, 244],5,1/24, 0, 0.87, 16, 0, 15, 0, 1)
+              2636, 1970, 1468, 1166, 943, 718, 455, 244],5,1/24, 0, 0.87, 16, 0, 15, 0, 1, "Poisson")
 
     Parameters(N, time_step, N_communities, community_probs, community_contact_rate,
         density_dependent_fecundity, average_worm_lifespan,
@@ -120,7 +120,8 @@ mutable struct Parameters
         birth_rate, human_cercariae_prop, predis_aggregation, cercariae_survival, miracidia_survival,
         death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
         spec_ages, ages_per_index, record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold,
-        rate_acquired_immunity, M0, human_larvae_maturity_time, egg_sample_size) =
+        rate_acquired_immunity, M0, human_larvae_maturity_time, egg_sample_size,
+        egg_production_distribution) =
     new(N, time_step, N_communities, community_probs, community_contact_rate,
         density_dependent_fecundity, average_worm_lifespan,
         max_age, initial_worms, initial_miracidia, initial_miracidia_days,
@@ -130,7 +131,8 @@ mutable struct Parameters
         birth_rate, human_cercariae_prop, predis_aggregation,cercariae_survival, miracidia_survival,
                 death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
         spec_ages, ages_per_index,record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold,
-        rate_acquired_immunity, M0, human_larvae_maturity_time, egg_sample_size)
+        rate_acquired_immunity, M0, human_larvae_maturity_time, egg_sample_size,
+        egg_production_distribution)
 end
 
 
@@ -895,22 +897,30 @@ function egg_production!(humans, pars)
         mean_eggs = pars.max_fecundity * wp *
                 exp(- pars.density_dependent_fecundity  * wp)
 
+        if pars.egg_production_distribution == "Poisson"
+            eggs = rand(Poisson(mean_eggs))
+        elseif pars.egg_production_distribution == "NegBin"
+            NB_r = pars.r * wp
 
+        # calculate the probability of a success
+            p = NB_r/(NB_r+mean_eggs)
+
+        # choose from NB
+            eggs = rand(NegativeBinomial(NB_r,p))
+        else
+            error("egg_production_distribution must be 'Poisson' or 'NegBin'")
         # mean_eggs = 0.5*(pars.max_fecundity * M0)/(M0 + M) * (1-exp(-M0*log(2)*M)) * M
 # calculate the number of successes
-    #    NB_r = pars.r * wp
+        end
 
-# calculate the probability of a success
-    #    p = NB_r/(NB_r+mean_eggs)
-
-# choose from NB
-         #eggs = rand(NegativeBinomial(NB_r,p))
-        eggs = rand(Poisson(mean_eggs))
             # println(eggs)
         humans[i].eggs = eggs
     end
     return humans
 end
+
+
+
 
 
 
@@ -1320,7 +1330,8 @@ function get_prevalences!(humans, time, pars)
         push!(final_ages, h.age);
         # final_eggs = kato_katz(eggs[i], gamma_k)
         # take a sample of the eggs of the individual. For urine sample this may be ~ 1/100 and is defined
-        # by the egg_sample_size parameter.
+        # by the egg_sample_size parameter. for use of kato katz method, this is used for stool samples and hence the sample
+        # size is different to urine sample
         sampled_eggs1 = rand(Binomial(h.eggs, pars.egg_sample_size))
         sampled_eggs2 = rand(Binomial(h.eggs, pars.egg_sample_size))
         sampled_eggs = 0.5 * (sampled_eggs1 + sampled_eggs2)
