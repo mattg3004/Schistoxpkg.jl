@@ -234,6 +234,9 @@ This will make the contact rate array for each age of individual in the populati
     5-9 will have rate 0.61, 10-15 rate 1 and 16+ 0.06
 """
 function make_age_contact_rate_array(pars, scenario, input_ages, input_contact_rates)
+
+
+
     if pars.max_age < 60
         error("max_age must be greater than 60")
     else
@@ -1128,7 +1131,7 @@ function mda(humans, mda_coverage, min_age_mda, max_age_mda, mda_effectiveness, 
 
     #= find index of people with correct ages for the mda treatment =#
     in_gender = in(mda_gender)
-    x = findall(((min_age_mda .<= ages .<= max_age_mda) .& in_gender.(gender) .& (access .== 1)))
+    x = findall(((min_age_mda .<= ages .< max_age_mda) .& in_gender.(gender) .& (access .== 1)))
 
 
     k = length(x)
