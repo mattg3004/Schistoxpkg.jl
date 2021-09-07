@@ -38,6 +38,11 @@ Gamma distributed death ages, while more than 1 will result in Erlang distributi
 
 contact_rate: global contact rate for the uptake of larvae from the environment (Float)
 
+max_fec_contact_rate_product: product of maximum fecundity and contact rate parameters. This
+is often used to keep the simulation in a desired range of behaviour when maximum fecundity is changed.
+We will set the contact rate depending on this parameter and the maximum fecundity. Appropriate values
+of this parameter will depend on the value of the cercariae and miracidia survival. (Float)
+
 max_fecundity: expected number of eggs from a single worm pair. The actual number 
 will be chosen from a distribution with this mean (Float)
 
@@ -110,5 +115,12 @@ a proxy for mean worm burden (Float)
 
 human_larvae_maturity_time: length of time in days after which a cercariae uptaken by
 a human will mature into a worm (Int)
+
+egg_sample_size: the sample size of daily output for egg counting. For haematobium, this 
+will be ~1/100 as the usual sample size is 10mL and a daily amount of urine is ~1L (Float >0 & <1)
+
+egg_production_distribution: Either "NegBin" of "Poisson", depending on whether a negative 
+binomial or Poisson distribution is desired for the production of eggs given the 
+number of worms in an individual (String)
 
 ```
