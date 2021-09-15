@@ -320,13 +320,13 @@ function get_death_age(pars)
             end
             x = rand()
         end
-        if k == 1
-            min_age = 0
-        else
-            min_age = pars.ages_for_death[k-1]
-        end
+        # if k == 1
+        #     min_age = 0
+        # else
+        #     min_age = pars.ages_for_death[k-1]
+        # end
 
-        death_age = min_age + rand() * (goal_age - min_age)
+        death_age = age + rand()
 
     return death_age
 end
@@ -454,6 +454,8 @@ function create_population(pars)
         humans[end].uptake_rate = humans[end].predisposition * pars.contact_rate * humans[end].age_contact_rate *
                                     pars.time_step * pars.community_contact_rate[community]
     end
+    humans = generate_ages_and_deaths(20000, humans, pars)
+    humans = update_contact_rate(humans,  pars)
     return humans, miracidia, cercariae
 
 end
@@ -533,7 +535,12 @@ function create_population_specified_ages(pars)
         humans[end].relative_contact_rate = humans[end].age_contact_rate *  pars.community_contact_rate[humans[end].community]/
         (maximum(pars.community_contact_rate) * maximum(pars.contact_rate_by_age_array))
         humans[end].predisposition = humans[end].predisposition * ((1-humans[end].gender)* pars.female_factor + humans[end].gender* pars.male_factor)
+        humans[end].uptake_rate = humans[end].predisposition * pars.contact_rate * humans[end].age_contact_rate *
+                                    pars.time_step * pars.community_contact_rate[community]
+
     end
+    humans = generate_ages_and_deaths(20000, humans, pars)
+    humans = update_contact_rate(humans,  pars)
     return humans, miracidia, cercariae
 
 end
