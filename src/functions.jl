@@ -744,7 +744,7 @@ Kill a chosen proportion of miracidia in the environment governed by the
 miracidia_survival parameter in the pars struct
 """
 function miracidia_death!(miracidia, pars)
-    #= as emiracidia is an array, we need to use . syntax to apply
+    #= as miracidia is an array, we need to use . syntax to apply
     the functions to each element in the array =#
     # return rand.(Binomial.(env_miracidia, 1 - env_miracidia_survival_prop))
     if pars.miracidia_survival <= 0
@@ -1498,7 +1498,6 @@ update the population for a given length of time. Here we do not age the populat
 function update_env_to_equilibrium(num_time_steps, humans, miracidia, cercariae, pars)
 
 
-
     sim_time = 0
     record_time = 0
     record::Array{out} = []
@@ -1513,7 +1512,7 @@ function update_env_to_equilibrium(num_time_steps, humans, miracidia, cercariae,
 
         sim_time += pars.time_step/365
 
-        humans =   egg_production!(humans, pars)
+        humans =  egg_production!(humans, pars)
 
         humans =  worm_maturity!(humans, pars)
 
@@ -1621,8 +1620,6 @@ function update_env_to_equilibrium_increasing(num_time_steps, humans, miracidia,
     end
     return humans, miracidia, cercariae, record
 end
-
-
 
 
 
