@@ -1,4 +1,4 @@
-using Schistoxpkg
+#using Schistoxpkg
 using Test
 using Distributions
 using Random
@@ -6,7 +6,7 @@ using JLD
 
 
 
-egg_production_distribution = "Poisson"
+egg_production_distribution = "NegBin"
 N = 1000    #population size
 time_step = 10.0
 N_communities = 1
@@ -29,8 +29,8 @@ male_factor = 1
 age_contact_rates = [0.032,0.61, 1,0.06]
 ages_for_contacts = [4,9,15,100]
 contact_rate_by_age_array = fill(0.09, trunc(Int,(max_age+1)))
-mda_adherence = 0.9
-mda_access = 0.9
+mda_adherence = 1
+mda_access = 1
 female_factor = 1
 male_factor = 1
 birth_rate = 28*time_step/(1000*365)
@@ -152,8 +152,29 @@ end
 end
 
 
+updated_cercariae = cercariae
+if cercariae > 0
+    time_step_specific_cerc_death = pars.cercariae_survival
+    if pars.time_step > 1
+        c = cercariae
+        for i in 1:pars.time_step
+             c = (c + miracidia[1]/pars.time_step) * pars.cercariae_survival
+        end
+        c1 = cercariae
+        c1 = (c1 +  miracidia[1])
+        if c1 > 0
+            time_step_specific_cerc_death = c/c1
+        end
+    end
+    if pars.cercariae_survival <= 0
+        error("cercariae_survival_prop must be bigger than 0")
+    else
+        updated_cercariae = trunc(Int, round(cercariae * time_step_specific_cerc_death, digits= 0))
+    end
+end
+
 @testset "cercariae_death" begin
-    @test cercariae_death!(cercariae, pars)== pars.init_env_cercariae  * pars.cercariae_survival
+    @test cercariae_death!(cercariae, miracidia, pars)== updated_cercariae
 
 end
 
@@ -204,6 +225,7 @@ end
     @test sum(sum.(human_larvae)) == 0
 end
 
+cercariae = 10000
 humans, cercariae, miracidia  = cercariae_uptake_with_human_larvae!(humans, cercariae, miracidia, pars)
 
 
@@ -256,7 +278,7 @@ humans = egg_production!(humans, pars)
 # @testset "mira_prod" begin
 #     @test miracidia_production!(humans) == 81
 # end
-
+eggs = sum((p->p.eggs).(humans))
 humans = death_of_human(humans)
 @testset "death" begin
     length(humans) < pars.N
@@ -265,7 +287,7 @@ end
 
 humans = administer_drug(humans, 1:length(humans), 1)
 @testset "administer_drug" begin
-    @test sum((p->p.eggs).(humans)) == 0
+    @test sum((p->p.eggs).(humans)) == eggs
 end
 
 
