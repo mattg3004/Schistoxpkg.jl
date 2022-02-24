@@ -2,18 +2,18 @@ using JLD
 using Distributions
 using Random
 
-N = 1  #population size
-time_step = 1.0 # time step length
+N = 1000 #population size
+time_step = 20.0 # time step length
 N_communities = 1 # how many communites there are in the population
 community_probs = [1.0] # probability of being in each community
 community_contact_rate = [1.0]
 density_dependent_fecundity = 0.0007
 average_worm_lifespan = 5.7
 max_age = 100
-initial_worms = 0
-initial_miracidia_days = 3
-initial_miracidia = 50000*N/1000
-init_env_cercariae = 50000*N/1000
+initial_worms = 10
+
+initial_miracidia = time_step*5000000*N/1000
+init_env_cercariae = time_step*5000000*N/1000
 worm_stages = 1
 egg_production_distribution = "NegBin"
 female_factor = 1
@@ -42,7 +42,9 @@ human_cercariae_prop = 1
 predis_aggregation = 0.24
 cercariae_survival = 0.1
 miracidia_survival = 0.1
+
 miracidia_maturity = 24
+initial_miracidia_days =  trunc(Int,miracidia_maturity/time_step)
 death_prob_by_age = [0.0656, 0.0093, 0.003, 0.0023, 0.0027, 0.0038, 0.0044, 0.0048, 0.0053,
                      0.0065, 0.0088, 0.0106, 0.0144, 0.021, 0.0333, 0.0529, 0.0851, 0.1366, 0.2183, 0.2998 , 0.3698, 1]
 
@@ -72,7 +74,7 @@ M0 = 1000
 rate_acquired_immunity = 0
 human_larvae_maturity_time = 40
 egg_sample_size = 1/100
-heavy_burden_threshold = 400
+heavy_burden_threshold = 50
 
 
 pars = Parameters(N, time_step, N_communities, community_probs, community_contact_rate,

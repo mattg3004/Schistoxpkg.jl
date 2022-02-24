@@ -452,7 +452,7 @@ function create_population(pars)
         end
 
         humans[end].uptake_rate = humans[end].predisposition * pars.contact_rate * humans[end].age_contact_rate *
-                                    pars.time_step * pars.community_contact_rate[community]
+                                    pars.community_contact_rate[community]
     end
     humans = generate_ages_and_deaths(20000, humans, pars)
     humans = update_contact_rate(humans,  pars)
@@ -536,7 +536,7 @@ function create_population_specified_ages(pars)
         (maximum(pars.community_contact_rate) * maximum(pars.contact_rate_by_age_array))
         humans[end].predisposition = humans[end].predisposition * ((1-humans[end].gender)* pars.female_factor + humans[end].gender* pars.male_factor)
         humans[end].uptake_rate = humans[end].predisposition * pars.contact_rate * humans[end].age_contact_rate *
-                                    pars.time_step * pars.community_contact_rate[community]
+                                     pars.community_contact_rate[community]
 
     end
     humans = generate_ages_and_deaths(20000, humans, pars)
@@ -566,7 +566,7 @@ function update_contact_rate(humans,  pars)
         (maximum(pars.community_contact_rate) * maximum(pars.contact_rate_by_age_array))
 
         h.uptake_rate = h.predisposition * pars.contact_rate * h.age_contact_rate *
-                                    pars.time_step * pars.community_contact_rate[h.community]
+                                     pars.community_contact_rate[h.community]
     end
     return humans
 end
@@ -588,7 +588,7 @@ uptake cercariae into humans, whilst updating cercariae with miracidia.
 Uptaken cercariae immediately become worms in this formulation
 """
 function cercariae_uptake!(humans, cercariae, miracidia, pars)
-
+    #cercariae = 0
     humans = shuffle(humans)
     k = length(humans)
 #= assign larvae which have been in the environment for 40 days to become infective.
@@ -642,7 +642,7 @@ uptake cercariae into humans, whilst updating cercariae with matured miracidia.
 Uptaken cercariae become larvae within humans, rather than immmediately into worms with this function.
 """
 function cercariae_uptake_with_human_larvae!(humans, cercariae, miracidia, pars)
-
+    cercariae = 0
     humans = shuffle(humans)
     k = length(humans)
 #= assign larvae which have been in the environment for 40 days to become infective.
@@ -765,15 +765,30 @@ end
 Kill a chosen proportion of cercariae in the environment governed by the
 cercariae_survival parameter in the pars struct
 """
-function cercariae_death!(cercariae, pars)
+function cercariae_death!(cercariae, miracidia, pars)
     # updated_cercariae = 0
     # for i in 1:time_step
     #     updated_cercariae += (env_cercariae/time_step) * (1/(2^i))
     # end
-    if pars.cercariae_survival <= 0
-        error("cercariae_survival_prop must be bigger than 0")
-    else
-        updated_cercariae = trunc(Int, round(cercariae * pars.cercariae_survival, digits= 0))
+    updated_cercariae = cercariae
+    if cercariae > 0
+        time_step_specific_cerc_death = pars.cercariae_survival
+        if pars.time_step > 1
+            c = cercariae
+            for i in 1:pars.time_step
+                 c = (c + miracidia[1]/pars.time_step) * pars.cercariae_survival
+            end
+            c1 = cercariae
+            c1 = (c1 +  miracidia[1])
+            if c1 > 0
+                time_step_specific_cerc_death = c/c1
+            end
+        end
+        if pars.cercariae_survival <= 0
+            error("cercariae_survival_prop must be bigger than 0")
+        else
+            updated_cercariae = trunc(Int, round(cercariae * time_step_specific_cerc_death, digits= 0))
+        end
     end
     return updated_cercariae
 end
@@ -895,34 +910,36 @@ function egg_production!(humans, pars)
     for i in 1 : length(humans)
 #        wp = calculate_worm_pairs(humans[i])
         wp = worm_pairs[i]
-        wp = max(wp, 1E-10)
-#= if we have a positive number of worms, then make calculation,
-        otherwise the number of eggs is trivially 0 =#
-#         if worm_pairs > 0
+        eggs = 0
+        if wp > 0
+            wp = max(wp, 1E-10)
+    #= if we have a positive number of worms, then make calculation,
+            otherwise the number of eggs is trivially 0 =#
+    #         if worm_pairs > 0
 
-                     #println(female_worms[i][1])
-# calculate the mean number of eggs we would expect
-    #    mean_eggs = pars.max_fecundity * wp *
-    #            exp(- pars.density_dependent_fecundity  * female_worms[i][1])
-        mean_eggs = pars.max_fecundity * wp *
-                exp(- pars.density_dependent_fecundity  * wp)
+                         #println(female_worms[i][1])
+    # calculate the mean number of eggs we would expect
+        #    mean_eggs = pars.max_fecundity * wp *
+        #            exp(- pars.density_dependent_fecundity  * female_worms[i][1])
+            mean_eggs = pars.max_fecundity * wp *
+                    exp(- pars.density_dependent_fecundity  * wp) * pars.time_step
 
-        if pars.egg_production_distribution == "Poisson"
-            eggs = rand(Poisson(mean_eggs))
-        elseif pars.egg_production_distribution == "NegBin"
-            NB_r = pars.r * wp
+            if pars.egg_production_distribution == "Poisson"
+                eggs = rand(Poisson(mean_eggs))
+            elseif pars.egg_production_distribution == "NegBin"
+                NB_r = pars.r * wp
 
-        # calculate the probability of a success
-            p = NB_r/(NB_r+mean_eggs)
+            # calculate the probability of a success
+                p = NB_r/(NB_r+mean_eggs)
 
-        # choose from NB
-            eggs = rand(NegativeBinomial(NB_r,p))
-        else
-            error("egg_production_distribution must be 'Poisson' or 'NegBin'")
-        # mean_eggs = 0.5*(pars.max_fecundity * M0)/(M0 + M) * (1-exp(-M0*log(2)*M)) * M
-# calculate the number of successes
+            # choose from NB
+                eggs = rand(NegativeBinomial(NB_r,p))
+            else
+                error("egg_production_distribution must be 'Poisson' or 'NegBin'")
+            # mean_eggs = 0.5*(pars.max_fecundity * M0)/(M0 + M) * (1-exp(-M0*log(2)*M)) * M
+    # calculate the number of successes
+            end
         end
-
             # println(eggs)
         humans[i].eggs = eggs
     end
@@ -1068,7 +1085,7 @@ function birth_of_human(humans, pars)
     end
 
     humans[end].uptake_rate = humans[end].predisposition * pars.contact_rate * humans[end].age_contact_rate *
-                                    pars.time_step * pars.community_contact_rate[community]
+                    pars.community_contact_rate[community]
 
     return humans
 end
@@ -1093,7 +1110,7 @@ function administer_drug(humans, indices, drug_effectiveness)
         humans[index].female_worms = rand.(Binomial.(humans[index].female_worms,p))
         humans[index].male_worms = rand.(Binomial.(humans[index].male_worms, p))
 #         @inbounds humans[index].human_cercariae = rand.(Binomial.(humans[index].human_cercariae,p))
-        humans[index].eggs = 0
+        #humans[index].eggs = 0
     end
     return humans
 end
@@ -1342,8 +1359,8 @@ function get_prevalences!(humans, time, pars)
         # take a sample of the eggs of the individual. For urine sample this may be ~ 1/100 and is defined
         # by the egg_sample_size parameter. for use of kato katz method, this is used for stool samples and hence the sample
         # size is different to urine sample
-        sampled_eggs1 = rand(Binomial(h.eggs, pars.egg_sample_size))
-        sampled_eggs2 = rand(Binomial(h.eggs, pars.egg_sample_size))
+        sampled_eggs1 = rand(Binomial(trunc(Int,h.eggs/pars.time_step), pars.egg_sample_size))
+        sampled_eggs2 = rand(Binomial(trunc(Int,h.eggs/pars.time_step), pars.egg_sample_size))
         sampled_eggs = 0.5 * (sampled_eggs1 + sampled_eggs2)
         final_eggs = sampled_eggs * (1-pars.use_kato_katz) + kato_katz(sampled_eggs, gamma_k) * pars.use_kato_katz
 
@@ -1498,6 +1515,7 @@ update the population for a given length of time. Here we do not age the populat
 function update_env_to_equilibrium(num_time_steps, humans, miracidia, cercariae, pars)
 
 
+
     sim_time = 0
     record_time = 0
     record::Array{out} = []
@@ -1512,7 +1530,7 @@ function update_env_to_equilibrium(num_time_steps, humans, miracidia, cercariae,
 
         sim_time += pars.time_step/365
 
-        humans =  egg_production!(humans, pars)
+        humans =   egg_production!(humans, pars)
 
         humans =  worm_maturity!(humans, pars)
 
@@ -1523,7 +1541,7 @@ function update_env_to_equilibrium(num_time_steps, humans, miracidia, cercariae,
 #=  kill miracidia in the environment at specified death rate =#
         miracidia =  miracidia_death!(miracidia, pars)
 #=  kill cercariae in the environment at specified death rate =#
-        cercariae =   cercariae_death!(cercariae, pars)
+        cercariae =   cercariae_death!(cercariae, miracidia, pars)
 
 
     end
@@ -1570,7 +1588,7 @@ function update_env_to_equilibrium_human_larvae(num_time_steps, humans, miracidi
 #=  kill miracidia in the environment at specified death rate =#
         miracidia =  miracidia_death!(miracidia, pars)
 #=  kill cercariae in the environment at specified death rate =#
-        cercariae =   cercariae_death!(cercariae, pars)
+        cercariae =   cercariae_death!(cercariae, miracidia, pars)
 
 
     end
@@ -1614,7 +1632,7 @@ function update_env_to_equilibrium_increasing(num_time_steps, humans, miracidia,
 #=  kill miracidia in the environment at specified death rate =#
         miracidia =  miracidia_death!(miracidia, pars)
 #=  kill cercariae in the environment at specified death rate =#
-        cercariae =   cercariae_death!(cercariae, pars)
+        cercariae =   cercariae_death!(cercariae, miracidia, pars)
 
 
     end
@@ -1671,7 +1689,7 @@ function update_env_constant_population(num_time_steps, humans,  miracidia, cerc
         end
 
         if sim_time >= record_time
-            a = get_prevalences!(humans, sim_time, pars)
+            a =  get_prevalences!(humans, sim_time, pars)
             push!(record, a)
             record_time += pars.record_frequency
         end
@@ -1685,13 +1703,13 @@ function update_env_constant_population(num_time_steps, humans,  miracidia, cerc
 
         humans =  egg_production!(humans, pars)
 
-        humans =  worm_maturity!(humans, pars)
+        humans =    worm_maturity!(humans, pars)
 
         push!(miracidia, miracidia_production!(humans))
 
         humans = vac_decay!(humans, pars)
 
-        humans = death_of_human(humans)
+        humans =   death_of_human(humans)
 
         if length(humans) < pars.N
             for k in 1:(pars.N - length(humans))
@@ -1734,7 +1752,7 @@ function update_env_constant_population(num_time_steps, humans,  miracidia, cerc
 #=  kill miracidia in the environment at specified death rate =#
         miracidia =  miracidia_death!(miracidia, pars)
 #=  kill cercariae in the environment at specified death rate =#
-        cercariae =  cercariae_death!(cercariae, pars)
+        cercariae =  cercariae_death!(cercariae, miracidia, pars)
 
     end
     return humans, miracidia, cercariae, record
@@ -1854,7 +1872,7 @@ function update_env_constant_population_human_larvae(num_time_steps, humans,  mi
 #=  kill miracidia in the environment at specified death rate =#
         miracidia =  miracidia_death!(miracidia, pars)
 #=  kill cercariae in the environment at specified death rate =#
-        cercariae =  cercariae_death!(cercariae, pars)
+        cercariae =  cercariae_death!(cercariae, miracidia, pars)
 
     end
     return humans, miracidia, cercariae, record
@@ -1973,7 +1991,7 @@ function update_env_constant_population_increasing(num_time_steps, humans,  mira
 #=  kill miracidia in the environment at specified death rate =#
         miracidia =  miracidia_death!(miracidia, pars)
 #=  kill cercariae in the environment at specified death rate =#
-        cercariae =   cercariae_death!(cercariae, pars)
+        cercariae =   cercariae_death!(cercariae, miracidia, pars)
 
     end
     return humans, miracidia, cercariae, record
@@ -2084,7 +2102,7 @@ function update_env_no_births_deaths(num_time_steps, humans,  miracidia, cercari
 #=  kill miracidia in the environment at specified death rate =#
         miracidia =  miracidia_death!(miracidia, pars)
 #=  kill cercariae in the environment at specified death rate =#
-        cercariae =   cercariae_death!(cercariae, pars)
+        cercariae =   cercariae_death!(cercariae, miracidia, pars)
 
     end
     return humans, miracidia, cercariae, record
@@ -2197,7 +2215,7 @@ function update_env_no_births_deaths_human_larvae(num_time_steps, humans,  mirac
 #=  kill miracidia in the environment at specified death rate =#
         miracidia =  miracidia_death!(miracidia, pars)
 #=  kill cercariae in the environment at specified death rate =#
-        cercariae =   cercariae_death!(cercariae, pars)
+        cercariae =   cercariae_death!(cercariae, miracidia, pars)
 
     end
     return humans, miracidia, cercariae, record
@@ -2305,7 +2323,7 @@ function update_env_no_births_deaths_increasing(num_time_steps, humans,  miracid
 #=  kill miracidia in the environment at specified death rate =#
         miracidia =  miracidia_death!(miracidia, pars)
 #=  kill cercariae in the environment at specified death rate =#
-        cercariae =   cercariae_death!(cercariae, pars)
+        cercariae =   cercariae_death!(cercariae, miracidia, pars)
 
     end
     return humans, miracidia, cercariae, record
