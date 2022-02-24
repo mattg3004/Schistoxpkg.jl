@@ -77,12 +77,12 @@ egg_sample_size = 1/100
 heavy_burden_threshold = 50
 
 
-pars = Parameters(N, time_step, N_communities, community_probs, community_contact_rate,
-        density_dependent_fecundity, average_worm_lifespan,
-        max_age, initial_worms, initial_miracidia, initial_miracidia_days, init_env_cercariae,
-        worm_stages, contact_rate, max_fec_contact_rate_product, max_fecundity, age_contact_rates,
-        ages_for_contacts, contact_rate_by_age_array, mda_adherence, mda_access,  female_factor, male_factor, miracidia_maturity,
-        birth_rate, human_cercariae_prop, predis_aggregation, cercariae_survival, miracidia_survival,
-        death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
-        spec_ages, ages_per_index, record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold,
-        rate_acquired_immunity, M0, human_larvae_maturity_time, egg_sample_size, egg_production_distribution)
+#pars = Parameters(N, time_step, N_communities, community_probs, community_contact_rate,
+#        density_dependent_fecundity, average_worm_lifespan,
+#        max_age, initial_worms, initial_miracidia, initial_miracidia_days, init_env_cercariae,
+#        worm_stages, contact_rate, max_fec_contact_rate_product, max_fecundity, age_contact_rates,
+#        ages_for_contacts, contact_rate_by_age_array, mda_adherence, mda_access,  female_factor, male_factor, miracidia_maturity,
+#        birth_rate, human_cercariae_prop, predis_aggregation, cercariae_survival, miracidia_survival,
+#        death_prob_by_age, ages_for_death, r, vaccine_effectiveness, drug_effectiveness,
+#        spec_ages, ages_per_index, record_frequency, use_kato_katz, kato_katz_par, heavy_burden_threshold,
+#        rate_acquired_immunity, M0, human_larvae_maturity_time, egg_sample_size, egg_production_distribution)
