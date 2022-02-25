@@ -153,25 +153,15 @@ end
 
 
 updated_cercariae = cercariae
-if cercariae > 0
-    time_step_specific_cerc_death = pars.cercariae_survival
-    if pars.time_step > 1
-        c = cercariae
-        for i in 1:pars.time_step
-             c = (c + miracidia[1]/pars.time_step) * pars.cercariae_survival
-        end
-        c1 = cercariae
-        c1 = (c1 +  miracidia[1])
-        if c1 > 0
-            time_step_specific_cerc_death = c/c1
-        end
-    end
-    if pars.cercariae_survival <= 0
-        error("cercariae_survival_prop must be bigger than 0")
-    else
-        updated_cercariae = trunc(Int, round(cercariae * time_step_specific_cerc_death, digits= 0))
-    end
+time_step_specific_cerc_death = pars.cercariae_survival
+c = cercariae
+for i in 1:pars.time_step
+    c = (c + miracidia[1]/pars.time_step) * pars.cercariae_survival
 end
+c1 = cercariae
+c1 = (c1 +  miracidia[1])
+updated_cercariae = trunc(Int, round(cercariae * time_step_specific_cerc_death, digits= 0))
+
 
 @testset "cercariae_death" begin
     @test cercariae_death!(cercariae, miracidia, pars)== updated_cercariae
