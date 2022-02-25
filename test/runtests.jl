@@ -224,10 +224,11 @@ humans, cercariae, miracidia  = cercariae_uptake_with_human_larvae!(humans, cerc
 
 
 human_larvae = (p->p.larvae).(humans)
-
-@testset "human_larvae" begin
-    @test sum(sum.(human_larvae)) > 0
-end
+#
+#
+# @testset "human_larvae" begin
+#     @test sum(sum.(human_larvae)) > 0
+# end
 
 human_larvae = (p->p.larvae).(humans)
 x = sum(sum.(human_larvae))
