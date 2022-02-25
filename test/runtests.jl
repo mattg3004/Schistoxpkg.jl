@@ -88,7 +88,7 @@ humans, miracidia, cercariae = create_population_specified_ages(pars)
 end
 
 
-
+pars.cercariae_survival
 
 @testset "create_contacts_settings" begin
     conts = create_contact_settings("low adult")
@@ -152,16 +152,20 @@ end
 end
 
 
-updated_cercariae = cercariae
-time_step_specific_cerc_death = pars.cercariae_survival
-c = cercariae
-for i in 1:pars.time_step
-    c = (c + miracidia[1]/pars.time_step) * pars.cercariae_survival
+function calculate_time_step_specific_cerc_death(cercariae, pars, miracidia)
+    updated_cercariae = cercariae
+    time_step_specific_cerc_death = pars.cercariae_survival
+    c = cercariae
+    for i in 1:pars.time_step
+        c = (c + miracidia[1]/pars.time_step) * pars.cercariae_survival
+    end
+    c1 = cercariae
+    c1 = (c1 +  miracidia[1])
+    time_step_specific_cerc_death = c/c1
+    updated_cercariae = trunc(Int, round(cercariae * time_step_specific_cerc_death, digits= 0))
+    return updated_cercariae
 end
-c1 = cercariae
-c1 = (c1 +  miracidia[1])
-updated_cercariae = trunc(Int, round(cercariae * time_step_specific_cerc_death, digits= 0))
-
+updated_cercariae = calculate_time_step_specific_cerc_death(cercariae, pars, miracidia)
 
 @testset "cercariae_death" begin
     @test cercariae_death!(cercariae, miracidia, pars)== updated_cercariae
