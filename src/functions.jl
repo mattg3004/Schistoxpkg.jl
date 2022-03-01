@@ -763,24 +763,28 @@ end
     cercariae_death!(miracidia, pars)
 
 Kill a chosen proportion of cercariae in the environment governed by the
-cercariae_survival parameter in the pars struct
+cercariae_survival parameter in the pars struct. This parameter governs what
+proportion of cercariae survive for for one additional day, so if the time step
+is greater than one, we have to calculate the correct proportion who die over
+the chosen time step
 """
 function cercariae_death!(cercariae, miracidia, pars)
-    # updated_cercariae = 0
-    # for i in 1:time_step
-    #     updated_cercariae += (env_cercariae/time_step) * (1/(2^i))
-    # end
+
     updated_cercariae = cercariae
     if cercariae > 0
         time_step_specific_cerc_death = pars.cercariae_survival
         if pars.time_step > 1
             c = cercariae
             for i in 1:pars.time_step
+                # calculate the number of cercariae remaining if there was
+                #daily addition and culling of cercariae to the pool
                  c = (c + miracidia[1]/pars.time_step) * pars.cercariae_survival
             end
             c1 = cercariae
             c1 = (c1 +  miracidia[1])
             if c1 > 0
+                # calculate the death rate needed to match the daily version of
+                # adding and culling cercariae
                 time_step_specific_cerc_death = c/c1
             end
         end
