@@ -88,7 +88,7 @@ mutable struct Parameters
     record_frequency::Float64
     use_kato_katz::Int64 # if 0, then don't use KK, if 1, use KK
     kato_katz_par::Float64
-    heavy_burden_threshold::Int64
+    heavy_burden_threshold::Float64
     rate_acquired_immunity::Float64
     M0::Float64 # mean worm burden
     human_larvae_maturity_time::Int64
@@ -273,7 +273,7 @@ function make_age_contact_rate_array(pars, scenario, input_ages, input_contact_r
                 pars.contact_rate_by_age_array[i] = input_contact_rates[end]
             end
 
-            for i in 1 : length(input_contact_rates)
+            for i in eachindex(input_contact_rates)
                 if i == 1
                     for j in 1:trunc(Int,(input_ages[i] + 1))
                         pars.contact_rate_by_age_array[j] = input_contact_rates[i]
@@ -823,12 +823,12 @@ function worm_maturity!(humans, pars)
     p = pars.time_step * pars.worm_stages/ (365 * pars.average_worm_lifespan)
 
     @inbounds for h in humans
-        if h.last_uptake > 1.5 * 365*pars.average_worm_lifespan
-            for j in 1:pars.worm_stages
-                h.female_worms[j] = 0
-                h.male_worms[j] = 0
-            end
-        else
+    #    if h.last_uptake > 1.5 * 365*pars.average_worm_lifespan
+    #        for j in 1:pars.worm_stages
+#                h.female_worms[j] = 0
+    #            h.male_worms[j] = 0
+#            end
+#        else
         # kill appropriate number of worms in the final stage
             n = h.female_worms[pars.worm_stages]
             h.female_worms[pars.worm_stages] = rand(Binomial(n, 1-p))
@@ -851,7 +851,7 @@ function worm_maturity!(humans, pars)
                 h.female_worms[j] -= aging_females
                 h.male_worms[j+1] += aging_males
                 h.male_worms[j] -= aging_males
-            end
+            #end
         end
     end
     return humans
@@ -911,12 +911,13 @@ function egg_production!(humans, pars)
     female_worms = (p->p.female_worms).(humans)
     worm_pairs = calculate_worm_pairs(female_worms, male_worms)
 
-    for i in 1 : length(humans)
+    for i in eachindex(humans)
 #        wp = calculate_worm_pairs(humans[i])
         wp = worm_pairs[i]
+
         eggs = 0
         if wp > 0
-            wp = max(wp, 1E-10)
+            wp = max(wp, 1E-6)
     #= if we have a positive number of worms, then make calculation,
             otherwise the number of eggs is trivially 0 =#
     #         if worm_pairs > 0
@@ -965,7 +966,7 @@ function egg_production_increasing!(humans, pars)
     male_worms = (p->p.male_worms).(humans)
     female_worms = (p->p.female_worms).(humans)
     worms = sum.(male_worms) + sum.(female_worms)
-    for i in 1 : length(humans)
+    for i in eachindex(humans)
 #        wp = calculate_worm_pairs(humans[i])
         M = worms[i]
 #= if we have a positive number of worms, then make calculation,
@@ -1108,7 +1109,7 @@ reduce male and female worms with a given efficacy alongside removing eggs
 """
 function administer_drug(humans, indices, drug_effectiveness)
 
-    @inbounds for i in 1:length(indices)
+    @inbounds for i in eachindex(indices)
          index = indices[i]
         p = 1 - (drug_effectiveness * humans[index].adherence)
         humans[index].female_worms = rand.(Binomial.(humans[index].female_worms,p))
@@ -1131,7 +1132,7 @@ adding to their vaccine status signifying that they will have increased immunity
 """
 function administer_vaccine(humans, indices, vaccine_effectiveness, vaccine_duration)
 
-    @inbounds for i in 1:length(indices)
+    @inbounds for i in eachindex(indices)
          index = indices[i]
         p = 1 - (vaccine_effectiveness)
         humans[index].female_worms = rand.(Binomial.(humans[index].female_worms,p))
